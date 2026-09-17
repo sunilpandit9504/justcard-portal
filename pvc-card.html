@@ -1,0 +1,3029 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Justcard — Single Print PVC Studio</title>
+<script>
+  window.location.replace("single-pvc/index.html" + window.location.search);
+</script>
+<meta http-equiv="refresh" content="0; url=single-pvc/index.html">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<script src="wallet-client.js"></script>
+<style>
+:root{
+  --bg: #fbf9fe;
+  --bg-subtle: #f5f0fb;
+  --card: #ffffff;
+  --text: #0f172a;
+  --text-secondary: #475569;
+  --muted: #94a3b8;
+  --line: #ede9fe;
+  --line-focus: #a855f7;
+  --p: #8b5cf6;
+  --p-hover: #7c3aed;
+  --p-gradient: linear-gradient(135deg, #a855f7 0%, #7c3aed 50%, #6366f1 100%);
+  --p-gradient-hover: linear-gradient(135deg, #9333ea 0%, #6d28d9 50%, #4f46e5 100%);
+  --p-glow: rgba(168, 85, 247, 0.35);
+  --green: #10b981;
+  --green-glow: rgba(16, 185, 129, 0.25);
+  --red: #ef4444;
+  --radius-xl: 20px;
+  --radius-lg: 14px;
+  --radius-md: 10px;
+  --radius-sm: 8px;
+  --shadow-card: 0 4px 20px -2px rgba(124, 58, 237, 0.08), 0 2px 6px -1px rgba(15, 23, 42, 0.03);
+  --shadow-elevated: 0 20px 40px -8px rgba(168, 85, 247, 0.22), 0 6px 16px -2px rgba(15, 23, 42, 0.04);
+  --transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+*{box-sizing:border-box}
+body{
+  margin:0;
+  font-family:'Plus Jakarta Sans',system-ui,-apple-system,sans-serif;
+  background:var(--bg);
+  background-image:radial-gradient(at 0% 0%, rgba(168, 85, 247, 0.08) 0px, transparent 50%), radial-gradient(at 100% 0%, rgba(124, 58, 237, 0.08) 0px, transparent 50%), radial-gradient(at 50% 100%, rgba(99, 102, 241, 0.06) 0px, transparent 50%);
+  color:var(--text);
+  -webkit-font-smoothing:antialiased;
+}
+
+header{
+  position:sticky;
+  top:0;
+  z-index:40;
+  background:rgba(255, 255, 255, 0.94);
+  backdrop-filter:blur(16px);
+  -webkit-backdrop-filter:blur(16px);
+  border-bottom:1px solid var(--line);
+  box-shadow:0 4px 20px -4px rgba(124, 58, 237, 0.07);
+}
+
+.brandbar{
+  height:58px;
+  display:flex;
+  align-items:center;
+  gap:12px;
+  padding:0 20px;
+  overflow:auto;
+  white-space:nowrap;
+}
+
+.logo{
+  width:36px;
+  height:36px;
+  border-radius:10px;
+  background:var(--p-gradient);
+  color:#fff;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-family:'Outfit',sans-serif;
+  font-size:22px;
+  font-weight:900;
+  box-shadow:0 4px 14px var(--p-glow);
+}
+
+.brand{
+  font-family:'Outfit',sans-serif;
+  font-weight:800;
+  font-size:20px;
+  color:#0f172a;
+  letter-spacing:-0.4px;
+}
+
+.ver{
+  font-size:11px;
+  font-weight:700;
+  color:#7e22ce;
+  background:#f3e8ff;
+  border:1px solid #d8b4fe;
+  border-radius:20px;
+  padding:2px 8px;
+}
+
+.pill{
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  border:1px solid #ede9fe;
+  background:#fff;
+  border-radius:24px;
+  padding:6px 14px;
+  font-size:12px;
+  font-weight:600;
+  color:#475569;
+  box-shadow:0 1px 3px rgba(0,0,0,0.02);
+  transition:var(--transition);
+}
+.pill:first-of-type{margin-left:auto}
+.pill b{color:#0f172a;font-weight:800}
+.tokens{font-weight:900;color:#7e22ce;background:#f3e8ff;padding:2px 6px;border-radius:6px}
+
+.tabs{
+  display:flex;
+  gap:6px;
+  padding:8px 16px 10px;
+  overflow-x:auto;
+  overflow-y:hidden;
+  scrollbar-width:thin;
+  background:rgba(248, 250, 252, 0.7);
+  border-top:1px solid #f1f5f9;
+}
+
+.tab{
+  border:1px solid transparent;
+  background:transparent;
+  border-radius:10px;
+  padding:8px 14px;
+  font-family:'Plus Jakarta Sans',sans-serif;
+  font-size:12.5px;
+  font-weight:700;
+  color:#64748b;
+  white-space:nowrap;
+  cursor:pointer;
+  transition:var(--transition);
+  display:inline-flex;
+  align-items:center;
+  gap:5px;
+}
+
+.tab:hover{
+  background:#ffffff;
+  color:#1e293b;
+  border-color:#e2e8f0;
+  transform:translateY(-1px);
+}
+
+.tab.active{
+  background:var(--p-gradient);
+  color:#fff;
+  border-color:transparent;
+  box-shadow:0 4px 14px var(--p-glow);
+}
+
+.wrap{
+  max-width:1120px;
+  margin:auto;
+  padding:20px 16px 50px;
+}
+
+.panel{
+  background:var(--card);
+  border-radius:var(--radius-xl);
+  margin-bottom:16px;
+  padding:20px 22px;
+  border:1px solid var(--line);
+  box-shadow:var(--shadow-card);
+  transition:var(--transition);
+}
+
+.panel:hover{
+  box-shadow:0 6px 24px -2px rgba(15, 23, 42, 0.07);
+}
+
+.title{
+  font-size:11px;
+  font-weight:800;
+  letter-spacing:0.8px;
+  text-transform:uppercase;
+  color:#64748b;
+  margin-bottom:14px;
+  display:flex;
+  align-items:center;
+  gap:6px;
+}
+
+.row{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:16px;
+}
+
+.group{margin-bottom:14px}
+label{
+  display:block;
+  font-size:12px;
+  font-weight:700;
+  margin-bottom:7px;
+  color:#334155;
+}
+
+.field,.upload{
+  height:44px;
+  width:100%;
+  border:1.5px solid #e2e8f0;
+  background:#f8fafc;
+  border-radius:var(--radius-md);
+  padding:0 14px;
+  font-family:inherit;
+  font-size:13px;
+  color:#1e293b;
+  outline:none;
+  transition:var(--transition);
+}
+
+.field:focus{
+  border-color:var(--p);
+  background:#fff;
+  box-shadow:0 0 0 4px rgba(99, 102, 241, 0.12);
+}
+
+select.field{
+  cursor:pointer;
+}
+
+.upload{
+  display:flex;
+  align-items:center;
+  cursor:pointer;
+  user-select:none;
+  font-size:12.5px;
+  color:#64748b;
+  position:relative;
+  overflow:hidden;
+  border:1.5px dashed #cbd5e1;
+  background:#f8fafc;
+}
+
+.upload:hover{
+  border-color:var(--p);
+  background:#eef2ff;
+  color:var(--p);
+}
+
+.upload input[type=file]{
+  position:absolute;
+  inset:0;
+  width:100%;
+  height:100%;
+  opacity:0;
+  cursor:pointer;
+  z-index:2;
+}
+
+.upload span{
+  margin-left:8px;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+  font-weight:600;
+}
+
+.actions{display:flex;gap:10px}
+
+.btn{
+  height:44px;
+  border:0;
+  border-radius:var(--radius-md);
+  font-family:inherit;
+  font-weight:750;
+  font-size:13px;
+  cursor:pointer;
+  padding:0 16px;
+  transition:var(--transition);
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:6px;
+}
+
+.btn:active{transform:scale(0.98)}
+
+.primary{
+  flex:1;
+  background:var(--p-gradient);
+  color:#fff;
+  box-shadow:0 4px 14px var(--p-glow);
+}
+
+.primary:hover{
+  box-shadow:0 6px 18px var(--p-glow);
+  transform:translateY(-1px);
+}
+
+.purple{
+  background:var(--p-gradient);
+  color:#fff;
+  box-shadow:0 4px 14px var(--p-glow);
+}
+
+.purple:hover{
+  box-shadow:0 6px 18px var(--p-glow);
+  transform:translateY(-1px);
+}
+
+.outline{
+  background:#fff;
+  border:1.5px solid #e2e8f0;
+  color:#475569;
+}
+
+.outline:hover{
+  background:#f8fafc;
+  border-color:#cbd5e1;
+  color:#0f172a;
+}
+
+.full{width:100%}
+
+.secure{
+  background:linear-gradient(135deg, #ecfdf5 0%, #f0fdf4 100%);
+  border:1px solid #a7f3d0;
+}
+
+.secure b{font-size:13px;color:#047857}
+.secure p{font-size:12px;margin:5px 0 0;color:#065f46;line-height:1.45}
+
+.hidden{display:none!important}
+.module{display:none;animation:fadeIn 0.25s ease forwards}
+.module.active{display:block}
+
+@keyframes fadeIn{
+  from{opacity:0;transform:translateY(4px)}
+  to{opacity:1;transform:translateY(0)}
+}
+
+.section-head{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  margin:24px 2px 12px;
+}
+
+.section-head h2{
+  font-family:'Outfit',sans-serif;
+  font-size:18px;
+  font-weight:800;
+  margin:0;
+  color:#0f172a;
+}
+
+.count{
+  font-size:12px;
+  font-weight:600;
+  color:#64748b;
+  background:#e2e8f0;
+  padding:3px 10px;
+  border-radius:20px;
+}
+
+.cardgrid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:16px;
+}
+
+.cardbox{
+  min-height:300px;
+  background:#f8fafc;
+  border-radius:var(--radius-lg);
+  border:1.5px dashed #cbd5e1;
+  position:relative;
+  overflow:hidden;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  box-shadow:inset 0 2px 4px rgba(0,0,0,0.02);
+  transition:var(--transition);
+}
+
+.cardbox:hover{
+  border-color:var(--p);
+}
+
+.badge{
+  position:absolute;
+  top:12px;
+  left:12px;
+  background:rgba(15, 23, 42, 0.75);
+  backdrop-filter:blur(6px);
+  color:#fff;
+  border-radius:20px;
+  padding:4px 10px;
+  font-size:10px;
+  font-weight:800;
+  letter-spacing:0.5px;
+  z-index:2;
+}
+
+.empty{
+  min-height:300px;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  color:#94a3b8;
+  font-size:12px;
+  font-weight:600;
+  gap:10px;
+}
+
+.empty-icon{
+  font-size:32px;
+  opacity:0.6;
+  color:var(--p);
+}
+
+.cardimg{
+  width:100%;
+  aspect-ratio:85.6/53.98;
+  object-fit:fill;
+  display:block;
+  border-radius:10px;
+  box-shadow:0 8px 24px rgba(0,0,0,0.12);
+}
+
+.save{
+  height:40px;
+  width:100%;
+  margin:10px 0 14px;
+  border:1.5px solid #e2e8f0;
+  background:#fff;
+  border-radius:var(--radius-md);
+  color:#334155;
+  font-weight:750;
+  font-size:12.5px;
+  cursor:pointer;
+  transition:var(--transition);
+}
+
+.save:hover{
+  border-color:var(--p);
+  color:var(--p);
+  background:#eef2ff;
+  transform:translateY(-1px);
+}
+
+.toolbar{
+  display:flex;
+  gap:8px;
+  flex-wrap:wrap;
+  margin:12px 0;
+}
+
+.small{height:36px;font-size:11.5px;padding:0 12px}
+
+.pdfpages{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(150px,1fr));
+  gap:12px;
+  margin-top:14px;
+}
+
+.page{
+  background:#fff;
+  border:1.5px solid var(--line);
+  border-radius:var(--radius-md);
+  padding:8px;
+  cursor:pointer;
+  transition:var(--transition);
+  box-shadow:0 2px 6px rgba(0,0,0,0.02);
+}
+
+.page:hover{
+  border-color:var(--p);
+  transform:translateY(-2px);
+  box-shadow:0 6px 16px rgba(99, 102, 241, 0.1);
+}
+
+.page.selected{
+  border:2px solid var(--p);
+  box-shadow:0 0 0 3px var(--p-glow);
+}
+
+.page canvas{
+  width:100%;
+  display:block;
+  border-radius:6px;
+}
+
+.page small{
+  display:block;
+  text-align:center;
+  color:#64748b;
+  font-weight:700;
+  margin-top:6px;
+  font-size:11px;
+}
+
+.editor{
+  background:#0f172a;
+  border-radius:var(--radius-lg);
+  padding:14px;
+  overflow:auto;
+  box-shadow:0 10px 30px rgba(0,0,0,0.25);
+}
+
+.editor canvas{
+  display:block;
+  max-width:100%;
+  height:auto;
+  margin:auto;
+  touch-action:none;
+}
+
+.print-layout{
+  background:#fff;
+  padding:14px;
+  border-radius:var(--radius-lg);
+  border:1px solid var(--line);
+}
+
+.sheet{
+  display:grid;
+  grid-template-columns:repeat(2,85.6mm);
+  gap:5mm;
+  padding:6mm;
+  background:#fff;
+  min-height:100mm;
+  align-items:start;
+  justify-content:start;
+}
+
+.sheet .printcard{
+  border:1px dashed #cbd5e1;
+  aspect-ratio:85.6/54;
+  overflow:hidden;
+  border-radius:4px;
+}
+
+.printcard{width:85.6mm;height:54mm}
+.printcard img{width:100%;height:100%;object-fit:fill}
+
+.history-item{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  border-bottom:1px solid var(--line);
+  padding:12px 0;
+  font-size:13px;
+  transition:var(--transition);
+}
+.history-item:last-child{border-bottom:0}
+.history-item:hover{background:#f8fafc}
+.thumb{width:60px;height:38px;object-fit:cover;border-radius:6px;background:#e2e8f0;box-shadow:0 2px 4px rgba(0,0,0,0.05)}
+
+.photo-preview{
+  width:35mm;
+  height:45mm;
+  background:#f1f5f9;
+  border:1.5px solid #cbd5e1;
+  border-radius:6px;
+  margin:14px auto;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  overflow:hidden;
+  box-shadow:0 4px 12px rgba(0,0,0,0.06);
+}
+.photo-preview img{width:100%;height:100%;object-fit:cover}
+
+.notice{font-size:12px;color:#64748b;line-height:1.5}
+.notice.mini{font-size:11px}
+
+@media(max-width:768px){
+  .row,.cardgrid{grid-template-columns:1fr}
+  .pill{display:none}
+  .wrap{padding:14px 10px 40px}
+  .panel{padding:16px}
+  .sheet{grid-template-columns:repeat(2,1fr);padding:3mm;gap:3mm}
+  .cardbox,.empty{min-height:260px}
+}
+
+/* PACKAGE CARDS */
+.package-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.package-card{
+  border:1.5px solid var(--line);
+  border-radius:var(--radius-lg);
+  padding:16px;
+  background:#ffffff;
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+  position:relative;
+  transition:var(--transition);
+  box-shadow:var(--shadow-card);
+}
+.package-card:hover{transform:translateY(-3px);box-shadow:var(--shadow-elevated)}
+.package-card>div{display:flex;flex-direction:column;gap:4px}
+.package-card b{font-family:'Outfit',sans-serif;font-size:15px;letter-spacing:-0.2px}
+.package-duration{font-size:11px;font-weight:700;color:var(--muted)}
+.package-card strong{font-family:'Outfit',sans-serif;font-size:22px;color:var(--p)}
+.package-status{font-size:11px;font-weight:800;color:#64748b;background:#f1f5f9;padding:2px 8px;border-radius:12px;width:fit-content}
+.package-card.active{border:2px solid var(--p);box-shadow:0 0 0 3px var(--p-glow)}
+.package-card.active .package-status{background:var(--p);color:#fff}
+.package-card.silver{background:linear-gradient(145deg, #f8fafc, #edf2f7);border-color:#cbd5e1}
+.package-card.gold{background:linear-gradient(145deg, #fffdf5, #fef3c7);border-color:#fcd34d}
+.package-card.diamond{background:linear-gradient(145deg, #f0fdfa, #ccfbf1);border-color:#5eead4}
+.package-card.silver strong{color:#475569}
+.package-card.gold strong{color:#b45309}
+.package-card.diamond strong{color:#0f766e}
+.package-card.silver.active{background:linear-gradient(145deg, #64748b, #475569);border-color:#334155;color:#fff}
+.package-card.gold.active{background:linear-gradient(145deg, #f59e0b, #d97706);border-color:#b45309;color:#fff}
+.package-card.diamond.active{background:linear-gradient(145deg, #14b8a6, #0d9488);border-color:#0f766e;color:#fff}
+.package-card.active b,.package-card.active strong,.package-card.active .package-duration{color:#fff}
+.package-action{margin-top:8px}
+.package-action .btn{width:100%}
+
+@media(max-width:768px){.package-cards{grid-template-columns:1fr}}
+
+/* A4 DOCUMENT STUDIO */
+.scan-layout{
+  display:grid;
+  grid-template-columns:360px minmax(0,1fr);
+  gap:18px;
+  align-items:start;
+}
+@media(max-width:960px){
+  .scan-layout{grid-template-columns:1fr}
+}
+.scan-left{
+  background:#fff;
+  border:1px solid var(--line);
+  border-radius:var(--radius-xl);
+  padding:18px;
+  box-shadow:var(--shadow-card);
+}
+.scan-right{
+  background:#fff;
+  border:1px solid var(--line);
+  border-radius:var(--radius-xl);
+  padding:18px;
+  box-shadow:var(--shadow-card);
+}
+.side-tabs{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:8px;
+  margin-bottom:14px;
+}
+.side-tab{
+  height:40px;
+  border:1.5px solid #e2e8f0;
+  background:#f8fafc;
+  border-radius:var(--radius-md);
+  font-family:inherit;
+  font-size:12px;
+  font-weight:800;
+  color:#64748b;
+  cursor:pointer;
+  transition:var(--transition);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:6px;
+}
+.side-tab:hover{
+  border-color:var(--p);
+  color:var(--p);
+  background:#fff;
+}
+.side-tab.active{
+  background:var(--p-gradient);
+  color:#fff;
+  border-color:transparent;
+  box-shadow:0 4px 12px var(--p-glow);
+}
+.scan-panel{
+  background:#f8fafc;
+  border:1px solid #e2e8f0;
+  border-radius:var(--radius-lg);
+  padding:14px;
+}
+.scan-mode-grid{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:6px;
+  margin-bottom:12px;
+}
+.scan-mode{
+  height:36px;
+  font-size:11px;
+  font-weight:750;
+  border-radius:var(--radius-md);
+  border:1.5px solid #e2e8f0;
+  background:#fff;
+  color:#475569;
+  cursor:pointer;
+  transition:var(--transition);
+}
+.scan-mode:hover{
+  border-color:var(--p);
+  color:var(--p);
+}
+.scan-mode.active{
+  background:#6366f1;
+  color:#fff;
+  border-color:#6366f1;
+  box-shadow:0 2px 8px rgba(99,102,241,0.3);
+}
+.scan-adjust-grid{
+  display:grid;
+  gap:8px;
+}
+.scan-adjust-grid div{
+  display:flex;
+  flex-direction:column;
+  gap:4px;
+}
+.scan-adjust-grid label{
+  display:flex;
+  justify-content:space-between;
+  font-size:10.5px;
+  font-weight:800;
+  color:#64748b;
+  margin:0;
+}
+.scan-adjust-grid output{
+  color:var(--p);
+  font-weight:800;
+}
+.scan-adjust-grid input[type=range]{
+  width:100%;
+  accent-color:var(--p);
+  cursor:pointer;
+}
+.scan-actions{
+  display:grid;
+  grid-template-columns:1.5fr 1fr 1fr;
+  gap:6px;
+}
+.doc-editor-wrap{
+  background:#0f172a;
+  border-radius:var(--radius-lg);
+  padding:16px;
+  color:#fff;
+  box-shadow:inset 0 2px 8px rgba(0,0,0,0.3);
+}
+.doc-editor-wrap .title{
+  color:#e2e8f0;
+}
+.doc-canvas-box{
+  background:#1e293b;
+  border-radius:8px;
+  min-height:360px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  overflow:auto;
+  border:1px solid #334155;
+}
+.doc-canvas-box canvas{
+  display:block;
+  max-width:100%;
+  height:auto;
+  touch-action:none;
+}
+.point-help{
+  font-size:11px;
+  font-weight:700;
+  color:#94a3b8;
+  text-align:center;
+}
+.a4-preview{
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  min-height:360px;
+  max-height:560px;
+  overflow:auto;
+  background:#334155;
+  border-radius:12px;
+  padding:16px;
+}
+.a4-sheet{
+  width:100%;
+  max-width:380px;
+  aspect-ratio:210/297;
+  background:#fff;
+  box-shadow:0 12px 35px rgba(0,0,0,0.35);
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:flex-start;
+  padding:12px;
+  gap:8px;
+  box-sizing:border-box;
+  border-radius:4px;
+  overflow:hidden;
+}
+.a4-sheet.landscape{
+  max-width:520px;
+  aspect-ratio:297/210;
+  flex-direction:row;
+  justify-content:flex-start;
+}
+.doc-print-img{
+  max-width:100%;
+  max-height:100%;
+  object-fit:contain;
+  border-radius:2px;
+  display:block;
+  margin:auto;
+}
+
+/* CROP MODAL */
+.crop-modal{
+  position:fixed;
+  inset:0;
+  background:rgba(15, 23, 42, 0.75);
+  backdrop-filter:blur(8px);
+  z-index:100;
+  display:none;
+  align-items:center;
+  justify-content:center;
+  padding:16px;
+}
+.crop-modal.open{display:flex}
+.crop-window{
+  width:min(1150px,100%);
+  max-height:94vh;
+  overflow:auto;
+  background:#fff;
+  border-radius:24px;
+  box-shadow:0 25px 60px -15px rgba(0,0,0,0.3);
+  border:1px solid #e2e8f0;
+}
+.crop-head{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:16px 20px;
+  border-bottom:1px solid var(--line);
+  background:#f8fafc;
+}
+.crop-head b{font-family:'Outfit',sans-serif;font-size:16px}
+.crop-body{display:grid;grid-template-columns:190px 1fr 230px;gap:14px;padding:16px}
+.crop-side{background:#f8fafc;border:1px solid var(--line);border-radius:var(--radius-lg);padding:12px}
+.crop-stage{background:#0f172a;border-radius:var(--radius-lg);padding:12px;min-height:450px;display:flex;align-items:center;justify-content:center;overflow:auto}
+.crop-stage canvas{max-width:100%;height:auto;touch-action:none;border-radius:8px}
+.crop-tools{display:flex;flex-wrap:wrap;gap:6px}
+.crop-tools .btn{height:36px;font-size:11.5px}
+.side-card{border:2px solid transparent;border-radius:var(--radius-md);padding:8px;margin-bottom:8px;background:#fff;cursor:pointer;transition:var(--transition)}
+.side-card.active{border-color:var(--p);box-shadow:0 0 0 3px var(--p-glow)}
+.side-card img{width:100%;aspect-ratio:85.6/54;object-fit:fill;border-radius:6px}
+.crop-footer{display:flex;gap:10px;padding:14px 20px;border-top:1px solid var(--line);background:#f8fafc}
+.crop-footer .btn{flex:1}
+
+/* SINGLE PRINT REFERENCE STUDIO */
+.single-print-reference{
+  display:grid!important;
+  grid-template-columns:270px minmax(400px,1fr) 460px;
+  gap:18px;
+  align-items:start;
+  background:#f8fafc!important;
+  border:0!important;
+  box-shadow:none!important;
+  padding:0!important;
+}
+.sp-left,.sp-center,.sp-right{min-width:0}
+.sp-left{
+  background:#fff;
+  border:1px solid var(--line);
+  border-radius:var(--radius-xl);
+  padding:18px;
+  box-shadow:var(--shadow-card);
+}
+.sp-title{font-family:'Outfit',sans-serif;font-weight:800;font-size:13px;color:#334155;letter-spacing:0.5px;margin-bottom:14px}
+.sp-label{font-size:11px;font-weight:800;color:#64748b;margin:12px 0 6px}
+.sp-side-row{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.sp-tool-row{display:flex;gap:6px;flex-wrap:wrap;margin:10px 0}
+.sp-tool-row .btn{flex:1}
+.sp-page-info{margin-top:10px;background:#f1f5f9;border:1px solid #e2e8f0;border-radius:var(--radius-md);padding:10px;font-size:11px;color:#334155}
+.sp-note{margin:10px 0 12px;background:#eef2ff;border-radius:var(--radius-md);padding:10px;font-size:11px;color:#4f46e5;line-height:1.45}
+.btn.green{background:var(--green)!important;color:#fff!important;border-color:var(--green)!important;box-shadow:0 4px 14px var(--green-glow)!important}
+.btn.green:hover{box-shadow:0 6px 18px var(--green-glow)!important;transform:translateY(-1px)}
+.sp-center-title{font-family:'Outfit',sans-serif;font-weight:800;font-size:14px;color:#0f172a;margin:0 0 10px}
+.sp-center{background:#fff;border-radius:var(--radius-xl);min-height:480px;padding:18px;border:1px solid var(--line);box-shadow:var(--shadow-card)}
+.sp-preview{min-height:430px;background:#0f172a;border-radius:var(--radius-lg);display:flex;align-items:center;justify-content:center;padding:16px;overflow:hidden;box-shadow:inset 0 2px 8px rgba(0,0,0,0.3)}
+.sp-preview .print-preview-sheet{margin:0!important;box-shadow:0 8px 30px rgba(0,0,0,0.4)!important;border-radius:4px}
+.sp-preview-caption{text-align:center;font-size:11px;color:#94a3b8;margin-top:10px}
+.sp-right{display:flex;flex-direction:column;gap:16px}
+.sp-card{background:#fff;border:1px solid var(--line);border-radius:var(--radius-xl);padding:16px;box-shadow:var(--shadow-card)}
+.sp-card-head{display:flex;justify-content:space-between;align-items:center;color:#0f172a;font-size:12px;font-weight:800;margin-bottom:12px}
+.sp-align-grid{display:grid;grid-template-columns:100px 1fr 1fr;gap:12px;align-items:end}
+.sp-pad{text-align:center}
+.sp-pad .pos-btn{width:32px;height:32px;padding:0;margin:2px;font-weight:800;border-radius:8px}
+.sp-mini{font-size:9px;font-weight:800;color:#94a3b8;margin-bottom:6px;letter-spacing:0.5px}
+.sp-actions{display:flex;align-items:center;gap:6px}
+.sp-actions .btn{width:34px;height:32px;padding:0;border-radius:8px}
+.sp-actions b{font-size:12px;margin-left:4px}
+.sp-status{margin-top:12px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:var(--radius-md);padding:10px;font-size:11px;font-weight:700;color:#334155}
+.sp-hidden-pos{position:absolute;left:-99999px;width:1px;height:1px;overflow:hidden}
+.sp-guide-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px 16px}
+.sp-guide-grid div{display:flex;flex-direction:column;gap:3px;border-bottom:1px solid #f1f5f9;padding-bottom:8px}
+.sp-guide-grid span{font-size:9px;font-weight:800;color:#94a3b8;letter-spacing:0.5px}
+.sp-guide-grid b{font-size:11.5px;color:#1e293b}
+.sp-important{margin-top:12px;border:1px dashed #818cf8;border-radius:var(--radius-md);background:#f5f3ff;color:#4f46e5;padding:12px;font-size:11px;line-height:1.5}
+
+@media(max-width:1150px){
+  .single-print-reference{grid-template-columns:250px minmax(360px,1fr)}
+  .sp-right{grid-column:1/-1;display:grid;grid-template-columns:1fr 1fr}
+}
+@media(max-width:768px){
+  .single-print-reference{grid-template-columns:1fr}
+  .sp-right{grid-template-columns:1fr}
+}
+
+.print-preview-sheet{position:relative;width:152.4mm;height:101.6mm;min-height:101.6mm;background:#fff;margin:auto;overflow:hidden;border:1px solid #cbd5e1;display:flex;align-items:center;justify-content:center}
+body.print-canon .print-preview-sheet{width:87.71mm;height:55mm;min-height:55mm}
+.print-preview-card{position:absolute;width:85.60mm;height:53.98mm;left:50%;top:50%;transform:translate(-50%,-50%);transform-origin:center center;overflow:hidden;box-sizing:border-box}
+.print-preview-card img{position:absolute;width:100%;height:100%;left:0;top:0;object-fit:fill;display:block}
+.print-preview-card.cut{outline:1px dashed #64748b}
+
+/* FRONTEND LOGIN GATE WITH FROSTED GLASS */
+.login-gate{
+  position:fixed;
+  inset:0;
+  z-index:10000;
+  background:radial-gradient(circle at top left, #ede9fe 0%, #f8fafc 45%, #e0e7ff 100%);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:20px;
+  overflow:auto;
+}
+.login-gate.hidden{display:none!important}
+.login-shell{
+  width:min(460px,100%);
+  background:rgba(255, 255, 255, 0.94);
+  backdrop-filter:blur(24px);
+  -webkit-backdrop-filter:blur(24px);
+  border:1px solid rgba(226, 232, 240, 0.9);
+  border-radius:28px;
+  box-shadow:0 25px 50px -12px rgba(99, 102, 241, 0.18), 0 0 0 1px rgba(255, 255, 255, 0.8);
+  padding:28px;
+}
+.login-brand{text-align:center;margin-bottom:22px}
+.login-logo{
+  width:64px;
+  height:64px;
+  margin:0 auto 12px;
+  border-radius:20px;
+  background:var(--p-gradient);
+  color:#fff;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-family:'Outfit',sans-serif;
+  font-size:38px;
+  font-weight:950;
+  box-shadow:0 12px 28px var(--p-glow);
+}
+.login-brand h1{
+  margin:0;
+  font-family:'Outfit',sans-serif;
+  font-size:28px;
+  font-weight:900;
+  color:#0f172a;
+  letter-spacing:-0.5px;
+}
+.login-brand p{margin:6px 0 0;color:#64748b;font-size:13px;font-weight:500}
+.login-tabs{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:6px;
+  background:#f1f5f9;
+  border-radius:14px;
+  padding:5px;
+  margin-bottom:18px;
+}
+.login-tabs button,.login-tabs a{
+  height:40px;
+  border:0;
+  background:transparent;
+  border-radius:10px;
+  font-family:inherit;
+  font-weight:750;
+  font-size:12.5px;
+  color:#64748b;
+  cursor:pointer;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  transition:var(--transition);
+}
+.login-tabs button.active{
+  background:#fff;
+  color:var(--p);
+  box-shadow:0 2px 8px rgba(0,0,0,0.06);
+}
+.login-submit{height:46px;margin-top:6px;font-size:14px}
+.login-help{text-align:center;font-size:11px;color:#94a3b8;line-height:1.5;margin:14px 0 0}
+.login-badge{
+  display:inline-block;
+  margin-top:10px;
+  padding:4px 12px;
+  border-radius:20px;
+  background:#eef2ff;
+  color:#4f46e5;
+  font-size:11px;
+  font-weight:800;
+}
+.login-error{
+  display:none;
+  background:#fef2f2;
+  border:1px solid #fecaca;
+  color:#dc2626;
+  border-radius:var(--radius-md);
+  padding:10px 14px;
+  font-size:12px;
+  font-weight:600;
+  margin-bottom:12px;
+}
+.login-error.show{display:block}
+body.login-locked{overflow:hidden}
+
+/* USER STATS & ADMIN DASHBOARD */
+.user-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.stat{
+  background:#f8fafc;
+  border:1px solid var(--line);
+  border-radius:var(--radius-md);
+  padding:14px;
+}
+.stat b{font-family:'Outfit',sans-serif;font-size:20px;color:#0f172a}
+.admin-table{width:100%;border-collapse:collapse;font-size:12px}
+.admin-table th,.admin-table td{border-bottom:1px solid var(--line);padding:12px 8px;text-align:left}
+.admin-table th{color:#64748b;font-weight:800;text-transform:uppercase;font-size:10px;letter-spacing:0.5px}
+.badge-role{display:inline-block;border-radius:12px;padding:3px 8px;background:#eef2ff;color:#4f46e5;font-weight:800;font-size:10px}
+.wallet-positive{color:#059669;font-weight:800}
+.wallet-negative{color:#dc2626;font-weight:800}
+.account-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
+.account-actions .btn{flex:1;min-width:130px}
+.mini{font-size:11px}
+.modal-lite{position:fixed;inset:0;background:rgba(15,23,42,0.7);backdrop-filter:blur(6px);z-index:120;display:none;align-items:center;justify-content:center;padding:16px}
+.modal-lite.open{display:flex}
+.modal-card{width:min(520px,100%);background:#fff;border-radius:24px;padding:22px;box-shadow:0 25px 60px rgba(0,0,0,0.25);border:1px solid #e2e8f0}
+.modal-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
+.modal-head b{font-family:'Outfit',sans-serif;font-size:17px}
+
+/* PRINT PRESERVATION - EPSON & CANON & PVC DEDICATED PRINT STAGE */
+#jcCanonPrintStage {
+  display: none;
+}
+
+@media print{
+  @page {
+    margin: 0 !important;
+    size: auto;
+  }
+  @page canon_sheet {
+    size: 91mm 55mm;
+    margin: 0 !important;
+  }
+  @page epson_sheet {
+    size: 152.4mm 101.6mm;
+    margin: 0 !important;
+  }
+
+  html, body {
+    margin: 0 !important;
+    padding: 0 !important;
+    background: #fff !important;
+    width: 100% !important;
+    height: 100% !important;
+    overflow: visible !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  /* When printing via Print Now */
+  body.jc-canon-printing {
+    background: #fff !important;
+  }
+  body.jc-canon-printing > *:not(#jcCanonPrintStage) {
+    display: none !important;
+  }
+  body.jc-canon-printing #jcCanonPrintStage {
+    display: block !important;
+    position: fixed !important;
+    left: 0 !important;
+    top: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: #fff !important;
+    z-index: 999999 !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  .jc-print-canon, body.jc-canon-printing.print-canon #jcCanonPrintStage {
+    page: canon_sheet !important;
+    width: 91mm !important;
+    height: 55mm !important;
+  }
+
+  .jc-print-epson, body.jc-canon-printing:not(.print-canon) #jcCanonPrintStage {
+    page: epson_sheet !important;
+    width: 152.4mm !important;
+    height: 101.6mm !important;
+  }
+
+  #jcCanonPrintStage .jcCanonSheet {
+    position: relative !important;
+    width: 91mm !important;
+    height: 55mm !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: #fff !important;
+    overflow: hidden !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+  }
+
+  body.jc-canon-printing:not(.print-canon) #jcCanonPrintStage .jcCanonSheet {
+    width: 152.4mm !important;
+    height: 101.6mm !important;
+  }
+
+  #jcCanonPrintStage .jcCanonCard {
+    position: absolute !important;
+    width: 85.60mm !important;
+    height: 53.98mm !important;
+    left: 50% !important;
+    top: 50% !important;
+    transform: translate(-50%, -50%) !important;
+    overflow: hidden !important;
+    transform-origin: center center !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+    box-sizing: border-box !important;
+  }
+
+  #jcCanonPrintStage .jcCanonCard.cut {
+    outline: 0.35mm solid #cbd5e1 !important;
+  }
+
+  #jcCanonPrintStage .jcCanonCard img {
+    position: absolute !important;
+    width: 100% !important;
+    height: 100% !important;
+    max-width: none !important;
+    max-height: none !important;
+    left: 0 !important;
+    top: 0 !important;
+    object-fit: fill !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+    image-rendering: -webkit-optimize-contrast !important;
+    image-rendering: crisp-edges !important;
+  }
+
+  /* Fallback: Direct Print from Single Print screen */
+  body:not(.jc-canon-printing) header,
+  body:not(.jc-canon-printing) .no-print,
+  body:not(.jc-canon-printing) .toolbar,
+  body:not(.jc-canon-printing) .login-gate,
+  body:not(.jc-canon-printing) .crop-modal,
+  body:not(.jc-canon-printing) .modal-lite,
+  body:not(.jc-canon-printing) .sp-left,
+  body:not(.jc-canon-printing) .sp-right,
+  body:not(.jc-canon-printing) .sp-center-title,
+  body:not(.jc-canon-printing) .sp-preview-caption,
+  body:not(.jc-canon-printing) .section-head,
+  body:not(.jc-canon-printing) .panel:not(.single-print-reference) {
+    display: none !important;
+  }
+
+  body:not(.jc-canon-printing) #singlePreview,
+  body:not(.jc-canon-printing) .print-preview-sheet {
+    display: block !important;
+  }
+}
+</style>
+</head>
+<body>
+<div class="login-gate hidden" id="loginGate">
+  <div class="login-shell">
+    <div class="login-brand"><div class="login-logo">J</div><h1>Justcard</h1><p>PVC Card Printing Portal</p><span class="login-badge">🔐 Retailer Login</span></div>
+    <div class="login-tabs"><a class="tab" href="/resume-builder/" style="text-decoration:none;">📄 Resume Builder</a><button type="button" id="gateLoginTab" class="active">Login</button><button type="button" id="gateRegisterTab">Create Account</button></div>
+    <div id="gateError" class="login-error"></div>
+    <form id="gateLoginForm" class="login-form">
+      <div class="group"><label>Mobile / Email</label><input id="gateLoginId" class="field" autocomplete="username" placeholder="Enter mobile or email" required></div>
+      <div class="group"><label>Password</label><input id="gateLoginPass" class="field" type="password" autocomplete="current-password" placeholder="Enter password" required></div>
+      <button class="btn purple full login-submit" type="submit">🔐 Login &amp; Continue</button>
+      
+      <div style="margin-top:14px;padding-top:12px;border-top:1px dashed #e2e0f0;text-align:center">
+        <div style="font-size:11px;font-weight:800;color:#6d67a5;margin-bottom:8px">⚡ ONE-CLICK DEMO ACCESS</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+          <button type="button" class="btn outline" id="demoAdminBtn" onclick="demoLogin('admin')" style="font-size:11px;height:38px;border-color:#7c3aed;color:#7c3aed;background:#f5f3ff;font-weight:800;display:flex;align-items:center;justify-content:center;gap:4px;cursor:pointer">👑 Admin Demo</button>
+          <button type="button" class="btn outline" id="demoRetailerBtn" onclick="demoLogin('retailer')" style="font-size:11px;height:38px;border-color:#059669;color:#059669;background:#ecfdf5;font-weight:800;display:flex;align-items:center;justify-content:center;gap:4px;cursor:pointer">🏪 Retailer Demo</button>
+        </div>
+      </div>
+      <p class="login-help">Admin Demo se pure system aur pricing settings manage kar sakte hain. Retailer Demo se PVC Cards aur Resume print kar sakte hain.</p>
+    </form>
+    <form id="gateRegisterForm" class="login-form hidden">
+      <div class="group"><label>Retailer / Shop Name</label><input id="gateRegName" class="field" placeholder="Shop name" required></div>
+      <div class="group"><label>Mobile Number</label><input id="gateRegPhone" class="field" inputmode="tel" placeholder="10 digit mobile" required></div>
+      <div class="group"><label>Email</label><input id="gateRegEmail" class="field" type="email" placeholder="Email address" required></div>
+      <div class="group"><label>Create Password</label><input id="gateRegPass" class="field" type="password" autocomplete="new-password" placeholder="Create password" required></div>
+      <button class="btn purple full login-submit" type="submit">✓ Create Retailer Account</button>
+      <p class="login-help">Account create hone ke baad admin wallet/package activate kar sakta hai.</p>
+    </form>
+  </div>
+</div>
+
+<header>
+ <div class="brandbar">
+  <a href="index.html" style="display:flex;align-items:center;gap:6px;text-decoration:none;color:inherit;">
+    <div class="logo">J</div><div class="brand">Justcard</div><div class="ver">v1.1 Multi-Studio</div>
+  </a>
+  <a href="index.html" class="pill" style="text-decoration:none;font-weight:750;color:#0f172a;background:#ffffff;"><i class="fa-solid fa-house"></i> Dashboard</a>
+  <a href="admin/index.html" class="pill" style="text-decoration:none;font-weight:750;color:#7c3aed;background:#f3e8ff;border-color:#d8b4fe;"><i class="fa-solid fa-crown"></i> Admin Panel</a>
+  <div class="jc-wallet-container" style="margin-left:auto;"></div>
+ </div>
+ <nav class="tabs">
+  <button class="tab active" data-module="extract">▣ Extract Cards</button>
+  <button class="tab" data-module="single">▤ Single Print</button>
+  <button class="tab" data-module="document">▧ A4 Document</button>
+  <button class="tab" data-module="photoMaker">📷 Photo Maker</button>
+  <button class="tab" data-module="resumeBuilder">📄 Resume Builder</button>
+  <button class="tab" data-module="history">↶ History</button>
+  <button class="tab" data-module="plans">◇ Recharge Plans</button>
+  <button class="tab" data-module="account">👤 Account</button>
+ </nav>
+</header>
+
+<main class="wrap">
+<!-- EXTRACT -->
+<section id="extract" class="module active">
+ <section class="panel">
+  <div class="title">CONFIGURATION</div>
+  <div class="row">
+   <div class="group"><label>State</label><select id="state" class="field"><option>Jharkhand</option><option>Bihar</option><option>West Bengal</option><option>Uttar Pradesh</option><option>Odisha</option></select></div>
+   <div class="group"><label>Card Type *</label><select id="cardType" class="field"><option>Aadhaar Card</option><option>PAN Card</option><option>Voter ID</option><option>Ayushman Card</option><option>Other PVC Card</option></select></div>
+  </div>
+ </section>
+ <section class="panel">
+  <div class="title">🔒 SELECT PDFS <span style="float:right;color:#aaa" id="pdfCount">0/5</span></div>
+  <div class="upload" style="position:relative;overflow:hidden;cursor:pointer">
+    ▣ <span id="pdfLabel">Choose PDF(s) — up to 5</span>
+    <input id="pdfs" type="file" accept="application/pdf" multiple style="position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer;display:block;z-index:10">
+  </div>
+  <div class="group" style="margin-top:10px"><label>PDF Password</label><input id="pdfPassword" class="field" type="password" placeholder="Password (if PDF is protected)"><div class="notice" style="margin-top:5px">Password-protected Aadhaar/e-Aadhaar PDF ke liye yahan password enter karein.</div></div>
+  <div class="actions" style="margin-top:12px"><button class="btn primary" id="process">ϟ Process</button><button class="btn outline" id="clear">▱</button></div><button class="btn purple full" id="openCrop" style="margin-top:8px">✂ Modify Cropping — Front / Back</button>
+  <div id="pdfPages" class="pdfpages"></div>
+ </section>
+ <div class="section-head"><h2>Extracted Cards</h2><span class="count" id="status">No cards processed yet</span></div>
+ <div class="cardgrid">
+  <div>
+   <div class="cardbox" id="frontBoxClickable" style="cursor:pointer" title="Click to view/crop Front"><span class="badge">FRONT</span><div class="empty" id="frontPreview"><div class="empty-icon">▤</div><div>Process a PDF to see front</div></div></div>
+   <div style="display:flex;gap:6px;margin-top:6px">
+     <button class="save" id="saveFront" style="flex:1">▧ Save Front</button>
+     <button class="btn purple small" id="printFrontBtn" style="flex:1" type="button">🖨 Single Print</button>
+   </div>
+  </div>
+  <div>
+   <div class="cardbox" id="backBoxClickable" style="cursor:pointer" title="Click to view/crop Back"><span class="badge">BACK</span><div class="empty" id="backPreview"><div class="empty-icon">⌑</div><div>Process a PDF to see back</div></div></div>
+   <div style="display:flex;gap:6px;margin-top:6px">
+     <button class="save" id="saveBack" style="flex:1">▧ Save Back</button>
+     <button class="btn purple small" id="printBackBtn" style="flex:1" type="button">🖨 Single Print</button>
+   </div>
+  </div>
+ </div>
+ <div style="margin-top:14px">
+   <button class="btn green full" id="extractGoToSinglePrint" type="button" style="font-weight:700;font-size:15px;height:46px;display:flex;align-items:center;justify-content:center;gap:8px;box-shadow:0 4px 14px rgba(16,185,129,0.3);cursor:pointer">🖨 Open Single Print Menu (Preview &amp; Print) →</button>
+ </div>
+</section>
+
+<!-- CROP -->
+<section id="crop" class="module">
+ <section class="panel">
+  <div class="title">✂ MANUAL CROP / PVC CARD EDITOR</div>
+  <p class="notice">PDF process karne ke baad yahan se Front aur Back ko manually crop karein. Crop box ko touch/mouse se drag karke set karein, phir Apply Crop se exact PVC ratio mein convert karein.</p>
+  <div class="row"><div><button class="btn purple full" id="launchCrop">✂ Open Modify Cropping</button></div><div><button class="btn outline full" id="resetBothCrop">Reset Front + Back</button></div></div>
+  <div class="cardgrid" style="margin-top:12px"><div class="cardbox"><span class="badge">FRONT</span><div class="empty" id="cropFrontSummary">No Front</div></div><div class="cardbox"><span class="badge">BACK</span><div class="empty" id="cropBackSummary">No Back</div></div></div>
+  <div style="margin-top:14px">
+    <button class="btn green full" id="cropGoToSinglePrint" type="button" style="font-weight:700;font-size:14px;height:42px;display:flex;align-items:center;justify-content:center;gap:8px;cursor:pointer">🖨 Go to Single Print Menu →</button>
+  </div>
+ </section>
+</section>
+
+<!-- SINGLE PRINT -->
+<section id="single" class="module print">
+ <section class="panel single-print-reference">
+  <div class="sp-left">
+   <div class="sp-title">PRINT SETTINGS</div>
+   <div class="sp-label">Active Card</div>
+   <select id="singleCard" class="field"><option>Current Card</option></select>
+   <div class="sp-label">Card Side</div>
+   <div class="sp-side-row"><button class="btn primary" id="sideFrontPrint" type="button">Front</button><button class="btn outline" id="sideBackPrint" type="button">Back</button></div>
+   <div class="sp-tool-row"><button class="btn outline small" id="cuttingBorder" type="button">Cutting Border</button><button class="btn outline small" id="mirrorPrint" type="button">Mirror Print</button><button class="btn outline small" id="autoBleed" type="button">Auto-Bleed</button></div>
+   <div class="sp-label">Printer</div>
+   <select id="printerProfile" class="field"><option value="canon">Canon</option><option value="epson1">Epson L3100 Series</option><option value="epson2">Epson L3100 Series</option><option value="epson3">Epson L3300 Series</option></select>
+   <div class="sp-label">Print Layout</div>
+   <select id="printLayout" class="field"><option value="pvc">PVC Card</option></select>
+   <div class="sp-page-info" id="paperInfo">Page: <b>55 × 87.71 mm</b> | Single page</div>
+   <div class="sp-note">ⓘ Canon reference profile: Card 55×91mm • Actual Size (No Scaling)</div>
+   <button class="btn green full no-print" id="downloadPrintPdf" type="button">⇩ Download PDF</button>
+   <button class="btn purple full no-print" id="singlePrint" type="button" onclick="return printSingleNow();">🖨 Print Now</button>
+  </div>
+
+  <div class="sp-center">
+   <div class="sp-center-title">Print Preview &amp; Setup Guide</div>
+   <div id="singlePreview" class="print-layout sp-preview"></div>
+   <div class="sp-preview-caption">Preview shows exact card placement on 55×87.71mm page</div>
+  </div>
+
+  <div class="sp-right">
+   <div class="sp-card">
+    <div class="sp-card-head"><b>☷ &nbsp; ALIGNMENT SETTINGS</b><button class="btn outline small" id="posCenter" type="button">Reset All</button></div>
+    <div class="sp-align-grid">
+     <div class="sp-pad">
+      <button class="btn outline pos-btn" id="posUp" type="button">↑</button>
+      <div><button class="btn outline pos-btn" id="posLeft" type="button">←</button><button class="btn outline pos-btn" id="posDown" type="button">↓</button><button class="btn outline pos-btn" id="posRight" type="button">→</button></div>
+     </div>
+     <div><div class="sp-mini">ZOOM</div><div class="sp-actions"><button class="btn outline" id="zoomMinusPrint" type="button">−</button><button class="btn outline" id="zoomPlusPrint" type="button">＋</button><b id="zoomPrintVal">100%</b></div></div>
+     <div><div class="sp-mini">ROTATION</div><div class="sp-actions"><button class="btn outline" id="rotMinusPrint" type="button">↶</button><button class="btn outline" id="rotPlusPrint" type="button">↷</button><b id="rotPrintVal">0°</b></div></div>
+    </div>
+    <div class="sp-status" id="sidePrintStatus">Side: Front &nbsp; X: 0.0 &nbsp; Y: 1.0</div>
+    <div class="sp-hidden-pos"><input id="printX" class="field" type="number" step="0.1" value="0.0"><input id="printY" class="field" type="number" step="0.1" value="1.0"></div>
+   </div>
+
+   <div class="sp-card">
+    <div class="sp-card-head"><b>⚙ &nbsp; PRINTER SETTINGS GUIDE</b></div>
+    <div class="sp-guide-grid">
+     <div><span>PAPER SIZE</span><b id="guidePaper">Card 55*91mm</b></div>
+     <div><span>BORDERLESS</span><b id="guideBorderless">ON</b></div>
+     <div><span>MEDIA TYPE</span><b id="guideMedia">Photo Paper Plus Glossy II</b></div>
+     <div><span>QUALITY</span><b id="guideQuality">High / Best</b></div>
+     <div><span>SCALING</span><b id="guideScaling">Actual Size (No Scaling)</b></div>
+     <div><span>AMOUNT OF EXTENSION</span><b>Minimum</b></div>
+     <div class="sp-important">ⓘ <b>Important Note:</b> Printer settings me Scale = 100% (Actual size) rakhein taaki card ka exact 85.6×54mm size nikle.</div>
+    </div>
+   </div>
+  </section>
+ </section>
+</section>
+
+<!-- A4 DOCUMENT -->
+<section id="document" class="module print">
+ <section class="panel">
+  <div class="title">▧ A4 DOCUMENT STUDIO — WHATSAPP CAMERA &amp; SCANNER PRINT</div>
+  <div style="background:linear-gradient(135deg, #eef2ff 0%, #f0fdf4 100%);border:1px solid #c7d2fe;border-radius:12px;padding:12px 14px;margin-bottom:14px;display:flex;align-items:center;gap:10px">
+    <div style="font-size:24px">📄</div>
+    <div style="font-size:12px;color:#1e293b;line-height:1.45">
+      <b>A4 Document &amp; WhatsApp Photo Studio:</b> WhatsApp ya Mobile se li gayi kisi bhi photo, scan ya PDF ko seedha A4 page par standard scale me print karein. Front + Back dono pages ko 2-in-1 layout me bhi print kar sakte hain.
+    </div>
+  </div>
+
+  <div class="scan-layout">
+   <div class="scan-left">
+    <div class="group">
+      <label style="font-weight:700;color:#1e293b;display:flex;justify-content:space-between">
+        <span>▣ Front Document / Photo</span>
+        <span id="docFrontClear" style="color:#ef4444;cursor:pointer;font-size:11px;font-weight:600;display:none">✕ Clear</span>
+      </label>
+      <div class="upload" id="docFrontZone" style="position:relative;overflow:hidden;cursor:pointer;min-height:50px;display:flex;align-items:center;padding:0 14px">
+        <span style="font-size:18px;margin-right:8px">📂</span>
+        <span id="docFrontLabel" style="font-weight:600;font-size:13px;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Choose Front Photo / PDF...</span>
+        <input id="docFrontInput" type="file" accept="image/*,application/pdf" style="position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer;display:block;z-index:10">
+      </div>
+    </div>
+
+    <div class="group" style="margin-top:10px">
+      <label style="font-weight:700;color:#1e293b;display:flex;justify-content:space-between">
+        <span>▣ Back Document / Photo (Optional)</span>
+        <span id="docBackClear" style="color:#ef4444;cursor:pointer;font-size:11px;font-weight:600;display:none">✕ Clear</span>
+      </label>
+      <div class="upload" id="docBackZone" style="position:relative;overflow:hidden;cursor:pointer;min-height:50px;display:flex;align-items:center;padding:0 14px">
+        <span style="font-size:18px;margin-right:8px">📂</span>
+        <span id="docBackLabel" style="font-weight:600;font-size:13px;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Choose Back Photo / PDF (Optional)...</span>
+        <input id="docBackInput" type="file" accept="image/*,application/pdf" style="position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer;display:block;z-index:10">
+      </div>
+    </div>
+
+    <div style="display:flex;gap:8px;margin-top:10px">
+      <button type="button" class="btn outline small" id="docPasteBtn" style="font-size:12px;flex:1;height:38px;font-weight:700">📋 Paste Image (Ctrl+V)</button>
+      <button type="button" class="btn outline small" id="docResetAllBtn" style="font-size:12px;height:38px">↺ Reset All</button>
+    </div>
+
+    <div class="row" style="margin-top:14px">
+     <div class="group">
+       <label>Print Layout</label>
+       <select id="docPrintLayout" class="field">
+         <option value="full" selected>📄 Full Page A4 (Standard Document)</option>
+         <option value="side_by_side">📑 2-in-1 Side-by-Side (Front + Back Document)</option>
+         <option value="top_bottom">📑 2-in-1 Top &amp; Bottom (Front + Back Document)</option>
+         <option value="card">🪪 True PVC Card 2-in-1 Side-by-Side (85.6 × 54 mm)</option>
+       </select>
+     </div>
+     <div class="group">
+       <label>A4 Paper Orientation</label>
+       <select id="docOrientation" class="field">
+         <option value="portrait">A4 Portrait (खड़ा)</option>
+         <option value="landscape">A4 Landscape (आड़ा)</option>
+       </select>
+     </div>
+    </div>
+
+    <div class="row" style="margin-top:-6px">
+     <div class="group">
+       <label>Page Margins</label>
+       <select id="docMargins" class="field">
+         <option value="standard">Standard (6mm Margins)</option>
+         <option value="small">Compact (3mm Margins)</option>
+         <option value="none">Borderless (Edge to Edge)</option>
+       </select>
+     </div>
+     <div class="group">
+       <label>Document Fit</label>
+       <select id="docFitMode" class="field">
+         <option value="contain">Fit Entire Page (No Cut)</option>
+         <option value="fill">Fill A4 Area</option>
+       </select>
+     </div>
+    </div>
+
+    <div class="scan-panel" style="margin-top:8px">
+     <div class="title" style="font-size:12px;margin-bottom:8px">✨ IMAGE ENHANCER &amp; FILTERS</div>
+     <div class="scan-mode-grid">
+      <button class="btn scan-mode active" data-mode="original" type="button">🌟 ORIGINAL</button>
+      <button class="btn scan-mode" data-mode="magic" type="button">🪄 MAGIC CLEAN</button>
+      <button class="btn scan-mode" data-mode="bw" type="button">🖨 B&amp;W XEROX</button>
+      <button class="btn scan-mode" data-mode="contrast" type="button">🔍 HIGH CONTRAST</button>
+     </div>
+     <div class="scan-adjust-grid" style="margin-top:10px">
+      <div><label>BRIGHTNESS <output id="docBrightnessVal">0</output></label><input id="docBrightness" type="range" min="-100" max="100" value="0"></div>
+      <div><label>CONTRAST <output id="docContrastVal">0</output></label><input id="docContrast" type="range" min="-100" max="100" value="0"></div>
+     </div>
+     <div class="scan-actions" style="margin-top:10px;display:flex;gap:8px">
+      <button class="btn outline" id="docRotateLeft" type="button" style="flex:1">↶ Rotate Left</button>
+      <button class="btn outline" id="docRotateRight" type="button" style="flex:1">↷ Rotate Right</button>
+     </div>
+    </div>
+   </div>
+
+   <div class="scan-right">
+    <div class="panel" style="border:1px solid var(--line);padding:14px;background:#334155;border-radius:12px">
+     <div class="title" style="font-size:12px;display:flex;justify-content:space-between;color:#f8fafc;margin-bottom:10px">
+       <span>📄 LIVE A4 PRINT PREVIEW</span>
+       <span style="font-size:11px;color:#94a3b8">210 × 297 mm</span>
+     </div>
+     <div id="a4Preview" class="a4-preview" style="background:#475569;border-radius:10px;padding:12px;display:flex;justify-content:center;overflow:auto;min-height:300px"></div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1.2fr 1fr 1fr;gap:8px;margin-top:14px">
+     <button class="btn green full no-print" id="docPrintA4" type="button" style="font-size:13px;height:42px">🖨 Print A4 Now</button>
+     <button class="btn purple full no-print" id="docDownloadPdf" type="button" style="font-size:12px;height:42px">⇩ Download PDF</button>
+     <button class="btn outline full no-print" id="docDownloadImg" type="button" style="font-size:12px;height:42px">💾 Save Image</button>
+    </div>
+    <button class="btn outline full no-print" id="docPrintBothA4" type="button" style="margin-top:8px;font-size:12.5px;height:38px">🖨 Print Front + Back on Same A4 Sheet</button>
+   </div>
+  </div>
+ </section>
+</section>
+
+<!-- PHOTO MAKER (standalone full-screen module) -->
+<section id="photoMaker" class="module"><section class="panel"><div class="title">PHOTO MAKER</div><div class="notice">Opening full Photo Maker Studio…</div></section></section>
+
+<section id="resumeBuilder" class="module">
+  <section class="panel">
+    <div style="font-size:15px;font-weight:900;color:#173d8f;margin-bottom:4px">📄 Resume / Bio-Data Builder V5</div>
+    <div style="font-size:11px;color:#777">Complete A4 resume editor — edit details, education, experience, photo and print/save PDF.</div>
+  </section>
+  
+
+<div class="rb-app">
+<section class="rb-panel">
+<h2>Text / Details Change करें</h2>
+
+<div class="rb-sec">
+<label>Name</label><input id="rb_name" value="AMIT KUMAR">
+<div class="rb-row"><div><label>Email ID</label><input id="rb_email" value="amitkumar@gmail.com"></div><div><label>Mobile No</label><input id="rb_mobile" value="9876543210"></div></div>
+<div class="rb-row"><div><label>WhatsApp No</label><input id="rb_whatsapp" value="9876543210"></div><div><label>Date of Birth</label><input id="rb_dob" value="15/08/2000"></div></div>
+<label>Address</label><textarea id="rb_address">Vill - Rampur, P.O - Rampur, P.S - Godda
+Dist - Godda, Jharkhand - 814133</textarea>
+<label>Photo</label><input id="rb_photo" type="file" accept="image/*">
+</div>
+
+<div class="rb-sec"><h2>Objective</h2><textarea id="rb_objective">To be associated with a progressive organization that gives me scope to apply my knowledge and skills, seek a challenging and rewarding job that ensures growth with my potential and provides me exposure to professional and personal growth along with the organization.</textarea></div>
+
+<div class="rb-sec"><h2>Education Qualifications</h2><div id="rb_eduForm"></div><button class="rb-light" onclick="rbAddEdu()">+ Add Row</button></div>
+
+<div class="rb-sec"><h2>Extra Qualification</h2><textarea id="rb_extra">Basic Know Computer Knowledge</textarea></div>
+
+<div class="rb-sec"><h2>Work Experience</h2><div id="rb_expForm"></div><button class="rb-light" onclick="rbAddExp()">+ Add Experience</button></div>
+
+<div class="rb-sec"><h2>Personal Detail</h2>
+<div class="rb-row"><div><label>Gender</label><input id="rb_gender" value="Male"></div><div><label>Father's Name</label><input id="rb_father" value="Ramesh Kumar"></div></div>
+<div class="rb-row"><div><label>Mother's Name</label><input id="rb_mother" value="Sunita Devi"></div><div><label>Marital Status</label><input id="rb_marital" value="Unmarried"></div></div>
+<div class="rb-row"><div><label>Hobbies</label><input id="rb_hobbies"></div><div><label>Religion</label><input id="rb_religion" value="Hindu"></div></div>
+<div class="rb-row"><div><label>Nationality</label><input id="rb_nationality" value="Indian"></div><div><label>Language Known</label><input id="rb_language" value="Hindi"></div></div>
+</div>
+
+<div class="rb-sec"><h2>Declaration</h2><textarea id="rb_declaration">I hereby declare that the information given above is true and correct to the best of my knowledge and belief.</textarea>
+<div><label>Date</label><input id="rb_date" value="31/08/2026"></div><label>Place</label><input id="rb_place" value="GODDA">
+<button class="rb-blue" onclick="rbPrintA4()">🖨 PRINT A4 / SAVE PDF — ₹2/PRINT</button>
+<button class="rb-light" onclick="rbSaveData()">💾 SAVE</button>
+<button class="rb-light" onclick="rbLoadData()">↻ LOAD</button>
+<button class="rb-red" onclick="rbResetData()">RESET</button>
+</div>
+</section>
+
+<section class="rb-preview">
+<div class="rb-paper">
+<div class="rb-title">Bio-Data</div>
+<div class="rb-toparea">
+<div class="rb-info">
+<div class="rb-n">Name: <span id="rb_rname">RAVI KUMAR</span></div>
+<div>Email ID: <span id="rb_remail"></span></div>
+<div>Mobile No: <span id="rb_rmobile"></span></div>
+<div>WhatsApp No: <span id="rb_rwhatsapp"></span></div>
+<div>Address : <span id="rb_raddress"></span></div>
+</div>
+<img id="rb_rphoto" class="rb-photo">
+</div>
+
+<div class="rb-bar">Objective :-</div><div class="rb-content rb-bullet">• &nbsp; <span id="rb_robjective"></span></div>
+<div class="rb-bar">Education Qualifications :-</div>
+<table class="rb-edu"><thead><tr><th>Sr.<br>No.</th><th>Class/ Degree</th><th>Board/University</th><th>Year</th><th>Percentage/Division</th></tr></thead><tbody id="rb_redu"></tbody></table>
+
+<div id="rb_extraBlock"><div class="rb-bar">Extra Qualification :-</div><div class="rb-content rb-bullet">• &nbsp; <span id="rb_rextra"></span></div></div>
+<div id="rb_expBlock"><div class="rb-bar">Work Experience :-</div><div id="rb_rexp"></div></div>
+
+<div class="rb-bar">Personal Detail :-</div><div class="rb-personal" id="rb_rpersonal"></div>
+<div class="rb-bar">Declaration :-</div><div class="rb-declare" id="rb_rdeclaration"></div>
+<div class="rb-bottom"><div>Date<span id="rb_rdate">................</span><br><br>Place<span id="rb_rplace">................</span></div><div class="rb-sign"><span id="rb_rsign">RAVI KUMAR</span></div></div>
+</div>
+</section>
+</div>
+
+
+<div id="rb_samePrintPreview" style="display:none;position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,.72);overflow:auto">
+<div style="width:210mm;min-height:297mm;margin:18px auto;background:#fff;position:relative;box-shadow:0 4px 24px #0008">
+<div style="position:fixed;right:18px;top:12px;z-index:100000;display:flex;gap:7px"><button onclick="rbCloseSamePrintPreview()" style="padding:9px 12px;border:0;border-radius:5px;font-weight:bold">CLOSE</button><button onclick="rbPrintA4()" style="padding:9px 12px;border:0;border-radius:5px;background:#173d8f;color:#fff;font-weight:bold">PRINT A4</button></div>
+<div id="rb_samePrintPreviewPage"></div></div></div>
+</section>
+<div id="rbPrintArea"></div>
+<style id="justcard-resume-integrated-style">
+#resumeBuilder *{box-sizing:border-box}
+#resumeBuilder header{background:var(--p-gradient);color:#fff;padding:14px 22px;border-radius:var(--radius-lg);display:flex;justify-content:space-between;align-items:center;box-shadow:0 4px 14px var(--p-glow)}
+#resumeBuilder header h1{margin:0;font-family:'Outfit',sans-serif;font-size:20px;font-weight:800}
+#resumeBuilder header small{font-weight:normal;font-size:12px;opacity:0.9}
+#resumeBuilder .rb-app{max-width:1700px;margin:auto;padding:18px 0;display:grid;grid-template-columns:390px minmax(0,1fr);gap:20px;align-items:start}
+#resumeBuilder .rb-panel{background:var(--card);border-radius:var(--radius-xl);padding:20px;border:1px solid var(--line);box-shadow:var(--shadow-card);height:max-content}
+#resumeBuilder .rb-panel h2{font-family:'Outfit',sans-serif;font-size:16px;font-weight:800;color:var(--text);margin:0 0 12px}
+#resumeBuilder .rb-sec{border-top:1px solid var(--line);margin-top:14px;padding-top:14px}
+#resumeBuilder label{display:block;font-size:11.5px;font-weight:750;color:#334155;margin:8px 0 4px}
+#resumeBuilder input,#resumeBuilder textarea{width:100%;border:1.5px solid #e2e8f0;background:#f8fafc;border-radius:var(--radius-md);padding:9px 12px;font-family:inherit;font-size:13px;color:#1e293b;outline:none;transition:var(--transition)}
+#resumeBuilder input:focus,#resumeBuilder textarea:focus{border-color:var(--p);background:#fff;box-shadow:0 0 0 4px rgba(124, 58, 237, 0.12)}
+#resumeBuilder textarea{min-height:64px;resize:vertical}
+#resumeBuilder .rb-row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+#resumeBuilder .rb-row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+#resumeBuilder .rb-item{border:1.5px solid #ede9fe;background:#faf8ff;padding:10px;border-radius:var(--radius-md);margin:8px 0;display:flex;flex-direction:column;gap:6px}
+#resumeBuilder button{border:0;border-radius:var(--radius-md);padding:9px 14px;font-family:'Plus Jakarta Sans',sans-serif;font-weight:750;font-size:12.5px;cursor:pointer;margin:6px 5px 0 0;transition:var(--transition);display:inline-flex;align-items:center;gap:6px}
+#resumeBuilder .rb-blue{background:var(--p-gradient);color:white;box-shadow:0 4px 14px var(--p-glow)}
+#resumeBuilder .rb-blue:hover{background:linear-gradient(135deg, #9333ea 0%, #6d28d9 50%, #4f46e5 100%);transform:translateY(-1px)}
+#resumeBuilder .rb-light{background:#f3e8ff;color:#7e22ce;border:1px solid #d8b4fe}
+#resumeBuilder .rb-light:hover{background:#ede9fe}
+#resumeBuilder .rb-red{background:#fee2e2;color:#dc2626;border:1px solid #fecaca}
+#resumeBuilder .rb-red:hover{background:#fecaca}
+#resumeBuilder .rb-preview{overflow:auto;display:flex;justify-content:center}
+#resumeBuilder .rb-paper{width:210mm;min-height:297mm;background:#fff;padding:15mm 14mm;box-shadow:0 10px 30px rgba(124, 58, 237, 0.12), 0 2px 10px rgba(0,0,0,0.05);border-radius:4px}
+#resumeBuilder .rb-title{text-align:center;font:bold 24px "Times New Roman",serif;margin-bottom:18px;color:#111}
+#resumeBuilder .rb-toparea{display:grid;grid-template-columns:1fr 29mm;gap:8mm;align-items:start}
+#resumeBuilder .rb-info{font:12.5px "Times New Roman",serif;line-height:1.55;color:#111}
+#resumeBuilder .rb-info .rb-n{font-weight:bold}
+#resumeBuilder .rb-photo{width:27mm;height:34mm;object-fit:cover;border:1px solid #555;display:none}
+#resumeBuilder .rb-bar{height:9mm;background:#7c3aed !important;border:1px solid #6d28d9 !important;color:#ffffff !important;border-radius:2px;padding:2mm 2.2mm;font:bold 14px "Times New Roman",serif;margin-top:5mm;-webkit-print-color-adjust:exact !important;print-color-adjust:exact !important}
+#resumeBuilder .rb-content{font:12px "Times New Roman",serif;line-height:1.42}
+#resumeBuilder .rb-bullet{padding:4mm 7mm 2mm 10mm;font-size:11.5px}
+#resumeBuilder .rb-edu{width:100%;border-collapse:collapse;font:11px "Times New Roman",serif}
+#resumeBuilder .rb-edu th,#resumeBuilder .rb-edu td{border:1px solid #222;padding:1.4mm 1mm;text-align:center}
+#resumeBuilder .rb-edu th{font-weight:bold;background:#f3e8ff;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}
+#resumeBuilder .rb-edu td:nth-child(2){text-align:left}
+#resumeBuilder .rb-personal{display:grid;grid-template-columns:38mm 7mm 1fr;font:12px "Times New Roman",serif;line-height:1.55;padding:4mm 5mm}
+#resumeBuilder .rb-declare{font:11.8px "Times New Roman",serif;line-height:1.45;padding:4mm 5mm 0}
+#resumeBuilder .rb-exp{font:12px "Times New Roman",serif;padding:4mm 7mm 1mm;line-height:1.5}
+#resumeBuilder .rb-bottom{display:flex;justify-content:space-between;margin:7mm 5mm 0;font:12px "Times New Roman",serif}
+#resumeBuilder .rb-sign{text-align:right;font-weight:bold;padding-top:11mm}
+@media(max-width:900px){.rb-app{grid-template-columns:1fr}.rb-preview{justify-content:flex-start}}
+@media print{
+html,body{width:210mm!important;height:297mm!important;margin:0!important;padding:0!important;background:#fff!important}
+header,.rb-panel,#rb_samePrintPreview{display:none!important}
+.rb-app{display:block!important;width:210mm!important;margin:0!important;padding:0!important}
+.rb-preview{display:block!important;width:210mm!important;margin:0!important;padding:0!important;overflow:visible!important}
+.rb-paper{width:210mm!important;height:297mm!important;min-height:297mm!important;max-height:297mm!important;margin:0!important;padding:12mm 12mm 10mm!important;border:0!important;box-shadow:none!important;overflow:hidden!important}
+*{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}
+@page{size:A4 portrait;margin:0}
+}
+#resumeBuilder{background:transparent;border-radius:12px;overflow:auto}
+body.rb-active>header{position:relative!important;top:auto!important;z-index:20!important}
+body.rb-active{overflow-x:hidden}
+body.rb-active>main.wrap{position:relative;z-index:1}
+#resumeBuilder .rb-app{width:100%;max-width:1500px;margin:auto;padding:18px 0;display:grid;grid-template-columns:minmax(380px,42%) minmax(0,1fr);gap:18px;align-items:start}
+#resumeBuilder .rb-panel{height:max-content;min-width:0}
+#resumeBuilder .rb-preview{min-width:0;width:100%;overflow:hidden;display:flex;justify-content:center;align-items:flex-start}
+#resumeBuilder .rb-paper{flex:0 0 auto;width:210mm;min-width:210mm}
+#resumeBuilder .rb-preview .rb-paper{transform-origin:top center}
+@media(max-width:1100px){#resumeBuilder .rb-app{grid-template-columns:minmax(360px,44%) minmax(0,1fr)}}
+@media(max-width:900px){#resumeBuilder .rb-app{grid-template-columns:1fr}#resumeBuilder .rb-preview{overflow:auto;justify-content:flex-start}#resumeBuilder .rb-preview .rb-paper{transform:none!important}}
+@media print{
+  body.rb-printing{margin:0!important;padding:0!important;background:#fff!important;overflow:hidden!important}
+  body.rb-printing>header{display:none!important}
+  body.rb-printing>main.wrap{display:block!important;width:210mm!important;max-width:210mm!important;margin:0!important;padding:0!important;background:#fff!important}
+  body.rb-printing>main.wrap>.module:not(#resumeBuilder){display:none!important}
+  body.rb-printing>#rbPrintArea{display:none!important}
+  body.rb-printing #resumeBuilder{display:block!important;position:static!important;width:210mm!important;max-width:210mm!important;min-height:297mm!important;margin:0!important;padding:0!important;background:#fff!important;overflow:visible!important}
+  body.rb-printing #resumeBuilder>.panel{display:none!important}
+  body.rb-printing #resumeBuilder .rb-app{display:block!important;width:210mm!important;max-width:210mm!important;margin:0!important;padding:0!important}
+  body.rb-printing #resumeBuilder .rb-panel{display:none!important}
+  body.rb-printing #resumeBuilder .rb-preview{display:block!important;width:210mm!important;max-width:210mm!important;margin:0!important;padding:0!important;overflow:visible!important}
+  body.rb-printing #resumeBuilder .rb-paper{display:block!important;width:210mm!important;min-width:210mm!important;height:297mm!important;min-height:297mm!important;max-height:297mm!important;margin:0!important;padding:12mm 12mm 10mm!important;overflow:hidden!important;box-shadow:none!important;transform:none!important;zoom:1!important;background:#fff!important}
+  @page{size:A4 portrait;margin:0}
+}
+#rbPrintArea{display:none}
+</style>
+<script id="justcard-resume-integrated-script">
+const F=["name","email","mobile","whatsapp","address","objective","extra","dob","gender","father","mother","marital","hobbies","religion","nationality","language","declaration","date","place"];
+const rb$=id=>document.getElementById(id.startsWith("rb_")?id:"rb_"+id);
+function esc(s){return String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[c]));}
+function rbAddEdu(d={degree:"MATRIC",board:"JAC",year:"2012",result:"2ND"}){let x=document.createElement("div");x.className="item";x.innerHTML=`<div class="rb-row3"><input placeholder="Class/Degree" value="${esc(d.degree)}"><input placeholder="Board/University" value="${esc(d.board)}"><input placeholder="Year" value="${esc(d.year)}"></div><input placeholder="Percentage/Division" value="${esc(d.result)}"><button class="rb-red" onclick="this.parentElement.remove();rbUpdate()">Remove</button>`;rb$("eduForm").appendChild(x);x.querySelectorAll("input").forEach(i=>i.oninput=rbUpdate);rbUpdate();}
+function rbAddExp(d={post:"Fresher",company:"",duration:"",detail:""}){let x=document.createElement("div");x.className="item";x.innerHTML=`<div class="rb-row"><input placeholder="Post / Job Title" value="${esc(d.post)}"><input placeholder="Company" value="${esc(d.company)}"></div><input placeholder="Duration" value="${esc(d.duration)}"><textarea placeholder="Work details">${esc(d.detail)}</textarea><button class="rb-red" onclick="this.parentElement.remove();rbUpdate()">Remove</button>`;rb$("expForm").appendChild(x);x.querySelectorAll("input,textarea").forEach(i=>i.oninput=rbUpdate);rbUpdate();}
+function rbFitPreview(){
+  const box=document.querySelector('#resumeBuilder .rb-preview');
+  const paper=document.querySelector('#resumeBuilder .rb-paper');
+  if(!box||!paper) return;
+  if(window.innerWidth<=900){paper.style.zoom='';paper.style.transform='';return;}
+  const natural=794;
+  const available=Math.max(320,box.clientWidth-4);
+  const scale=Math.min(1,available/natural);
+  paper.style.zoom=scale.toFixed(4);
+  paper.style.transform='none';
+}
+window.addEventListener('resize',rbFitPreview);
+setTimeout(rbFitPreview,50);
+
+function rbUpdate(){
+rb$("rname").textContent=rb$("name").value||"";
+rb$("remail").textContent=rb$("email").value||"";
+rb$("rmobile").textContent=rb$("mobile").value||"";
+rb$("rwhatsapp").textContent=rb$("whatsapp").value||"";
+rb$("raddress").textContent=rb$("address").value||"";
+rb$("robjective").textContent=rb$("objective").value||"";
+let rows=[...rb$("eduForm").children];rb$("redu").innerHTML=rows.map((x,n)=>{let i=x.querySelectorAll("input");return `<tr><td>${n+1}</td><td>${esc(i[0].value)}</td><td>${esc(i[1].value)}</td><td>${esc(i[2].value)}</td><td>${esc(i[3].value)}</td></tr>`}).join("");
+rb$("extraBlock").style.display=rb$("extra").value.trim()?"block":"none";rb$("rextra").textContent=rb$("extra").value||"";
+let ex=[...rb$("expForm").children];rb$("expBlock").style.display=ex.length?"block":"none";rb$("rexp").innerHTML=ex.map(x=>{let i=x.querySelectorAll("input"),t=x.querySelector("textarea");return `<div class="rb-exp">• &nbsp; <b>${esc(i[0].value)}</b>${i[1].value?" — "+esc(i[1].value):""}${i[2].value?" ("+esc(i[2].value)+")":""}<br>${esc(t.value)}</div>`}).join("");
+let P=[["Date of Birth",rb$("dob").value],["Gender",rb$("gender").value],["Father’s Name",rb$("father").value],["Mother’s Name",rb$("mother").value],["Marital Status",rb$("marital").value],["Hobbies",rb$("hobbies").value],["Religion",rb$("religion").value],["Nationality",rb$("nationality").value],["Language Known",rb$("language").value]];
+rb$("rpersonal").innerHTML=P.filter(a=>a[1]).map(a=>`<div>${esc(a[0])}</div><div>:</div><div>${esc(a[1])}</div>`).join("");
+rb$("rdeclaration").textContent=rb$("declaration").value||"";rb$("rdate").textContent=rb$("date").value||"................";rb$("rplace").textContent=rb$("place").value||"................";rb$("rsign").textContent=rb$("name").value||"";
+}
+F.forEach(id=>rb$(id).addEventListener("input",rbUpdate));
+rb$("photo").onchange=e=>{let f=e.target.files[0];if(!f)return;let r=new FileReader();r.onload=()=>{rb$("rphoto").src=r.result;rb$("rphoto").style.display="block";localStorage.jc_resume_v5_photo=r.result};r.readAsDataURL(f)};
+function rbOpenSamePrintPreview(){rbUpdate();const p=document.querySelector("#resumeBuilder .rb-paper"),h=document.getElementById("rb_samePrintPreviewPage");h.innerHTML="";const c=p.cloneNode(true);c.style.margin="0";c.style.boxShadow="none";c.style.border="0";h.appendChild(c);document.getElementById("rb_samePrintPreview").style.display="block";document.body.style.overflow="hidden"}
+function rbCloseSamePrintPreview(){document.getElementById("rb_samePrintPreview").style.display="none";document.body.style.overflow=""}
+function chargeResumePrint(){
+  const u=typeof getCurrentUser==='function'?getCurrentUser():null;
+  if(!u){
+    if(typeof unlockApp==='function') unlockApp();
+    alert('Please login first to print the resume.');
+    return false;
+  }
+  // Resume Builder print charge: ₹2 per successful print for retailer accounts.
+  // Admin printing remains free.
+  if(u.role!=='retailer') return true;
+  const rate=2;
+  const balance=Number(u.wallet||0);
+  if(balance<rate){
+    alert('Insufficient wallet balance. Resume print charge is ₹2.00. Please recharge your wallet.');
+    if(typeof showModule==='function') showModule('account');
+    return false;
+  }
+  const all=typeof getUsers==='function'?getUsers():[];
+  const nu={...u,wallet:balance-rate};
+  if(typeof saveUsers==='function') saveUsers(all.map(x=>x.id===u.id?nu:x));
+  if(typeof setSession==='function') setSession(nu);
+  if(typeof txAdd==='function') txAdd({type:'Resume Print Charge',detail:nu.name+' - ₹2.00'});
+  if(typeof updateAccountUI==='function') updateAccountUI();
+  return true;
+}
+function rbPrintA4(){
+  if(!chargeResumePrint()) return;
+  rbUpdate();
+  const oldTitle=document.title;
+  document.title=(document.getElementById("rb_name").value||"Bio-Data")+" - A4";
+  document.body.classList.add("rb-printing");
+  const cleanup=()=>{
+    document.body.classList.remove("rb-printing");
+    document.title=oldTitle;
+    window.removeEventListener("afterprint",cleanup);
+  };
+  window.addEventListener("afterprint",cleanup);
+  setTimeout(()=>window.print(),150);
+}
+function rbCollect(){return{f:Object.fromEntries(F.map(id=>[id,rb$(id).value])),edu:[...rb$("eduForm").children].map(x=>{let i=x.querySelectorAll("input");return{degree:i[0].value,board:i[1].value,year:i[2].value,result:i[3].value}}),exp:[...rb$("expForm").children].map(x=>{let i=x.querySelectorAll("input"),t=x.querySelector("textarea");return{post:i[0].value,company:i[1].value,duration:i[2].value,detail:t.value}})}}
+function rbSaveData(){localStorage.jc_resume_v5=JSON.stringify(rbCollect());alert("Saved successfully.");}
+function rbLoadData(){let d=JSON.parse(localStorage.jc_resume_v5||"null");if(!d)return;F.forEach(id=>rb$(id).value=d.f[id]||"");rb$("eduForm").innerHTML="";rb$("expForm").innerHTML="";(d.edu||[]).forEach(rbAddEdu);(d.exp||[]).forEach(rbAddExp);if(localStorage.jc_resume_v5_photo){rb$("rphoto").src=localStorage.jc_resume_v5_photo;rb$("rphoto").style.display="block"}rbUpdate();}
+function rbResetData(){if(confirm("Reset all data?")){localStorage.removeItem("v3");localStorage.removeItem("v3photo");location.reload();}}
+rbAddEdu({degree:"MATRIC",board:"JAC",year:"2012",result:"2ND"});rbAddEdu({degree:"INTER",board:"JAC",year:"2014",result:"2ND"});rbAddExp({post:"Office Assistant",company:"Private Organization",duration:"1 Year",detail:"Handled documentation, customer support and basic computer-related office work."});rbUpdate();rbFitPreview();
+</script>
+<section id="history" class="module"><section class="panel"><div class="title">HISTORY</div><div id="historyList"><p class="notice">No local history yet.</p></div><button class="btn outline" id="clearHistory">Clear History</button></section></section>
+
+<!-- PLANS -->
+<section id="plans" class="module"><section class="panel"><div class="title">RECHARGE PLANS</div><div class="row">
+ <div class="panel" style="border:1px solid var(--line);margin:0"><b>10 Tokens</b><p class="notice">For occasional printing</p><button class="btn purple full" onclick="recharge(10)">Select</button></div>
+ <div class="panel" style="border:1px solid var(--line);margin:0"><b>50 Tokens</b><p class="notice">For regular printing</p><button class="btn purple full" onclick="recharge(50)">Select</button></div>
+ </div><p class="notice" style="margin-top:12px">Retailer account ke liye Monthly / 3 Months package admin activate karega. Har successful card print par configured per-card amount wallet se deduct hoga.</p></section></section>
+
+<!-- ACCOUNT / USER MANAGEMENT -->
+<section id="account" class="module">
+ <section class="panel" id="accountGuest">
+  <div class="title">RETAILER ACCOUNT</div>
+  <p class="notice">Retailer apna account banaye, login kare aur wallet/package status yahin manage kare.</p>
+  <div class="account-actions"><button class="btn primary" id="openLogin">Login</button><button class="btn purple" id="openRegister">Create Retailer Account</button></div>
+  <p class="notice mini" style="margin-top:10px">Demo build: account data isi browser me local storage me rahega. Production me secure server/database + payment gateway connect karna hoga.</p>
+ </section>
+ <section class="panel hidden" id="accountRetailer">
+  <div class="title">MY ACCOUNT</div>
+  <div class="user-grid"><div class="stat"><div class="notice">Retailer</div><b id="retailerName">-</b></div><div class="stat"><div class="notice">Wallet</div><b id="retailerWallet">₹0.00</b></div><div class="stat"><div class="notice">Package</div><b id="retailerPackage">None</b></div></div>
+  <div class="panel" style="border:1px solid var(--line);margin-top:10px"><div class="title">MY PACKAGE</div>
+   <div class="package-cards">
+    <div class="package-card silver" id="retailerSilverCard"><div><b>🥈 SILVER</b><span class="package-duration">30 Days</span></div><strong id="retailerSilverPrice">₹0.00</strong><span class="package-status" id="retailerSilverStatus">AVAILABLE</span><div class="package-action"><button class="btn outline small" id="activateSilver">Activate Silver</button></div></div>
+    <div class="package-card gold" id="retailerGoldCard"><div><b>🥇 GOLD</b><span class="package-duration">90 Days</span></div><strong id="retailerGoldPrice">₹0.00</strong><span class="package-status" id="retailerGoldStatus">AVAILABLE</span><div class="package-action"><button class="btn outline small" id="activateGold">Activate Gold</button></div></div>
+    <div class="package-card diamond" id="retailerDiamondCard"><div><b>💎 DIAMOND</b><span class="package-duration">1 Year</span></div><strong id="retailerDiamondPrice">₹0.00</strong><span class="package-status" id="retailerDiamondStatus">AVAILABLE</span><div class="package-action"><button class="btn outline small" id="activateDiamond">Activate Diamond</button></div></div>
+   </div>
+   <p class="notice" id="retailerPackageMessage">Apna package select karke Activate button dabaiye.</p>
+  </div>
+  <div class="panel" style="border:1px solid var(--line);margin-top:10px"><div class="title">PRINT BILLING</div><p class="notice">Per-card amount wallet se automatically deduct hoga. Current rate: <b id="retailerRate">₹5.00/card</b></p><p class="notice" id="retailerExpiry"></p></div>
+  <div class="account-actions"><button class="btn purple" id="logoutBtn">Logout</button><button class="btn outline" id="retailerRefresh">Refresh</button></div>
+ </section>
+ <section class="panel hidden" id="accountAdmin">
+  <div class="title">ADMIN MANAGEMENT</div>
+  <div class="user-grid"><div class="stat"><div class="notice">Retailers</div><b id="adminUsersCount">0</b></div><div class="stat"><div class="notice">Card Charge</div><b id="adminRateText">₹5.00</b></div><div class="stat"><div class="notice">Active Packages</div><b id="adminActivePackages">0</b></div></div>
+  <div class="panel" style="border:1px solid var(--line);margin-top:10px"><div class="title">GLOBAL CARD RATE</div><div class="row"><div class="group"><label>Per card amount (₹)</label><input id="adminCardRate" class="field" type="number" min="0" step="0.50"></div><div class="group" style="display:flex;align-items:end"><button class="btn primary full" id="saveCardRate">Save Rate</button></div></div></div>
+  <div class="panel" style="border:1px solid var(--line);margin-top:10px">
+   <div class="title">WALLET MANAGEMENT</div>
+   <p class="notice">Admin yahan se kisi bhi retailer/user ke wallet me amount transfer (credit) ya wallet se amount deduct (debit) kar sakta hai.</p>
+   <div class="row">
+    <div class="group"><label>Select User</label><select id="adminWalletUser" class="field"><option value="">Select retailer</option></select></div>
+    <div class="group"><label>Amount (₹)</label><input id="adminWalletAmount" class="field" type="number" min="0.01" step="0.01" placeholder="Enter amount"></div>
+   </div>
+   <div class="row" style="margin-top:8px">
+    <div class="group"><label>Note / Reason</label><input id="adminWalletNote" class="field" placeholder="e.g. Wallet recharge"></div>
+    <div class="group" style="display:flex;align-items:end;gap:8px"><button class="btn primary" id="adminWalletTransfer">Transfer Amount</button><button class="btn outline" id="adminWalletClear">Clear</button></div>
+   </div>
+   <div id="adminWalletBalanceInfo" class="notice" style="margin-top:10px">Select a user to see current wallet balance.</div>
+  </div>
+  <div class="panel" style="border:1px solid var(--line);margin-top:10px"><div class="title">PACKAGE MANAGEMENT</div><div class="row"><div class="group"><label>Silver — 30 Days price (₹)</label><input id="pkgSilverPrice" class="field" type="number" min="0"></div><div class="group"><label>Gold — 90 Days price (₹)</label><input id="pkgGoldPrice" class="field" type="number" min="0"></div></div><div class="group"><label>Diamond — 1 Year price (₹)</label><input id="pkgDiamondPrice" class="field" type="number" min="0"></div><button class="btn purple full" id="savePackages">Save Package Prices</button></div>
+  <div class="panel" style="border:1px solid var(--line);margin-top:10px"><div class="title">RETAILER MANAGEMENT</div><div class="row" style="margin-bottom:10px"><div class="group"><label>Search retailer</label><input id="adminRetailerSearch" class="field" placeholder="Name / mobile / email"></div><div class="group" style="display:flex;align-items:end"><button class="btn outline full" id="adminRetailerRefresh">↻ Refresh Retailer List</button></div></div><div id="adminRetailerEmpty" class="notice" style="display:none;margin-bottom:8px">No retailer accounts found on this browser.</div><div style="overflow:auto"><table class="admin-table"><thead><tr><th>Retailer</th><th>Wallet</th><th>Package</th><th>Status</th><th>Wallet Action</th><th>Package Action</th></tr></thead><tbody id="adminUsersTable"></tbody></table></div></div>
+  <div class="panel" style="border:1px solid var(--line);margin-top:10px"><div class="title">RECENT TRANSACTIONS</div><div id="adminTransactions" class="notice">No transactions.</div></div>
+  <button class="btn outline full" id="adminLogout">Admin Logout</button>
+ </section>
+</section>
+
+
+<div class="modal-lite" id="accountModal"><div class="modal-card"><div class="modal-head"><b id="accountModalTitle">Retailer Login</b><button class="btn outline" id="closeAccountModal">✕</button></div><div id="accountModalBody"></div></div></div>
+<div class="crop-modal" id="cropModal">
+ <div class="crop-window">
+  <div class="crop-head"><b>✂ Modify Cropping — Justcard PVC</b><button class="btn outline" id="closeCrop">✕</button></div>
+  <div class="crop-body">
+   <div class="crop-side">
+    <div class="title">CARD SIDE</div>
+    <div class="side-card active" id="sideFront"><b>▣ FRONT</b><div id="sideFrontImg" class="notice">Select / process PDF</div></div>
+    <div class="side-card" id="sideBack"><b>▣ BACK</b><div id="sideBackImg" class="notice">Optional</div></div>
+    <div class="title" style="margin-top:12px">TOOLS</div>
+    <div class="crop-tools"><button class="btn small primary" id="autoDetect2">✨ Auto Detect</button><button class="btn small outline" id="zoomMinus">− Zoom</button><button class="btn small outline" id="zoomPlus">＋ Zoom</button><button class="btn small outline" id="rotMinus">↶ −1°</button><button class="btn small outline" id="rotPlus">↷ +1°</button><button class="btn small outline" id="resetOne">Reset</button></div>
+    <div class="crop-info" style="margin-top:10px">Standard PVC output: <b>85.60 × 53.98 mm (LANDSCAPE)</b><br><b>HIGH QUALITY:</b> 3× PDF render • 1712×1080 lossless PNG output • <b>HIGH QUALITY 2400×1513</b><br>Drag from any point on the canvas to draw a new card box. Auto Detect can be corrected manually.</div>
+   </div>
+   <div class="crop-stage"><canvas id="cropEditorCanvas" width="1000" height="700"></canvas></div>
+   <div class="crop-side">
+    <div class="title">CROP PREVIEW</div>
+    <div class="side-card"><b>FRONT</b><div id="previewFront2" class="notice">No crop</div></div>
+    <div class="side-card"><b>BACK</b><div id="previewBack2" class="notice">No crop</div></div>
+    <div class="title" style="margin-top:12px">DETECTED CANDIDATES</div>
+    <div id="candidateList" class="crop-info">Run Auto Detect to see suggestions.</div>
+   </div>
+  </div>
+  <div class="crop-footer" style="display:flex;gap:10px;justify-content:flex-end"><button class="btn purple" id="applyCrop2" style="font-weight:700">✓ Apply Crop &amp; Go to Single Print 🖨</button><button class="btn outline" id="cancelCrop2">Cancel</button></div>
+ </div>
+</div>
+</main>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.4.168/pdf.min.mjs" type="module"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script>
+let pdfjs=null, pdfFiles=[], frontData=null, backData=null, batch=[], cropImg=null, cropStart=null, cropRect=null;
+const $=s=>document.querySelector(s);
+const $$=s=>document.querySelectorAll(s);
+const tokenKey='justcard_tokens', histKey='justcard_history';
+$('#tokenText').textContent=localStorage.getItem(tokenKey)||8;
+// ================= USER / RETAILER MANAGEMENT =================
+const JC_USERS='justcard_users_v1', JC_SESSION='justcard_session_v1', JC_SETTINGS='justcard_billing_settings_v1', JC_TX='justcard_transactions_v1', JC_RETAILERS='justcard_retailers_v1';
+const defaultBilling={cardRate:5,silverPrice:299,goldPrice:799,diamondPrice:2499};
+function billingSettings(){return {...defaultBilling,...JSON.parse(localStorage.getItem(JC_SETTINGS)||'{}')}}
+function saveBillingSettings(x){localStorage.setItem(JC_SETTINGS,JSON.stringify(x))}
+function getUsers(){try{const raw=JSON.parse(localStorage.getItem(JC_USERS)||'[]');return Array.isArray(raw)?raw:[]}catch(e){return []}}
+function saveUsers(u){localStorage.setItem(JC_USERS,JSON.stringify(Array.isArray(u)?u:[]));localStorage.setItem(JC_RETAILERS,JSON.stringify(getUsers().filter(x=>x.role==='retailer')))}
+function getSession(){return JSON.parse(localStorage.getItem(JC_SESSION)||'null')}
+function setSession(u){if(u){localStorage.setItem(JC_SESSION,JSON.stringify({id:u.id,role:u.role}));document.body.classList.remove('login-locked');$('#loginGate').classList.add('hidden')}else{localStorage.removeItem(JC_SESSION);document.body.classList.add('login-locked');$('#loginGate').classList.remove('hidden')}try{updateAccountUI()}catch(e){console.warn('Account UI update skipped:',e)}}
+function getCurrentUser(){const se=getSession();return se?getUsers().find(u=>u.id===se.id)||null:null}
+function txAdd(t){let a=JSON.parse(localStorage.getItem(JC_TX)||'[]');a.unshift({...t,time:new Date().toLocaleString()});localStorage.setItem(JC_TX,JSON.stringify(a.slice(0,100)))}
+function money(n){return '₹'+Number(n||0).toFixed(2)}
+function ensureAdmin(){
+  let u=getUsers();
+  let changed=false;
+  if(!u.some(x=>x.role==='admin')){
+    u.unshift({id:'admin-1',name:'Justcard Admin',phone:'9999999999',email:'admin@justcard.local',password:'admin123',role:'admin',wallet:1000,active:true,package:null,createdAt:new Date().toISOString()});
+    changed=true;
+  }
+  if(!u.some(x=>x.role==='retailer'&&x.email==='retailer@justcard.local')){
+    u.push({
+      id:'ret-demo-1',
+      name:'Demo Retailer (Kiosk)',
+      phone:'9876543210',
+      email:'retailer@justcard.local',
+      password:'retailer123',
+      role:'retailer',
+      wallet:500,
+      active:true,
+      package:{name:'Gold',price:799,expiresAt:new Date(Date.now()+90*86400000).toISOString()},
+      createdAt:new Date().toISOString()
+    });
+    changed=true;
+  }
+  if(changed){
+    saveUsers(u);
+  } else {
+    localStorage.setItem(JC_RETAILERS,JSON.stringify(u.filter(x=>x.role==='retailer')));
+  }
+}
+function updateWalletHeader(){const u=getCurrentUser();$('#walletText').textContent=u?money(u.wallet):'₹0.00';$('#tokenText').textContent=u?Math.floor(Number(u.wallet||0)):(localStorage.getItem(tokenKey)||8)}
+function openAccountModal(mode){$('#accountModalTitle').textContent=mode==='login'?'Login':'Create Retailer Account';$('#accountModalBody').innerHTML=mode==='login'?`<div class="group"><label>Email or Phone</label><input id="authId" class="field" placeholder="Email / phone"></div><div class="group"><label>Password</label><input id="authPass" class="field" type="password" placeholder="Password"></div><button class="btn primary full" id="authSubmit">Login</button><div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px"><button type="button" class="btn outline small" id="modalDemoAdmin">👑 Admin Demo</button><button type="button" class="btn outline small" id="modalDemoRetailer">🏪 Retailer Demo</button></div>`:`<div class="row"><div class="group"><label>Retailer Name</label><input id="regName" class="field" placeholder="Shop / Retailer name"></div><div class="group"><label>Phone</label><input id="regPhone" class="field" placeholder="Mobile number"></div></div><div class="group"><label>Email</label><input id="regEmail" class="field" type="email" placeholder="Email"></div><div class="group"><label>Password</label><input id="regPass" class="field" type="password" placeholder="Create password"></div><button class="btn purple full" id="authSubmit">Create Account</button>`;$('#accountModal').classList.add('open');$('#authSubmit').onclick=()=>mode==='login'?doLogin():doRegister();if(mode==='login'){document.getElementById('modalDemoAdmin').onclick=()=>demoLogin('admin');document.getElementById('modalDemoRetailer').onclick=()=>demoLogin('retailer');}}
+function doLogin(){const id=($('#authId').value||'').trim().toLowerCase(),pw=$('#authPass').value;const u=getUsers().find(x=>(x.email||'').toLowerCase()===id||x.phone===id);if(!u||u.password!==pw){alert('Invalid login details.');return}if(u.active===false){alert('Account is blocked by admin.');return}setSession(u);$('#accountModal').classList.remove('open');alert('Login successful.');showModule('account')}
+function doRegister(){const name=$('#regName').value.trim(),phone=$('#regPhone').value.trim(),email=$('#regEmail').value.trim().toLowerCase(),pw=$('#regPass').value;if(!name||!phone||!email||!pw){alert('All fields are required.');return}let u=getUsers();if(u.some(x=>(x.email||'').toLowerCase()===email||x.phone===phone)){alert('Email or phone already registered.');return}const user={id:'ret-'+Date.now(),name,phone,email,password:pw,role:'retailer',wallet:0,active:true,package:null,createdAt:new Date().toISOString()};u.push(user);saveUsers(u);setSession(user);$('#accountModal').classList.remove('open');alert('Retailer account created successfully. Admin can add wallet/package from Admin Management.');showModule('account')}
+function unlockApp(){const u=getCurrentUser();if(!u){document.body.classList.add('login-locked');$('#loginGate').classList.remove('hidden');return false}document.body.classList.remove('login-locked');$('#loginGate').classList.add('hidden');updateAccountUI();return true}
+function gateError(msg){const e=$('#gateError');e.textContent=msg;e.classList.add('show')}
+window.demoLogin = function(role){
+  let all = getUsers();
+  let u;
+  if(role === 'admin'){
+    u = all.find(x => x.role === 'admin');
+    if(!u){
+      u = {id:'admin-1',name:'Justcard Admin',phone:'9999999999',email:'admin@justcard.local',password:'admin123',role:'admin',wallet:1000,active:true,package:null,createdAt:new Date().toISOString()};
+      all.unshift(u);
+    }
+    u.active = true;
+  } else {
+    u = all.find(x => x.role === 'retailer' && (x.email === 'retailer@justcard.local' || x.id === 'ret-demo-1'));
+    if(!u){
+      u = {id:'ret-demo-1',name:'Demo Retailer (Kiosk)',phone:'9876543210',email:'retailer@justcard.local',password:'retailer123',role:'retailer',wallet:500,active:true,package:{name:'Gold',price:799,expiresAt:new Date(Date.now()+90*86400000).toISOString()},createdAt:new Date().toISOString()};
+      all.push(u);
+    }
+    u.active = true;
+    if(!u.wallet || u.wallet < 100) u.wallet = 500;
+    if(!u.package) u.package = {name:'Gold',price:799,expiresAt:new Date(Date.now()+90*86400000).toISOString()};
+  }
+  saveUsers(all);
+  setSession(u);
+  clearGateError();
+  unlockApp();
+  showModule(u.role === 'admin' ? 'account' : 'extract');
+};
+const demoLogin = window.demoLogin;
+function gateLogin(id,pw){const clean=(id||'').trim().toLowerCase();const u=getUsers().find(x=>(x.email||'').toLowerCase()===clean||x.phone===clean);if(!u||u.password!==pw){gateError('Invalid mobile/email or password.');return false}if(u.active===false){gateError('Your retailer account is blocked by admin.');return false}setSession(u);clearGateError();unlockApp();showModule(u.role==='admin'?'account':'extract');return true}
+function gateRegister(name,phone,email,pw){name=name.trim();phone=phone.trim();email=email.trim().toLowerCase();if(!name||!phone||!email||!pw){gateError('Please fill all fields.');return false}let u=getUsers();if(u.some(x=>(x.email||'').toLowerCase()===email||x.phone===phone)){gateError('Mobile number or email already registered.');return false}const user={id:'ret-'+Date.now(),name,phone,email,password:pw,role:'retailer',wallet:0,active:true,package:null,createdAt:new Date().toISOString()};u.push(user);saveUsers(u);setSession(user);clearGateError();unlockApp();showModule('extract');alert('Retailer account created. Admin se wallet/package activate karwa sakte hain.');return true}
+function initLoginGate(){
+  ensureAdmin();
+  const session=getSession();
+  if(session&&getCurrentUser()&&getCurrentUser().active!==false){
+    setSession(getCurrentUser());
+  }else{
+    demoLogin('retailer');
+  }
+  $('#gateLoginTab').onclick=()=>{$('#gateLoginTab').classList.add('active');$('#gateRegisterTab').classList.remove('active');$('#gateLoginForm').classList.remove('hidden');$('#gateRegisterForm').classList.add('hidden');clearGateError()};
+  $('#gateRegisterTab').onclick=()=>{$('#gateRegisterTab').classList.add('active');$('#gateLoginTab').classList.remove('active');$('#gateRegisterForm').classList.remove('hidden');$('#gateLoginForm').classList.add('hidden');clearGateError()};
+  $('#gateLoginForm').onsubmit=e=>{e.preventDefault();gateLogin($('#gateLoginId').value,$('#gateLoginPass').value)};
+  $('#gateRegisterForm').onsubmit=e=>{e.preventDefault();gateRegister($('#gateRegName').value,$('#gateRegPhone').value,$('#gateRegEmail').value,$('#gateRegPass').value)};
+}
+
+function showModule(id){
+  document.body.classList.toggle('rb-active',id==='resumeBuilder');
+  $$('.tab').forEach(x=>x.classList.toggle('active',x.dataset.module===id));
+  $$('.module').forEach(x=>x.classList.toggle('active',x.id===id));
+  if(id==='account')updateAccountUI();
+  if(id==='document'){
+    setTimeout(()=>{
+      if(typeof renderA4Preview==='function') renderA4Preview();
+    },60);
+  }
+}
+function updateAccountUI(){ensureAdmin();const u=getCurrentUser();updateWalletHeader();$('#accountGuest').classList.toggle('hidden',!!u);$('#accountRetailer').classList.toggle('hidden',!u||u.role!=='retailer');$('#accountAdmin').classList.toggle('hidden',!u||u.role!=='admin');if(u&&u.role==='retailer'){const st=billingSettings();$('#retailerName').textContent=u.name;$('#retailerWallet').textContent=money(u.wallet);$('#retailerRate').textContent=money(st.cardRate)+'/card';const p=u.package&&new Date(u.package.expiresAt)>new Date()?u.package:null;$('#retailerPackage').textContent=p?p.name:'None';$('#retailerExpiry').textContent=p?'Valid till: '+new Date(p.expiresAt).toLocaleDateString():'No active package.';$('#retailerSilverPrice').textContent=money(st.silverPrice);$('#retailerGoldPrice').textContent=money(st.goldPrice);$('#retailerDiamondPrice').textContent=money(st.diamondPrice);const silverActive=p&&p.name==='Silver';const goldActive=p&&p.name==='Gold';const diamondActive=p&&p.name==='Diamond';$('#retailerSilverCard').classList.toggle('active',silverActive);$('#retailerGoldCard').classList.toggle('active',goldActive);$('#retailerDiamondCard').classList.toggle('active',diamondActive);$('#retailerSilverStatus').textContent=silverActive?'ACTIVE':'AVAILABLE';$('#retailerGoldStatus').textContent=goldActive?'ACTIVE':'AVAILABLE';$('#retailerDiamondStatus').textContent=diamondActive?'ACTIVE':'AVAILABLE';$('#activateSilver').textContent=silverActive?'✓ Silver Active':'Activate Silver';$('#activateGold').textContent=goldActive?'✓ Gold Active':'Activate Gold';$('#activateDiamond').textContent=diamondActive?'✓ Diamond Active':'Activate Diamond';$('#retailerPackageMessage').textContent=p?'Current package: '+p.name+' · Valid till '+new Date(p.expiresAt).toLocaleDateString():'Apna package select karke Activate button dabaiye.'}if(u&&u.role==='admin')renderAdmin()}
+function renderAdmin(){ensureAdmin();const all=getUsers();const us=all.filter(x=>x.role==='retailer');renderAdminWalletUsers(us);localStorage.setItem(JC_RETAILERS,JSON.stringify(us));const st=billingSettings();$('#adminUsersCount').textContent=us.length;$('#adminRateText').textContent=money(st.cardRate);$('#adminCardRate').value=st.cardRate;$('#pkgSilverPrice').value=st.silverPrice;$('#pkgGoldPrice').value=st.goldPrice;$('#pkgDiamondPrice').value=st.diamondPrice;$('#adminActivePackages').textContent=us.filter(x=>x.package&&new Date(x.package.expiresAt)>new Date()).length;const q=(document.getElementById('adminRetailerSearch')?.value||'').trim().toLowerCase();const filtered=us.filter(u=>!q||[u.name,u.phone,u.email].some(v=>String(v||'').toLowerCase().includes(q)));$('#adminRetailerEmpty').style.display=us.length?'none':'block';$('#adminUsersTable').innerHTML=filtered.length?filtered.map(u=>`<tr><td><b>${esc(u.name)}</b><br><span class="mini">${esc(u.phone)} · ${esc(u.email)}</span></td><td class="wallet-positive">${money(u.wallet)}</td><td>${u.package&&new Date(u.package.expiresAt)>new Date()?esc(u.package.name)+'<br><span class="mini">'+new Date(u.package.expiresAt).toLocaleDateString()+'</span>':'None'}</td><td>${u.active!==false?'<span class="badge-role">Active</span>':'<span class="wallet-negative">Blocked</span>'}</td><td><button class="btn outline small" onclick="adminWallet('${u.id}')">Add/Deduct</button></td><td><button class="btn purple small" onclick="adminPackage('${u.id}')">Package</button><button class="btn outline small" onclick="adminToggle('${u.id}')">${u.active===false?'Unblock':'Block'}</button></td></tr>`).join(''):'<tr><td colspan="6">No matching retailers.</td></tr>';const tx=JSON.parse(localStorage.getItem(JC_TX)||'[]');$('#adminTransactions').innerHTML=tx.length?tx.slice(0,15).map(t=>`<div class="history-item"><div><b>${esc(t.type)}</b><br><small>${esc(t.detail||'')} · ${esc(t.time)}</small></div></div>`).join(''):'No transactions.'}
+function esc(v){return String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
+function renderAdminWalletUsers(us){const sel=$('#adminWalletUser');if(!sel)return;const current=sel.value;sel.innerHTML='<option value="">Select retailer</option>'+us.map(u=>`<option value="${esc(u.id)}">${esc(u.name)} — ${esc(u.phone||u.email||'')} — ${money(u.wallet)}</option>`).join('');if(us.some(u=>u.id===current))sel.value=current;updateAdminWalletInfo()}
+function updateAdminWalletInfo(){const sel=$('#adminWalletUser');const info=$('#adminWalletBalanceInfo');if(!sel||!info)return;const u=getUsers().find(x=>x.id===sel.value);info.textContent=u?`${u.name} ka current wallet balance: ${money(u.wallet)}.`:'Select a user to see current wallet balance.'}
+function transferWalletAmount(){const id=$('#adminWalletUser')?.value;const amount=Number($('#adminWalletAmount')?.value);const note=($('#adminWalletNote')?.value||'').trim();if(!id){alert('Please select a user.');return}if(!Number.isFinite(amount)||amount<=0){alert('Enter a valid amount.');return}let all=getUsers();const u=all.find(x=>x.id===id);if(!u){alert('User not found.');return}const before=Number(u.wallet||0);if(before+amount<0){alert('Invalid wallet amount.');return}u.wallet=before+amount;saveUsers(all.map(x=>x.id===id?u:x));txAdd({type:'Wallet Transfer',detail:`Admin → ${u.name} +${money(amount)}${note?' · '+note:''}`});$('#adminWalletAmount').value='';$('#adminWalletNote').value='';renderAdmin();updateAccountUI();alert(`${money(amount)} successfully transferred to ${u.name}'s wallet.`)}
+function adminWallet(id){const u=getUsers().find(x=>x.id===id);if(!u)return;const raw=prompt('Amount to ADD (+) or DEDUCT (-) from wallet for '+u.name,'100');if(raw===null)return;const n=Number(raw);if(!Number.isFinite(n)||n===0){alert('Enter a valid amount.');return}if(n<0&&u.wallet+n<0){alert('Wallet cannot go below ₹0.');return}u.wallet=Number(u.wallet||0)+n;let all=getUsers();all=all.map(x=>x.id===id?u:x);saveUsers(all);txAdd({type:n>0?'Wallet Credit':'Wallet Debit',detail:u.name+' '+money(n)});updateAccountUI()}
+function adminPackage(id){const u=getUsers().find(x=>x.id===id);if(!u)return;const st=billingSettings();const choice=prompt('Enter package: 1 = Silver ('+money(st.silverPrice)+'), 2 = Gold ('+money(st.goldPrice)+'), 3 = Diamond ('+money(st.diamondPrice)+'), 0 = Remove','1');if(choice===null)return;if(choice==='0'){u.package=null}else if(choice==='1'||choice==='2'||choice==='3'){const days=choice==='1'?30:choice==='2'?90:365;const name=choice==='1'?'Silver':choice==='2'?'Gold':'Diamond';const price=choice==='1'?st.silverPrice:choice==='2'?st.goldPrice:st.diamondPrice;u.package={name,price,expiresAt:new Date(Date.now()+days*86400000).toISOString()}}else{alert('Invalid choice.');return}saveUsers(getUsers().map(x=>x.id===id?u:x));txAdd({type:'Package Update',detail:u.name+' → '+(u.package?u.package.name:'Removed')});updateAccountUI()}
+function adminToggle(id){let all=getUsers();const u=all.find(x=>x.id===id);if(!u)return;u.active=u.active===false;saveUsers(all);txAdd({type:u.active?'Retailer Unblocked':'Retailer Blocked',detail:u.name});updateAccountUI()}
+function chargeRetailerForCard(){const u=getCurrentUser(),st=billingSettings();if(!u||u.role!=='retailer')return true;if(u.active===false){alert('Retailer account is blocked.');return false}const p=u.package&&new Date(u.package.expiresAt)>new Date()?u.package:null;if(!p){alert('Active Silver, Gold ya Diamond package required.');showModule('account');return false}const rate=Number(st.cardRate);if(Number(u.wallet||0)<rate){alert('Insufficient wallet balance. Required: '+money(rate)+'. Please contact admin for wallet recharge.');showModule('account');return false}let all=getUsers();const nu={...u,wallet:Number(u.wallet)-rate};saveUsers(all.map(x=>x.id===u.id?nu:x));setSession(nu);txAdd({type:'Card Charge',detail:nu.name+' - '+money(rate)});updateAccountUI();return true}
+// Override old token billing: logged-in retailer uses wallet + active package; guest keeps legacy demo tokens.
+const legacyUseToken=useToken;
+useToken=function(){const u=getCurrentUser();if(!u){document.body.classList.add('login-locked');$('#loginGate').classList.remove('hidden');gateError('Please login first to print PVC cards.');return false}if(u.role==='retailer')return chargeRetailerForCard();return true};
+$('#openLogin').onclick=()=>openAccountModal('login');$('#openRegister').onclick=()=>openAccountModal('register');$('#closeAccountModal').onclick=()=>$('#accountModal').classList.remove('open');$('#logoutBtn').onclick=()=>{setSession(null);showModule('account')};$('#retailerRefresh').onclick=updateAccountUI;$('#adminLogout').onclick=()=>{setSession(null);showModule('account')};$('#saveCardRate').onclick=()=>{const n=Number($('#adminCardRate').value);if(!Number.isFinite(n)||n<0){alert('Invalid rate.');return}const st=billingSettings();st.cardRate=n;saveBillingSettings(st);txAdd({type:'Billing Setting',detail:'Card rate set to '+money(n)});updateAccountUI()};$('#adminRetailerRefresh').onclick=()=>renderAdmin();$('#adminWalletUser').onchange=updateAdminWalletInfo;$('#adminWalletTransfer').onclick=transferWalletAmount;$('#adminWalletClear').onclick=()=>{ $('#adminWalletUser').value=''; $('#adminWalletAmount').value=''; $('#adminWalletNote').value=''; updateAdminWalletInfo(); };$('#adminRetailerSearch').oninput=()=>{const q=$('#adminRetailerSearch').value.trim().toLowerCase();const rows=[...document.querySelectorAll('#adminUsersTable tr')];rows.forEach(r=>{const text=r.textContent.toLowerCase();r.style.display=(!q||text.includes(q))?'':'none'});};$('#savePackages').onclick=()=>{const s=Number($('#pkgSilverPrice').value),g=Number($('#pkgGoldPrice').value),d=Number($('#pkgDiamondPrice').value);if(![s,g,d].every(n=>Number.isFinite(n)&&n>=0)){alert('Invalid package prices.');return}const st=billingSettings();st.silverPrice=s;st.goldPrice=g;st.diamondPrice=d;saveBillingSettings(st);txAdd({type:'Package Pricing',detail:'Silver '+money(s)+' / Gold '+money(g)+' / Diamond '+money(d)});updateAccountUI()};
+function activateRetailerPackage(name){const u=getCurrentUser();if(!u||u.role!=='retailer'){alert('Please login as retailer first.');return}const st=billingSettings();const map={Silver:{days:30,price:st.silverPrice},Gold:{days:90,price:st.goldPrice},Diamond:{days:365,price:st.diamondPrice}};const x=map[name];if(!x)return;u.package={name,price:x.price,expiresAt:new Date(Date.now()+x.days*86400000).toISOString()};saveUsers(getUsers().map(v=>v.id===u.id?u:v));setSession(u);txAdd({type:'Package Activated',detail:u.name+' → '+name});updateAccountUI();alert(name+' package activated successfully.');}
+$('#activateSilver').onclick=()=>activateRetailerPackage('Silver');$('#activateGold').onclick=()=>activateRetailerPackage('Gold');$('#activateDiamond').onclick=()=>activateRetailerPackage('Diamond');
+ensureAdmin();updateAccountUI();initLoginGate();
+
+
+async function loadPdfJs(){
+ if(pdfjs) return pdfjs;
+ try{
+  pdfjs=await import('https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.4.168/pdf.min.mjs');
+  pdfjs.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.4.168/pdf.worker.min.mjs';
+  return pdfjs;
+ }catch(e){alert('PDF engine could not load. Check internet connection, then reload.');throw e}
+}
+function setImage(box,data,alt='card'){
+ box.innerHTML=''; const img=document.createElement('img'); img.className='cardimg'; img.src=data; img.alt=alt; box.appendChild(img);
+}
+function readImage(input,cb){const f=input.files&&input.files[0];if(!f)return;const r=new FileReader();r.onload=e=>cb(e.target.result);r.readAsDataURL(f)}
+function saveJpeg(data,name){if(!data){alert('No image available.');return}const a=document.createElement('a');a.href=data;a.download=name;a.click()}
+function addHistory(item){let h=JSON.parse(localStorage.getItem(histKey)||'[]');h.unshift({...item,time:new Date().toLocaleString()});h=h.slice(0,30);localStorage.setItem(histKey,JSON.stringify(h));renderHistory()}
+function renderHistory(){let h=JSON.parse(localStorage.getItem(histKey)||'[]');$('#historyList').innerHTML=h.length?h.map(x=>`<div class="history-item">${x.img?`<img class="thumb" src="${x.img}">`:''}<div><b>${x.type||'Card'}</b><br><small>${x.time}</small></div></div>`).join(''):'<p class="notice">No local history yet.</p>'}
+function useToken(){let n=Number(localStorage.getItem(tokenKey)||8);if(n<=0){alert('No tokens available. Open Recharge Plans.');return false}localStorage.setItem(tokenKey,n-1);$('#tokenText').textContent=n-1;return true}
+
+// ================= SINGLE PRINT ENGINE =================
+const printerProfiles={
+ canon:{name:'Canon',x:0,y:1.0,zoom:100,rot:0,paper:'Card 55*91mm',page:'55 × 87.71 mm',borderless:'ON',media:'Photo Paper Plus Glossy II',quality:'High / Best',scaling:'Actual Size (No Scaling)'},
+ epson1:{name:'Epson L3100 Series',x:0,y:0,zoom:100,rot:0,paper:'4×6 in (10×15 cm) / 4R',page:'101.6 × 152.4 mm',borderless:'ON',media:'Premium Glossy',quality:'High / Best',scaling:'Actual Size (No Scaling)'},
+ epson2:{name:'Epson L3100 Series',x:0,y:0,zoom:100,rot:0,paper:'4×6 in (10×15 cm) / 4R',page:'101.6 × 152.4 mm',borderless:'ON',media:'Premium Glossy',quality:'High / Best',scaling:'Actual Size (No Scaling)'},
+ epson3:{name:'Epson L3300 Series',x:0,y:-8.0,zoom:100,rot:0,paper:'4×6 in (10×15 cm) / 4R',page:'101.6 × 152.4 mm',borderless:'ON',media:'Premium Glossy',quality:'High / Best',scaling:'Actual Size (No Scaling)'}
+};
+let activePrintSide='Front', cutting=false, mirror=false, bleed=false;
+
+function currentProfile(){return printerProfiles[$('#printerProfile')?.value]||printerProfiles.canon}
+function syncProfileUI(){const p=currentProfile();document.body.classList.toggle('print-canon',$('#printerProfile')?.value==='canon');if($('#printX'))$('#printX').value=p.x;if($('#printY'))$('#printY').value=p.y;if($('#zoomPrintVal'))$('#zoomPrintVal').textContent=p.zoom+'%';if($('#rotPrintVal'))$('#rotPrintVal').textContent=p.rot+'°';if($('#paperInfo'))$('#paperInfo').innerHTML='Page: <b>'+p.page+'</b> | Single page • Card print orientation: PORTRAIT';if($('#guidePaper'))$('#guidePaper').textContent=p.paper;if($('#guideBorderless'))$('#guideBorderless').textContent=p.borderless;if($('#guideMedia'))$('#guideMedia').textContent=p.media;if($('#guideQuality'))$('#guideQuality').textContent=p.quality;if($('#guideScaling'))$('#guideScaling').textContent=p.scaling;renderSingle()}
+function renderSingle(){
+ const d=activePrintSide==='Front'?frontData:backData; const p=currentProfile();
+ const z=Number($('#printX')?.value||p.x)||0, y=Number($('#printY')?.value||p.y)||0, zoom=Number($('#zoomPrintVal')?.textContent.replace('%',''))||100, rot=Number($('#rotPrintVal')?.textContent.replace('°',''))||0;
+ if($('#sidePrintStatus')) $('#sidePrintStatus').textContent='Side: '+activePrintSide+'   X: '+z.toFixed(1)+'   Y: '+y.toFixed(1);
+ const sp = $('#singlePreview');
+ if(!sp) return;
+ if(!d){sp.innerHTML='<p class="notice">Upload or process a card first.</p>';return}
+ const sx=1+z/1000, sy=1+y/1000;
+ sp.innerHTML='<div class="print-preview-sheet"><div class="print-preview-card'+(cutting?' cut':'')+'"><img src="'+d+'" alt="PVC Card"></div></div>';
+ const card=sp.querySelector('.print-preview-card');
+ if(card){
+  card.style.transform='translate(calc(-50% + '+z+'mm), calc(-50% + '+y+'mm)) scale('+(zoom/100*sx)+','+(zoom/100*sy)+') rotate('+rot+'deg)'+(mirror?' scaleX(-1)':'');
+ }
+}
+function setPrintSide(side){activePrintSide=side;if($('#sideFrontPrint'))$('#sideFrontPrint').className='btn '+(side==='Front'?'primary':'outline');if($('#sideBackPrint'))$('#sideBackPrint').className='btn '+(side==='Back'?'primary':'outline');renderSingle()}
+function nudgePosition(dx,dy){const x=Number($('#printX')?.value)||0,y=Number($('#printY')?.value)||0;if($('#printX'))$('#printX').value=(x+dx).toFixed(1);if($('#printY'))$('#printY').value=(y+dy).toFixed(1);renderSingle()}
+function printSingleNow(){
+  const d=activePrintSide==='Front'?frontData:backData;
+  if(!d){alert('No card available. Please upload/process a card first.');return false;}
+  if(typeof useToken==='function' && !useToken()) return false;
+  const p=currentProfile();
+  const isCanon = ($('#printerProfile')?.value === 'canon');
+  const x=Number($('#printX')?.value||p.x)||0;
+  const y=Number($('#printY')?.value||p.y)||0;
+  const zoom=Number($('#zoomPrintVal')?.textContent.replace('%',''))||100;
+  const rot=Number($('#rotPrintVal')?.textContent.replace('°',''))||0;
+
+  let stage=document.getElementById('jcCanonPrintStage');
+  if(stage) stage.remove();
+  stage=document.createElement('div');
+  stage.id='jcCanonPrintStage';
+  if(isCanon) stage.className='jc-print-canon';
+  else stage.className='jc-print-epson';
+
+  stage.innerHTML='<div class="jcCanonSheet"><div class="jcCanonCard'+(cutting?' cut':'')+'"><img alt="PVC card" src="'+d+'"></div></div>';
+  document.body.appendChild(stage);
+
+  const card=stage.querySelector('.jcCanonCard');
+  if(card){
+    card.style.left='50%';
+    card.style.top='50%';
+    card.style.width='85.60mm';
+    card.style.height='53.98mm';
+    card.style.transform='translate(calc(-50% + '+x+'mm), calc(-50% + '+y+'mm)) rotate('+rot+'deg) scale('+(zoom/100).toFixed(4)+')'+(mirror?' scaleX(-1)':'');
+  }
+
+  document.documentElement.classList.add('jc-canon-printing');
+  document.body.classList.add('jc-canon-printing');
+  if(isCanon) document.body.classList.add('print-canon');
+  else document.body.classList.remove('print-canon');
+
+  void document.body.offsetHeight;
+
+  let cleaned=false;
+  const cleanup=()=>{
+    if(cleaned)return;
+    cleaned=true;
+    document.documentElement.classList.remove('jc-canon-printing');
+    document.body.classList.remove('jc-canon-printing');
+    if(stage && stage.parentNode) stage.remove();
+    window.removeEventListener('afterprint',cleanup);
+  };
+  window.addEventListener('afterprint',cleanup,{once:true});
+
+  try{
+    window.print();
+    addHistory({type:'Single print — '+p.name,img:d});
+    setTimeout(cleanup,5000);
+    return true;
+  }catch(err){
+    cleanup();
+    console.error('Print Now error:',err);
+    alert('Print Now error: '+(err.message||err));
+    return false;
+  }
+}
+
+$$('.tab').forEach(t=>t.onclick=()=>{
+  if(!getCurrentUser()){unlockApp();return}
+  if(t.dataset.module==='photoMaker'){
+    document.body.classList.remove('rb-active');
+    const u=getCurrentUser(); 
+    const payload=btoa(unescape(encodeURIComponent(JSON.stringify({id:u&&u.id,email:u&&u.email,role:u&&u.role,name:u&&u.name})))); 
+    location.href='photo-maker/index.html?jc_session='+encodeURIComponent(payload);
+    return;
+  }
+  if(t.dataset.module==='document'){
+    document.body.classList.remove('rb-active');
+    location.href='a4-document/index.html';
+    return;
+  }
+  showModule(t.dataset.module);
+  if(t.dataset.module==='single')renderSingle();
+  if(t.dataset.module==='history')renderHistory();
+});
+
+$('#pdfs').onchange=e=>{pdfFiles=[...e.target.files].slice(0,5);$('#pdfCount').textContent=pdfFiles.length+'/5';$('#pdfLabel').textContent=pdfFiles.length?pdfFiles.map(f=>f.name).join(', '):'Choose PDF(s) — up to 5'};
+async function autoFitPvcFromCanvas(sourceCanvas){
+ const w=sourceCanvas.width,h=sourceCanvas.height,ctx=sourceCanvas.getContext('2d');
+ const data=ctx.getImageData(0,0,w,h).data;
+ // Estimate page/background from corner pixels, then find the card-sized foreground area.
+ const corners=[0, w-1, (h-1)*w, (h-1)*w+w-1];
+ let bg=[0,0,0];
+ for(const p of corners){bg[0]+=data[p*4];bg[1]+=data[p*4+1];bg[2]+=data[p*4+2]}
+ bg=bg.map(v=>v/4);
+ let minX=w,minY=h,maxX=-1,maxY=-1;
+ const step=Math.max(1,Math.floor(Math.min(w,h)/900));
+ for(let y=0;y<h;y+=step){
+   for(let x=0;x<w;x+=step){
+     const i=(y*w+x)*4, dr=data[i]-bg[0], dg=data[i+1]-bg[1], db=data[i+2]-bg[2];
+     const diff=Math.sqrt(dr*dr+dg*dg+db*db);
+     const lum=.2126*data[i]+.7152*data[i+1]+.0722*data[i+2];
+     if(diff>32 && lum<250){
+       if(x<minX)minX=x;if(x>maxX)maxX=x;if(y<minY)minY=y;if(y>maxY)maxY=y;
+     }
+   }
+ }
+ // Fallback: remove a modest page margin when detection is too small/failed.
+ if(maxX<0 || maxY<0 || (maxX-minX)<w*.20 || (maxY-minY)<h*.15){
+   minX=w*.08;maxX=w*.92;minY=h*.08;maxY=h*.92;
+ }
+ // Add a small safety margin around detected content.
+ const padX=(maxX-minX)*.025,padY=(maxY-minY)*.025;
+ minX=Math.max(0,Math.floor(minX-padX));maxX=Math.min(w-1,Math.ceil(maxX+padX));
+ minY=Math.max(0,Math.floor(minY-padY));maxY=Math.min(h-1,Math.ceil(maxY+padY));
+ let cw=maxX-minX+1,ch=maxY-minY+1;
+ // Force the standard PVC card ratio 85.60:53.98 while staying inside the page.
+ const target=85.60/53.98, current=cw/ch;
+ if(current>target){
+   const wantedH=cw/target, extra=wantedH-ch;
+   minY=Math.max(0,Math.floor(minY-extra/2));maxY=Math.min(h-1,Math.ceil(maxY+extra/2));
+ }else{
+   const wantedW=ch*target, extra=wantedW-cw;
+   minX=Math.max(0,Math.floor(minX-extra/2));maxX=Math.min(w-1,Math.ceil(maxX+extra/2));
+ }
+ cw=maxX-minX+1;ch=maxY-minY+1;
+ const out=document.createElement('canvas');
+ // High quality working output; CSS/print module handles physical 85.6x54mm sizing.
+ out.width=1712;out.height=1080;
+ const oq=out.getContext('2d'); oq.imageSmoothingEnabled=true; oq.imageSmoothingQuality='high';
+ oq.drawImage(sourceCanvas,minX,minY,cw,ch,0,0,out.width,out.height);
+ return out.toDataURL('image/png');
+}
+
+async function processPdfPage(doc,pageNo){
+ const page=await doc.getPage(pageNo);
+ // Keep the complete PDF page at its original page layout. Do NOT auto-crop/resize here.
+ const vp=page.getViewport({scale:3.0});
+ const c=document.createElement('canvas');c.width=Math.round(vp.width);c.height=Math.round(vp.height);
+ await page.render({canvasContext:c.getContext('2d'),viewport:vp}).promise;
+ const data=c.toDataURL('image/png');
+ return {canvas:c,data,pageWidth:vp.width,pageHeight:vp.height};
+}
+
+$('#process').onclick=async()=>{
+ if(!pdfFiles.length){alert('Choose at least one PDF.');return}
+ if(!useToken())return;
+ const lib=await loadPdfJs();
+ $('#status').textContent='PDF uploaded — keeping full original page for manual PVC cropping...';
+ $('#pdfPages').innerHTML='';
+ let extracted=[];
+ try{
+   for(let fi=0;fi<pdfFiles.length;fi++){
+     const buf=await pdfFiles[fi].arrayBuffer();
+     const pw=$('#pdfPassword')?.value.trim()||'';
+     let asked=false;
+     const task=lib.getDocument({data:buf,password:pw||undefined,passwordCallback:(cb)=>{if(asked){cb(pw);return}asked=true;const v=prompt('PDF password enter karein:',pw);if(v===null)throw new Error('Password cancelled');$('#pdfPassword').value=v;cb(v)}});
+     const doc=await task.promise;
+     for(let p=1;p<=doc.numPages;p++){
+       const item=await processPdfPage(doc,p);
+       extracted.push({...item,page:p,file:fi});
+       const el=document.createElement('div');el.className='page';
+       el.innerHTML='<img style="width:100%;display:block;border-radius:5px;object-fit:contain;background:#fff" src="'+item.data+'"><small>Original PDF • Page '+p+'</small>';
+       el.onclick=()=>{
+         $$('.page').forEach(x=>x.classList.remove('selected'));el.classList.add('selected');
+         if(!cropSource.front) cropSource.front=item.data; else if(!cropSource.back) cropSource.back=item.data; else cropSource.front=item.data; openCropEditor();
+         $('#status').textContent='Full PDF page selected — crop the PVC area manually';
+       };
+       $('#pdfPages').appendChild(el);
+     }
+   }
+   // Keep the complete PDF pages as crop sources. Front/Back are only created after Apply Crop.
+   frontData=null; backData=null;
+   if(extracted[0]){ cropSource.front=extracted[0].data; }
+   if(extracted[1]){ cropSource.back=extracted[1].data; }
+   $('#frontPreview').innerHTML='<div class="empty">Full PDF page loaded — crop Front</div>';
+   $('#backPreview').innerHTML='<div class="empty">Full PDF page loaded — crop Back</div>';
+   $('#status').textContent=extracted.length>1
+     ? 'Full PDF pages loaded — select Front/Back and crop to PVC size'
+     : 'Full PDF page loaded — use Modify Cropping to select the PVC card';
+   renderSingle();
+   // Open the manual crop editor automatically after successful PDF processing.
+   setTimeout(()=>openCropEditor(),120);
+ }catch(e){
+   console.error(e);
+   const m=(e&&(/password/i.test(e.message||'')||e.name==='PasswordException'))?'PDF password incorrect.':'PDF processing failed. Please try another PDF.'; alert(m); $('#status').textContent=m;
+ }
+};
+
+// ===== Advanced Front/Back PVC Crop Editor =====
+let cropSource={front:null,back:null}, cropImages={front:null,back:null}, cropSide2='front', cropZoom2=1, cropAngle2=0, cropRect2=null, cropStart2=null, cropDragging2=false, cropCandidates=[];
+const ce2=$('#cropEditorCanvas'), cx2=ce2.getContext('2d');
+
+function getCropImage(side=cropSide2){
+ if(cropImages[side] && cropImages[side].complete && cropImages[side].naturalWidth>0){
+  return cropImages[side];
+ }
+ const raw = cropSource[side] || (side==='front' ? frontData : backData);
+ if(raw instanceof HTMLImageElement && raw.complete && raw.naturalWidth>0){
+  cropImages[side] = raw;
+  return raw;
+ }
+ return null;
+}
+
+function openCropEditor(){
+ const hasData = frontData || backData || cropSource.front || cropSource.back;
+ if(!hasData){alert('Pehle PDF process karein ya Front/Back image upload karein.');return}
+ if(frontData) cropSource.front = frontData;
+ if(backData) cropSource.back = backData;
+ $('#cropModal').classList.add('open');
+ setCropSide2(cropSource.front || frontData ? 'front' : 'back');
+}
+
+function setCropSide2(side){
+ cropSide2=side; cropZoom2=1; cropAngle2=0; cropRect2=null;
+ $('#sideFront').classList.toggle('active',side==='front'); $('#sideBack').classList.toggle('active',side==='back');
+ const raw=cropSource[side] || (side==='front' ? frontData : backData);
+ if(!raw){
+  cropImages[side]=null;
+  drawEditor2();
+  return;
+ }
+ if(raw instanceof HTMLImageElement && raw.complete && raw.naturalWidth>0){
+  cropImages[side]=raw;
+  drawEditor2();
+  autoDetect2(false);
+  return;
+ }
+ const src = typeof raw === 'string' ? raw : (raw && raw.src ? raw.src : '');
+ if(!src){
+  drawEditor2();
+  return;
+ }
+ const im=new Image();
+ im.onload=()=>{
+  cropImages[side]=im;
+  drawEditor2();
+  autoDetect2(false);
+ };
+ im.onerror=()=>{
+  console.error('Failed to load crop image for side:', side);
+ };
+ im.src=src;
+}
+
+function drawEditor2(){
+ const im=getCropImage(cropSide2);
+ if(!im||!im.width||!im.height){
+  cx2.clearRect(0,0,ce2.width,ce2.height);
+  return;
+ }
+ const maxW=980,maxH=680,scale=Math.min(maxW/im.width,maxH/im.height)*cropZoom2;
+ ce2.width=Math.max(1,Math.round(im.width*scale)); ce2.height=Math.max(1,Math.round(im.height*scale));
+ cx2.clearRect(0,0,ce2.width,ce2.height); cx2.save(); cx2.translate(ce2.width/2,ce2.height/2); cx2.rotate(cropAngle2*Math.PI/180); cx2.drawImage(im,-im.width*scale/2,-im.height*scale/2,im.width*scale,im.height*scale); cx2.restore();
+ if(cropRect2){
+  cx2.save();
+  cx2.fillStyle='rgba(101, 89, 238, 0.20)';
+  cx2.strokeStyle='#6559ee';
+  cx2.lineWidth=3;
+  cx2.setLineDash([8,5]);
+  cx2.fillRect(cropRect2.x,cropRect2.y,cropRect2.w,cropRect2.h);
+  cx2.strokeRect(cropRect2.x,cropRect2.y,cropRect2.w,cropRect2.h);
+  cx2.restore();
+ }
+}
+
+function makeCandidateBoxes(){
+ const im=getCropImage(cropSide2);
+ if(!im||!im.width||!ce2.width||!ce2.height)return [];
+ const ratio=85.6/53.98, boxes=[];
+ const W=ce2.width,H=ce2.height;
+ function add(x,y,w,h){
+  x=Math.max(0,Math.min(W-20,x));
+  y=Math.max(0,Math.min(H-20,y));
+  w=Math.max(20,Math.min(W-x,w));
+  h=Math.max(20,Math.min(H-y,h));
+  boxes.push({x:Math.round(x),y:Math.round(y),w:Math.round(w),h:Math.round(h)});
+ }
+ // 1. Centered PVC Card
+ let w1=W*.88,h1=w1/ratio; if(h1>H*.88){h1=H*.88;w1=h1*ratio}
+ add((W-w1)/2,(H-h1)/2,w1,h1);
+ // 2. Top Card (Aadhaar/ABHA top)
+ let wTop=W*.88,hTop=wTop/ratio;
+ if(hTop<=H*.58) add((W-wTop)/2,H*.04,wTop,hTop);
+ // 3. Bottom Card (Aadhaar/ABHA bottom)
+ let wBot=W*.88,hBot=wBot/ratio;
+ if(hBot<=H*.58) add((W-wBot)/2,H-hBot-H*.04,wBot,hBot);
+ // 4. Middle Card
+ let wMid=W*.88,hMid=wMid/ratio;
+ if(hMid<=H*.65) add((W-wMid)/2,(H-hMid)/2,wMid,hMid);
+ // 5. Left half card
+ let wLeft=W*.46,hLeft=wLeft/ratio;
+ add(W*.02,(H-hLeft)/2,wLeft,hLeft);
+ // 6. Right half card
+ let wRight=W*.46,hRight=wRight/ratio;
+ add(W-W*.02-wRight,(H-hRight)/2,wRight,hRight);
+ return boxes.slice(0,6);
+}
+
+function autoDetect2(show=true){
+ const im=getCropImage(cropSide2);
+ if(!im||!im.width){if(show)alert('Is side ke liye image nahi hai.');return}
+ cropZoom2=1; drawEditor2();
+ const boxes=makeCandidateBoxes(); cropCandidates=boxes;
+ if(boxes.length>0 && !cropRect2) cropRect2={...boxes[0]};
+ drawEditor2();
+ const candidateEl=$('#candidateList');
+ if(candidateEl){
+  candidateEl.innerHTML=boxes.length?boxes.map((b,i)=>`<div class="candidate" data-c="${i}" style="cursor:pointer;padding:6px;border:1px solid #e2e8f0;border-radius:8px;margin-bottom:6px;background:#fff"><img src="${candidateData(b)}" style="width:100%;border-radius:4px;display:block"><small style="display:block;margin-top:4px;font-weight:700;color:#4338ca">Candidate ${i+1} — tap to use</small></div>`).join(''):'No candidate found — draw manually on canvas.';
+  $$('#candidateList .candidate').forEach(el=>el.onclick=()=>{
+   const idx=Number(el.dataset.c);
+   if(boxes[idx]){
+    cropRect2={...boxes[idx]};
+    $$('#candidateList .candidate').forEach(c=>c.style.borderColor='#e2e8f0');
+    el.style.borderColor='#6559ee';
+    drawEditor2();
+   }
+  });
+ }
+}
+
+function candidateData(b){
+ const im=getCropImage(cropSide2);
+ if(!im||!im.width||!ce2.width)return '';
+ const sx=im.width/ce2.width,sy=im.height/ce2.height,o=document.createElement('canvas');
+ o.width=300;o.height=Math.max(1,Math.round(300/(b.w/b.h)));
+ const ctx=o.getContext('2d'); ctx.imageSmoothingEnabled=true; ctx.imageSmoothingQuality='high';
+ ctx.drawImage(im,b.x*sx,b.y*sy,b.w*sx,b.h*sy,0,0,o.width,o.height);
+ return o.toDataURL('image/png');
+}
+
+function point2(e){const r=ce2.getBoundingClientRect();return{x:(e.clientX-r.left)*ce2.width/r.width,y:(e.clientY-r.top)*ce2.height/r.height}}
+
+ce2.onpointerdown=e=>{
+ const im=getCropImage(cropSide2);
+ if(!im)return;
+ cropDragging2=true;cropStart2=point2(e);cropRect2={x:cropStart2.x,y:cropStart2.y,w:1,h:1};ce2.setPointerCapture(e.pointerId);
+};
+
+ce2.onpointermove=e=>{
+ if(!cropDragging2)return;
+ const p=point2(e),x=Math.min(cropStart2.x,p.x),y=Math.min(cropStart2.y,p.y);
+ let w=Math.abs(p.x-cropStart2.x),h=Math.abs(p.y-cropStart2.y),r=85.6/53.98;
+ if(w/h>r)h=w/r;else if(h)w=h*r;
+ cropRect2={x,y,w,h};drawEditor2();
+};
+
+ce2.onpointerup=()=>cropDragging2=false;
+
+function exportCrop2(){
+ const im=getCropImage(cropSide2);
+ if(!im||!im.width||!im.height||!ce2.width||!ce2.height){
+  alert('PDF page/image load nahi hua. Please PDF dobara select ya process karein.');
+  return null;
+ }
+ if(!cropRect2||cropRect2.w<8||cropRect2.h<8){
+  const boxes=makeCandidateBoxes();
+  if(boxes.length>0) cropRect2={...boxes[0]};
+  else cropRect2={x:0,y:0,w:ce2.width,h:ce2.height};
+ }
+ const sx=im.width/ce2.width, sy=im.height/ce2.height;
+ let x=Math.max(0,cropRect2.x*sx), y=Math.max(0,cropRect2.y*sy);
+ let w=Math.min(im.width-x,cropRect2.w*sx), h=Math.min(im.height-y,cropRect2.h*sy);
+ if(w<8||h<8){alert('Crop area bahut chhota hai.');return null}
+ const o=document.createElement('canvas'); o.width=2400; o.height=1513; // Always export PVC in LANDSCAPE 85.6:53.98 ratio
+ const ctx=o.getContext('2d'); ctx.imageSmoothingEnabled=true; ctx.imageSmoothingQuality='high';
+ ctx.fillStyle='#fff';ctx.fillRect(0,0,o.width,o.height);
+ ctx.drawImage(im,x,y,w,h,0,0,o.width,o.height);
+ return o.toDataURL('image/png');
+}
+function updateCropPreview2(side,data){
+ const el=$(side==='front'?'#previewFront2':'#previewBack2');
+ if(el) el.innerHTML=data?'<img class="crop-preview-img" width=2400 height=1513 src="'+data+'">':'No crop';
+}
+$('#openCrop').onclick=openCropEditor; $('#launchCrop').onclick=openCropEditor; $('#closeCrop').onclick=()=>$('#cropModal').classList.remove('open'); $('#cancelCrop2').onclick=()=>$('#cropModal').classList.remove('open');
+$('#sideFront').onclick=()=>setCropSide2('front'); $('#sideBack').onclick=()=>setCropSide2('back'); $('#autoDetect2').onclick=()=>autoDetect2(true);
+$('#zoomPlus').onclick=()=>{cropZoom2=Math.min(3,cropZoom2+.15);drawEditor2()}; $('#zoomMinus').onclick=()=>{cropZoom2=Math.max(.5,cropZoom2-.15);drawEditor2()};
+$('#rotPlus').onclick=()=>{cropAngle2+=1;drawEditor2()}; $('#rotMinus').onclick=()=>{cropAngle2-=1;drawEditor2()}; $('#resetOne').onclick=()=>autoDetect2(false);
+$('#applyCrop2').addEventListener('click',function(e){
+ e.preventDefault(); e.stopPropagation();
+ try{
+  const d=exportCrop2(); if(!d)return;
+  const side = cropSide2;
+  if(side==='front'){
+   frontData=d; cropSource.front=d; setImage($('#frontPreview'),d,'PVC Front'); updateCropPreview2('front',d);
+   const s=$('#cropFrontSummary'); if(s)s.innerHTML='<img class="cardimg" src="'+d+'">';
+  }else{
+   backData=d; cropSource.back=d; setImage($('#backPreview'),d,'PVC Back'); updateCropPreview2('back',d);
+   const s=$('#cropBackSummary'); if(s)s.innerHTML='<img class="cardimg" src="'+d+'">';
+  }
+  setPrintSide(side==='front'?'Front':'Back');
+  try{renderSingle()}catch(_e){}
+  try{addHistory({type:'Manual PVC crop — '+side.toUpperCase(),img:d})}catch(_e){}
+  $('#cropModal').classList.remove('open');
+  $('#status').textContent=(side==='front'?'Front':'Back')+' PVC crop applied successfully';
+  // Automatically switch to Single Print module
+  showModule('single');
+  renderSingle();
+ }catch(err){console.error(err);alert('Apply Crop error: '+(err.message||err));}
+});
+
+function goToSinglePrint(side){
+  if(!frontData && !backData && !cropSource.front && !cropSource.back){
+    alert('Pehle PDF process karein ya Front/Back image upload karein.');
+    return;
+  }
+  if(side){
+    setPrintSide(side);
+  } else if(frontData){
+    setPrintSide('Front');
+  } else if(backData){
+    setPrintSide('Back');
+  }
+  showModule('single');
+  renderSingle();
+}
+
+if($('#printFrontBtn')) $('#printFrontBtn').onclick = (e) => {
+  e.preventDefault(); e.stopPropagation();
+  if(!frontData){ openCropEditor(); return; }
+  goToSinglePrint('Front');
+};
+if($('#printBackBtn')) $('#printBackBtn').onclick = (e) => {
+  e.preventDefault(); e.stopPropagation();
+  if(!backData){ setCropSide2('back'); openCropEditor(); return; }
+  goToSinglePrint('Back');
+};
+if($('#extractGoToSinglePrint')) $('#extractGoToSinglePrint').onclick = (e) => { e.preventDefault(); goToSinglePrint(); };
+if($('#cropGoToSinglePrint')) $('#cropGoToSinglePrint').onclick = (e) => { e.preventDefault(); goToSinglePrint(); };
+if($('#frontBoxClickable')) $('#frontBoxClickable').onclick = () => {
+  if(frontData) goToSinglePrint('Front');
+  else openCropEditor();
+};
+if($('#backBoxClickable')) $('#backBoxClickable').onclick = () => {
+  if(backData) goToSinglePrint('Back');
+  else { setCropSide2('back'); openCropEditor(); }
+};
+$('#resetBothCrop').onclick=()=>{frontData=null;backData=null;$('#frontPreview').innerHTML='<div class="empty">Front cleared</div>';$('#backPreview').innerHTML='<div class="empty">Back cleared</div>';if($('#cropFrontSummary'))$('#cropFrontSummary').textContent='No Front';if($('#cropBackSummary'))$('#cropBackSummary').textContent='No Back'};
+
+$('#clear').onclick=()=>{pdfFiles=[];$('#pdfs').value='';$('#pdfPages').innerHTML='';$('#pdfCount').textContent='0/5';$('#pdfLabel').textContent='Choose PDF(s) — up to 5';$('#status').textContent='No cards processed yet'};
+
+function readImage(input,cb){const f=input.files&&input.files[0];if(!f)return;const r=new FileReader();r.onload=()=>cb(r.result);r.readAsDataURL(f)}
+$('#front').onchange=function(e){
+  const el=this;
+  readImage(el,d=>{
+    if(!el.files||!el.files[0])return;
+    frontData=d;cropSource.front=d;
+    $('#frontLabel').textContent=el.files[0].name;
+    setImage($('#frontPreview'),d,'front');
+    renderSingle();
+    el.value='';
+  });
+};
+$('#back').onchange=function(e){
+  const el=this;
+  readImage(el,d=>{
+    if(!el.files||!el.files[0])return;
+    backData=d;cropSource.back=d;
+    $('#backLabel').textContent=el.files[0].name;
+    setImage($('#backPreview'),d,'back');
+    renderSingle();
+    el.value='';
+  });
+};
+$('#addBatch').onclick=()=>{if(!frontData&&!backData){alert('Upload front or back image first.');return}batch.push({front:frontData,back:backData,type:$('#cardType').value});renderMulti();addHistory({type:'Added to batch',img:frontData||backData})};
+$('#saveFront').onclick=()=>saveJpeg(frontData,'Justcard-front.jpg');$('#saveBack').onclick=()=>saveJpeg(backData,'Justcard-back.jpg');
+
+$('#printerProfile').onchange=syncProfileUI; $('#printX').oninput=renderSingle; $('#printY').oninput=renderSingle;
+$('#posUp').onclick=()=>nudgePosition(0,-0.1); $('#posDown').onclick=()=>nudgePosition(0,0.1); $('#posLeft').onclick=()=>nudgePosition(-0.1,0); $('#posRight').onclick=()=>nudgePosition(0.1,0); $('#posCenter').onclick=()=>{const p=currentProfile();$('#printX').value=p.x.toFixed(1);$('#printY').value=p.y.toFixed(1);renderSingle()};
+$('#sideFrontPrint').onclick=()=>setPrintSide('Front'); $('#sideBackPrint').onclick=()=>setPrintSide('Back'); $('#singleCopies').oninput=renderSingle;
+$('#zoomMinusPrint').onclick=()=>{let v=Math.max(50,(Number($('#zoomPrintVal').textContent.replace('%',''))||100)-5);$('#zoomPrintVal').textContent=v+'%';renderSingle()};
+$('#zoomPlusPrint').onclick=()=>{let v=Math.min(150,(Number($('#zoomPrintVal').textContent.replace('%',''))||100)+5);$('#zoomPrintVal').textContent=v+'%';renderSingle()};
+$('#rotMinusPrint').onclick=()=>{let v=(Number($('#rotPrintVal').textContent.replace('°',''))||0)-90; if(v<=-360)v=0; $('#rotPrintVal').textContent=v+'°';renderSingle()};
+$('#rotPlusPrint').onclick=()=>{let v=(Number($('#rotPrintVal').textContent.replace('°',''))||0)+90; if(v>=360)v=0; $('#rotPrintVal').textContent=v+'°';renderSingle()};
+$('#cuttingBorder').onclick=()=>{cutting=!cutting;$('#cuttingBorder').classList.toggle('toggle-on',cutting);renderSingle()};
+$('#mirrorPrint').onclick=()=>{mirror=!mirror;$('#mirrorPrint').classList.toggle('toggle-on',mirror);renderSingle()};
+$('#autoBleed').onclick=()=>{bleed=!bleed;$('#autoBleed').classList.toggle('toggle-on',bleed);renderSingle()};
+$('#downloadPrintPdf').onclick=()=>{
+  if(!frontData&&!backData){alert('No card available.');return}
+  if(window.JustcardWallet){
+    window.JustcardWallet.chargeService('singlePrint', 'Single Print PVC (PDF)', ()=>{
+      window.print();
+      addHistory({type:'Print PDF — '+currentProfile().name,img:activePrintSide==='Front'?frontData:backData});
+    });
+  } else {
+    window.print();
+  }
+};
+$('#singlePrint').onclick=function(e){
+  e.preventDefault();
+  e.stopPropagation();
+  if(window.JustcardWallet){
+    window.JustcardWallet.chargeService('singlePrint', 'Single Print PVC', ()=>{
+      printSingleNow();
+    });
+  } else {
+    printSingleNow();
+  }
+};
+
+/* ============================================================
+   A4 DOCUMENT STUDIO — REBUILT ULTRA-RELIABLE ENGINE
+   ============================================================ */
+let a4Doc = {
+  front: null,
+  frontName: '',
+  back: null,
+  backName: '',
+  rotation: 0,
+  filter: 'original',
+  brightness: 0,
+  contrast: 0
+};
+
+function docGetFilterCss() {
+  let b = 100 + Number(a4Doc.brightness || 0);
+  let c = 100 + Number(a4Doc.contrast || 0);
+  let extra = '';
+  if (a4Doc.filter === 'magic') {
+    b += 10;
+    c += 28;
+    extra = ' saturate(1.15)';
+  } else if (a4Doc.filter === 'bw') {
+    extra = ' grayscale(100%) contrast(140%)';
+  } else if (a4Doc.filter === 'contrast') {
+    c += 45;
+  }
+  return `brightness(${b}%) contrast(${c}%)${extra}`;
+}
+
+function renderA4Preview() {
+  const container = document.getElementById('a4Preview');
+  if (!container) return;
+
+  const f = a4Doc.front;
+  const b = a4Doc.back;
+
+  if (!f && !b) {
+    container.innerHTML = `
+      <div style="color:#cbd5e1;text-align:center;padding:35px 20px;width:100%">
+        <div style="font-size:36px;margin-bottom:8px">📄</div>
+        <div style="font-size:14px;font-weight:700">Kripya Front ya Back Document Photo / PDF upload karein</div>
+        <div style="font-size:11.5px;color:#94a3b8;margin-top:4px">Browse karein, Drag & Drop karein ya WhatsApp se Copy karke Paste (Ctrl+V) karein.</div>
+      </div>
+    `;
+    return;
+  }
+
+  const landscape = $('#docOrientation')?.value === 'landscape';
+  const layout = $('#docPrintLayout')?.value || 'full';
+  const margins = $('#docMargins')?.value || 'standard';
+  const fitMode = $('#docFitMode')?.value || 'contain';
+  const pad = margins === 'none' ? '0' : margins === 'small' ? '3mm' : '6mm';
+  const filterStyle = docGetFilterCss();
+  const rotStyle = a4Doc.rotation ? `transform:rotate(${a4Doc.rotation}deg);` : '';
+
+  let content = '';
+
+  if (layout === 'card') {
+    // ONLY when PVC Card option is selected: fix into exact standard PVC card dimensions
+    content = `
+      <div style="display:flex;flex-direction:column;align-items:center;width:100%;padding-top:8mm">
+        <div style="font-size:12px;font-weight:800;color:#334155;margin-bottom:6mm;letter-spacing:0.5px;display:flex;align-items:center;gap:6px">
+          <span>🪪 True PVC Card Size (85.60 × 53.98 mm) — 2-in-1 Side-by-Side</span>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(2, 85.60mm);gap:6mm;align-items:start;justify-content:center;align-content:start">
+          ${f ? `
+            <div style="width:85.60mm;height:53.98mm;border:1.5px dashed #6366f1;border-radius:3.18mm;overflow:hidden;box-shadow:0 4px 14px rgba(0,0,0,0.18);background:#fff;position:relative">
+              <img src="${f}" style="width:100%;height:100%;object-fit:fill;filter:${filterStyle};${rotStyle}" alt="Front PVC Card">
+              <span style="position:absolute;top:2px;left:4px;font-size:9px;font-weight:800;color:#fff;background:#6366f1;padding:1px 5px;border-radius:3px">FRONT</span>
+              <span style="position:absolute;bottom:2px;right:4px;font-size:9px;font-weight:700;color:#fff;background:rgba(15,23,42,0.75);padding:1px 5px;border-radius:3px">85.6 × 54 mm</span>
+            </div>
+          ` : `
+            <div style="width:85.60mm;height:53.98mm;border:1.5px dashed #94a3b8;border-radius:3.18mm;display:flex;flex-direction:column;align-items:center;justify-content:center;background:#f8fafc;color:#64748b;font-size:11px;font-weight:700;text-align:center;padding:8px">
+              ▣ Upload Front Card
+            </div>
+          `}
+          ${b ? `
+            <div style="width:85.60mm;height:53.98mm;border:1.5px dashed #10b981;border-radius:3.18mm;overflow:hidden;box-shadow:0 4px 14px rgba(0,0,0,0.18);background:#fff;position:relative">
+              <img src="${b}" style="width:100%;height:100%;object-fit:fill;filter:${filterStyle};${rotStyle}" alt="Back PVC Card">
+              <span style="position:absolute;top:2px;left:4px;font-size:9px;font-weight:800;color:#fff;background:#10b981;padding:1px 5px;border-radius:3px">BACK</span>
+              <span style="position:absolute;bottom:2px;right:4px;font-size:9px;font-weight:700;color:#fff;background:rgba(15,23,42,0.75);padding:1px 5px;border-radius:3px">85.6 × 54 mm</span>
+            </div>
+          ` : `
+            <div style="width:85.60mm;height:53.98mm;border:1.5px dashed #94a3b8;border-radius:3.18mm;display:flex;flex-direction:column;align-items:center;justify-content:center;background:#f8fafc;color:#64748b;font-size:11px;font-weight:700;text-align:center;padding:8px">
+              ▣ Upload Back Card (Optional)
+            </div>
+          `}
+        </div>
+      </div>
+    `;
+  } else if (layout === 'side_by_side') {
+    // 2-in-1 Side-by-Side Xerox style: Top placement, Front & Back side-by-side, bottom page empty
+    const list = [f, b].filter(Boolean);
+    content = `
+      <div style="width:100%;display:flex;flex-direction:column;justify-content:flex-start;align-items:center;padding-top:10mm">
+        <div style="display:grid;grid-template-columns:${list.length > 1 ? '1fr 1fr' : '1fr'};gap:6mm;width:100%;align-items:start;justify-content:center">
+          ${list.map(src => `
+            <div style="width:100%;display:flex;align-items:flex-start;justify-content:center;overflow:hidden">
+              <img class="doc-print-img" src="${src}" style="width:100%;max-width:100%;height:auto;max-height:95mm;object-fit:${fitMode};filter:${filterStyle};${rotStyle}display:block;margin:0 auto">
+            </div>
+          `).join('')}
+        </div>
+      </div>
+    `;
+  } else if (layout === 'top_bottom') {
+    // 2-in-1 Top-Bottom Xerox style: Top placement, Front on top, Back below it, bottom page empty
+    const list = [f, b].filter(Boolean);
+    content = `
+      <div style="width:100%;display:flex;flex-direction:column;justify-content:flex-start;align-items:center;padding-top:10mm">
+        <div style="display:flex;flex-direction:column;gap:6mm;width:100%;align-items:center;justify-content:flex-start">
+          ${list.map(src => `
+            <div style="width:100%;max-width:100%;display:flex;align-items:center;justify-content:center;overflow:hidden">
+              <img class="doc-print-img" src="${src}" style="width:100%;max-height:80mm;object-fit:${fitMode};filter:${filterStyle};${rotStyle}display:block;margin:0 auto">
+            </div>
+          `).join('')}
+        </div>
+      </div>
+    `;
+  } else {
+    // Full Page A4: full document
+    const src = f || b;
+    content = `
+      <div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;overflow:hidden">
+        <img class="doc-print-img" src="${src}" alt="document" style="width:100%;height:100%;max-width:100%;max-height:100%;object-fit:${fitMode};filter:${filterStyle};${rotStyle}display:block;margin:auto">
+      </div>
+    `;
+  }
+
+  container.innerHTML = `<div class="a4-sheet ${landscape ? 'landscape' : ''}" style="padding:${pad}">${content}</div>`;
+}
+
+function handleDocUpload(file, side) {
+  if (!file) return;
+  const isPdf = file.type === 'application/pdf' || (file.name && file.name.toLowerCase().endsWith('.pdf'));
+  const labelEl = document.getElementById(side === 'front' ? 'docFrontLabel' : 'docBackLabel');
+  const clearEl = document.getElementById(side === 'front' ? 'docFrontClear' : 'docBackClear');
+  if (labelEl) labelEl.textContent = file.name;
+
+  if (isPdf) {
+    docLoadPdfFile(file, side);
+  } else {
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      const data = e.target.result;
+      a4Doc[side] = data;
+      a4Doc[side + 'Name'] = file.name || (side + '_image.png');
+      if (labelEl) labelEl.textContent = a4Doc[side + 'Name'];
+      if (clearEl) clearEl.style.display = 'inline';
+      renderA4Preview();
+    };
+    reader.onerror = function(err) {
+      console.error('File read error:', err);
+      alert('Photo read nahi ho payi. Kripya doosri image try karein.');
+    };
+    reader.readAsDataURL(file);
+  }
+}
+
+// Front and Back file inputs
+const docFrontInp = document.getElementById('docFrontInput');
+if (docFrontInp) {
+  docFrontInp.onchange = function() {
+    const file = this.files && this.files[0];
+    if (file) handleDocUpload(file, 'front');
+  };
+}
+
+const docBackInp = document.getElementById('docBackInput');
+if (docBackInp) {
+  docBackInp.onchange = function() {
+    const file = this.files && this.files[0];
+    if (file) handleDocUpload(file, 'back');
+  };
+}
+
+async function docLoadPdfFile(file, side) {
+  try {
+    const lib = await loadPdfJs();
+    const buf = await file.arrayBuffer();
+    const pdf = await lib.getDocument({ data: buf }).promise;
+    const page = await pdf.getPage(1);
+    const vp = page.getViewport({ scale: 2.5 });
+    const c = document.createElement('canvas');
+    c.width = Math.ceil(vp.width);
+    c.height = Math.ceil(vp.height);
+    await page.render({ canvasContext: c.getContext('2d'), viewport: vp }).promise;
+    const data = c.toDataURL('image/png');
+    if (side === 'front') {
+      a4Doc.front = data;
+      a4Doc.frontName = file.name;
+      $('#docFrontLabel').textContent = file.name;
+      $('#docFrontClear').style.display = 'inline';
+    } else {
+      a4Doc.back = data;
+      a4Doc.backName = file.name;
+      $('#docBackLabel').textContent = file.name;
+      $('#docBackClear').style.display = 'inline';
+    }
+    renderA4Preview();
+  } catch (err) {
+    console.error(err);
+    alert('PDF load error: ' + (err.message || err));
+  }
+}
+
+// Clear handlers
+$('#docFrontClear').onclick = e => {
+  e.stopPropagation();
+  a4Doc.front = null;
+  a4Doc.frontName = '';
+  $('#docFrontLabel').textContent = 'Choose Front Photo / PDF...';
+  $('#docFrontClear').style.display = 'none';
+  renderA4Preview();
+};
+$('#docBackClear').onclick = e => {
+  e.stopPropagation();
+  a4Doc.back = null;
+  a4Doc.backName = '';
+  $('#docBackLabel').textContent = 'Choose Back Photo / PDF (Optional)...';
+  $('#docBackClear').style.display = 'none';
+  renderA4Preview();
+};
+$('#docResetAllBtn').onclick = () => {
+  a4Doc.front = null;
+  a4Doc.frontName = '';
+  a4Doc.back = null;
+  a4Doc.backName = '';
+  a4Doc.rotation = 0;
+  a4Doc.filter = 'original';
+  a4Doc.brightness = 0;
+  a4Doc.contrast = 0;
+  $('#docFrontLabel').textContent = 'Choose Front Photo / PDF...';
+  $('#docBackLabel').textContent = 'Choose Back Photo / PDF (Optional)...';
+  $('#docFrontClear').style.display = 'none';
+  $('#docBackClear').style.display = 'none';
+  $('#docBrightness').value = 0;
+  $('#docContrast').value = 0;
+  $('#docBrightnessVal').textContent = '0';
+  $('#docContrastVal').textContent = '0';
+  document.querySelectorAll('.scan-mode').forEach(b => b.classList.toggle('active', b.dataset.mode === 'original'));
+  renderA4Preview();
+};
+
+// Filter buttons
+document.querySelectorAll('.scan-mode').forEach(b => {
+  b.onclick = () => {
+    a4Doc.filter = b.dataset.mode;
+    document.querySelectorAll('.scan-mode').forEach(x => x.classList.toggle('active', x === b));
+    renderA4Preview();
+  };
+});
+
+// Adjustments
+['docBrightness', 'docContrast'].forEach(id => {
+  const el = document.getElementById(id);
+  if (el) {
+    el.oninput = () => {
+      a4Doc[id === 'docBrightness' ? 'brightness' : 'contrast'] = Number(el.value);
+      const valEl = document.getElementById(id + 'Val');
+      if (valEl) valEl.textContent = el.value;
+      renderA4Preview();
+    };
+  }
+});
+
+// Rotation
+$('#docRotateLeft').onclick = () => {
+  a4Doc.rotation = (a4Doc.rotation + 270) % 360;
+  renderA4Preview();
+};
+$('#docRotateRight').onclick = () => {
+  a4Doc.rotation = (a4Doc.rotation + 90) % 360;
+  renderA4Preview();
+};
+
+// Select controls change
+['docPrintLayout', 'docOrientation', 'docMargins', 'docFitMode'].forEach(id => {
+  const el = document.getElementById(id);
+  if (el) el.onchange = renderA4Preview;
+});
+
+// Drag & drop on specific zones
+['docFrontZone', 'docBackZone'].forEach(id => {
+  const z = document.getElementById(id);
+  if (!z) return;
+  const side = id === 'docFrontZone' ? 'front' : 'back';
+  z.addEventListener('dragover', e => {
+    e.preventDefault();
+    z.style.borderColor = '#4f46e5';
+    z.style.background = '#eef2ff';
+  });
+  ['dragleave', 'drop'].forEach(ev => {
+    z.addEventListener(ev, e => {
+      e.preventDefault();
+      z.style.borderColor = '';
+      z.style.background = '';
+    });
+  });
+  z.addEventListener('drop', e => {
+    const f = e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0];
+    if (f) handleDocUpload(f, side);
+  });
+});
+
+// Global Paste (Ctrl+V)
+window.addEventListener('paste', e => {
+  const items = e.clipboardData?.items;
+  if (!items) return;
+  for (let i = 0; i < items.length; i++) {
+    if (items[i].type.indexOf('image') !== -1) {
+      const file = items[i].getAsFile();
+      if (file) {
+        const docTab = document.querySelector('.tab[data-module="document"]');
+        if (docTab && !docTab.classList.contains('active')) docTab.click();
+        const side = !a4Doc.front ? 'front' : 'back';
+        handleDocUpload(file, side);
+        break;
+      }
+    }
+  }
+});
+
+const docPasteBtn = document.getElementById('docPasteBtn');
+if (docPasteBtn) {
+  docPasteBtn.onclick = async () => {
+    try {
+      if (navigator.clipboard && navigator.clipboard.read) {
+        const items = await navigator.clipboard.read();
+        for (const item of items) {
+          const imageType = item.types.find(t => t.startsWith('image/'));
+          if (imageType) {
+            const blob = await item.getType(imageType);
+            const side = !a4Doc.front ? 'front' : 'back';
+            const file = new File([blob], side === 'front' ? 'Pasted_Front.png' : 'Pasted_Back.png', { type: blob.type });
+            handleDocUpload(file, side);
+            return;
+          }
+        }
+        alert('Clipboard me koi image nahi mili. WhatsApp Web se image copy karke yahan paste karein.');
+      } else {
+        alert('Kripya keyboard se Ctrl + V dabayein.');
+      }
+    } catch (err) {
+      alert('Clipboard se paste karne ke liye keyboard par Ctrl + V dabayein.');
+    }
+  };
+}
+
+// Filtered canvas export helper for print & pdf
+function getDocExportCanvas(srcData) {
+  return new Promise(resolve => {
+    if (!srcData) return resolve(null);
+    const img = new Image();
+    img.onload = () => {
+      const rot = ((a4Doc.rotation % 360) + 360) % 360;
+      const isRot = rot === 90 || rot === 270;
+      const c = document.createElement('canvas');
+      c.width = isRot ? img.height : img.width;
+      c.height = isRot ? img.width : img.height;
+      const ctx = c.getContext('2d');
+      ctx.save();
+      ctx.translate(c.width / 2, c.height / 2);
+      ctx.rotate((rot * Math.PI) / 180);
+      ctx.filter = docGetFilterCss();
+      ctx.drawImage(img, -img.width / 2, -img.height / 2);
+      ctx.restore();
+      resolve(c.toDataURL('image/png'));
+    };
+    img.onerror = () => resolve(srcData);
+    img.src = srcData;
+  });
+}
+
+function printA4Images(images, landscape = false, layout = 'full', margins = 'standard', fitMode = 'contain') {
+  const list = images.filter(Boolean);
+  if (!list.length) {
+    alert('Print ke liye document image available nahi hai.');
+    return false;
+  }
+  const orientation = landscape ? 'landscape' : 'portrait';
+  const marginMm = margins === 'none' ? 0 : margins === 'small' ? 3 : 6;
+
+  let gridStyle = '', cards = '';
+  if (layout === 'card') {
+    // ONLY when True PVC Card option is selected
+    gridStyle = 'display:grid;grid-template-columns:repeat(2, 85.60mm);gap:6mm;align-items:start;justify-content:center;align-content:start;width:100%;padding-top:8mm;';
+    const imgStyle = `width:85.60mm !important;height:53.98mm !important;object-fit:fill !important;border:1px dashed #94a3b8;border-radius:3.18mm;box-sizing:border-box;`;
+    cards = list.map(src => `<div style="width:85.60mm;height:53.98mm;border:1px dashed #94a3b8;border-radius:3.18mm;overflow:hidden;box-sizing:border-box"><img src="${src}" alt="PVC card" style="${imgStyle}"></div>`).join('');
+  } else if (layout === 'side_by_side') {
+    // 2-in-1 Side-by-Side Xerox style: Top placement, bottom blank
+    gridStyle = 'display:flex;flex-direction:column;justify-content:flex-start;align-items:center;width:100%;height:100%;padding-top:10mm;';
+    const imgStyle = `width:100%;max-width:100%;height:auto;max-height:95mm;object-fit:${fitMode};margin:0 auto;display:block;`;
+    cards = `
+      <div style="display:grid;grid-template-columns:${list.length > 1 ? '1fr 1fr' : '1fr'};gap:6mm;width:100%;align-items:start;justify-content:center">
+        ${list.map(src => `<div style="width:100%;display:flex;align-items:flex-start;justify-content:center;overflow:hidden"><img src="${src}" alt="document" style="${imgStyle}"></div>`).join('')}
+      </div>
+    `;
+  } else if (layout === 'top_bottom') {
+    // 2-in-1 Top-Bottom Xerox style: Top placement, Front on top, Back below it, bottom blank
+    gridStyle = 'display:flex;flex-direction:column;justify-content:flex-start;align-items:center;width:100%;height:100%;padding-top:10mm;';
+    const imgStyle = `width:100%;max-width:100%;max-height:80mm;object-fit:${fitMode};margin:0 auto;display:block;`;
+    cards = `
+      <div style="display:flex;flex-direction:column;gap:6mm;width:100%;align-items:center;justify-content:flex-start">
+        ${list.map(src => `<div style="width:100%;display:flex;align-items:center;justify-content:center;overflow:hidden"><img src="${src}" alt="document" style="${imgStyle}"></div>`).join('')}
+      </div>
+    `;
+  } else {
+    // Full Page A4: full width & height
+    gridStyle = 'display:flex;align-items:center;justify-content:center;width:100%;height:100%;';
+    const imgStyle = `width:100%;height:100%;max-width:100%;max-height:100%;object-fit:${fitMode};margin:auto;display:block;`;
+    cards = `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;overflow:hidden"><img src="${list[0]}" alt="document" style="${imgStyle}"></div>`;
+  }
+
+  const popup = window.open('', '_blank', 'width=950,height=950');
+  if (!popup) {
+    alert('Print window open nahi hua. Browser me pop-up allow karein.');
+    return false;
+  }
+  popup.document.open();
+  popup.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>Justcard Print</title><style>
+    @page{size:A4 ${orientation};margin:0}
+    *{box-sizing:border-box}
+    html,body{margin:0;padding:0;background:#fff;width:100%;height:100%}
+    .page{width:${landscape ? '297mm' : '210mm'};height:${landscape ? '210mm' : '297mm'};position:relative;background:#fff;padding:${marginMm}mm;overflow:hidden;box-sizing:border-box;${gridStyle}}
+    img{display:block}
+    @media print{html,body{width:100%;height:100%;overflow:hidden}.page{margin:0;box-shadow:none}}
+  </style></head><body><div class="page ${orientation}">${cards}</div><script>
+    const imgs=[...document.images];
+    Promise.all(imgs.map(i=>i.complete?Promise.resolve():new Promise(r=>{i.onload=r;i.onerror=r})))
+      .then(()=>setTimeout(()=>window.print(),260));
+  <\/script></body></html>`);
+  popup.document.close();
+  return true;
+}
+
+$('#docPrintA4').onclick = async () => {
+  const f = a4Doc.front;
+  const b = a4Doc.back;
+  const list = [f, b].filter(Boolean);
+  if (!list.length) {
+    alert('Pehle Document photo ya PDF upload karein.');
+    return;
+  }
+  if (!useToken()) return;
+  const processedList = [];
+  for (const item of list) {
+    processedList.push(await getDocExportCanvas(item));
+  }
+  const landscape = $('#docOrientation')?.value === 'landscape';
+  const layout = $('#docPrintLayout')?.value || 'full';
+  const margins = $('#docMargins')?.value || 'standard';
+  const fitMode = $('#docFitMode')?.value || 'contain';
+  if (printA4Images(processedList, landscape, layout, margins, fitMode)) {
+    addHistory({ type: 'A4 Document Print (' + layout + ')', img: processedList[0] });
+  }
+};
+
+$('#docPrintBothA4').onclick = async () => {
+  const f = a4Doc.front;
+  const b = a4Doc.back;
+  if (!f && !b) {
+    alert('Pehle Front ya Back document upload karein.');
+    return;
+  }
+  if (!useToken()) return;
+  const pf = await getDocExportCanvas(f);
+  const pb = await getDocExportCanvas(b);
+  const landscape = $('#docOrientation')?.value === 'landscape';
+  const layout = $('#docPrintLayout')?.value || 'full';
+  const margins = $('#docMargins')?.value || 'standard';
+  const fitMode = $('#docFitMode')?.value || 'contain';
+  if (printA4Images([pf, pb].filter(Boolean), landscape, layout, margins, fitMode)) {
+    addHistory({ type: 'A4 Document Print (' + layout + ')', img: pf || pb });
+  }
+};
+
+$('#docDownloadPdf').onclick = async () => {
+  const current = a4Doc.front || a4Doc.back;
+  if (!current) {
+    alert('Pehle document upload karein.');
+    return;
+  }
+  if (!window.jspdf || !window.jspdf.jsPDF) {
+    alert('PDF engine load ho raha hai, kripya 1 second baad try karein.');
+    return;
+  }
+  const processed = await getDocExportCanvas(current);
+  const landscape = $('#docOrientation').value === 'landscape';
+  const doc = new window.jspdf.jsPDF({ orientation: landscape ? 'landscape' : 'portrait', unit: 'mm', format: 'a4' });
+  const pageW = landscape ? 297 : 210, pageH = landscape ? 210 : 297;
+  const margins = $('#docMargins').value || 'standard';
+  const marginMm = margins === 'none' ? 0 : margins === 'small' ? 3 : 6;
+  const availW = pageW - marginMm * 2, availH = pageH - marginMm * 2;
+
+  const im = new Image();
+  im.onload = () => {
+    const imgRatio = im.width / im.height, pageRatio = availW / availH;
+    let drawW, drawH;
+    if (imgRatio > pageRatio) {
+      drawW = availW;
+      drawH = availW / imgRatio;
+    } else {
+      drawH = availH;
+      drawW = availH * imgRatio;
+    }
+    const posX = marginMm + (availW - drawW) / 2, posY = marginMm + (availH - drawH) / 2;
+    doc.addImage(processed, 'PNG', posX, posY, drawW, drawH);
+    doc.save(`Justcard_A4_Document.pdf`);
+  };
+  im.src = processed;
+};
+
+$('#docDownloadImg').onclick = async () => {
+  const current = a4Doc.front || a4Doc.back;
+  if (!current) {
+    alert('Pehle document upload karein.');
+    return;
+  }
+  const processed = await getDocExportCanvas(current);
+  const a = document.createElement('a');
+  a.href = processed;
+  a.download = `Justcard_Clean_A4_Document.png`;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+};
+
+function renderMulti(){const list=$('#batchList');if(!batch.length){list.textContent='No cards in batch.';$('#multiSheet').innerHTML='';return}list.innerHTML=batch.map((x,i)=>`<div class="history-item"><span>${i+1}.</span><b>${x.type}</b><span style="margin-left:auto">${x.front?'Front':''}${x.front&&x.back?' + ':''}${x.back?'Back':''}</span></div>`).join('');let imgs=batch.map(x=>x.front||x.back).filter(Boolean);$('#multiSheet').innerHTML='<div class="sheet">'+imgs.map(d=>`<div class="printcard"><img src="${d}"></div>`).join('')+'</div>'}
+$('#multiPrint').onclick=()=>{if(!batch.length){alert('Batch is empty.');return}if(!useToken())return;window.print();addHistory({type:'Multi print',img:batch[0].front||batch[0].back})};
+
+$('#cropImage').onchange=e=>readImage(e.target,d=>{cropImg=new Image();cropImg.onload=()=>{const c=$('#cropCanvas'),ctx=c.getContext('2d'),s=Math.min(900/cropImg.width,560/cropImg.height);c.width=cropImg.width*s;c.height=cropImg.height*s;ctx.drawImage(cropImg,0,0,c.width,c.height);cropRect=null};cropImg.src=d;$('#cropLabel').textContent=e.target.files[0].name});
+const cc=$('#cropCanvas');cc.onpointerdown=e=>{if(!cropImg)return;const r=cc.getBoundingClientRect();cropStart={x:e.clientX-r.left,y:e.clientY-r.top};cropRect=null};
+cc.onpointermove=e=>{if(!cropStart)return;const r=cc.getBoundingClientRect(),x=e.clientX-r.left,y=e.clientY-r.top;cropRect={x:Math.min(cropStart.x,x),y:Math.min(cropStart.y,y),w:Math.abs(x-cropStart.x),h:Math.abs(y-cropStart.y)};drawCrop()};
+cc.onpointerup=()=>cropStart=null;
+function drawCrop(){if(!cropImg)return;const ctx=cc.getContext('2d'),s=Math.min(cc.width/cropImg.width,cc.height/cropImg.height);ctx.clearRect(0,0,cc.width,cc.height);ctx.drawImage(cropImg,0,0,cc.width,cc.height);if(cropRect){ctx.strokeStyle='#fff';ctx.lineWidth=2;ctx.strokeRect(cropRect.x,cropRect.y,cropRect.w,cropRect.h)}}
+$('#cropDo').onclick=()=>{if(!cropImg||!cropRect||cropRect.w<5||cropRect.h<5){alert('Drag a crop area first.');return}const sx=cropImg.width/cc.width,sy=cropImg.height/cc.height,can=document.createElement('canvas');can.width=Math.round(cropRect.w*sx);can.height=Math.round(cropRect.h*sy);can.getContext('2d').drawImage(cropImg,cropRect.x*sx,cropRect.y*sy,can.width,can.height,0,0,can.width,can.height);frontData=can.toDataURL('image/png');setImage($('#frontPreview'),frontData,'cropped card');alert('Cropped image saved as current Front card.');renderSingle()};
+$('#cropAuto').onclick=()=>{if(!cropImg){alert('Upload an image first.');return}const w=cc.width*.82,h=cc.height*.55;cropRect={x:(cc.width-w)/2,y:(cc.height-h)/2,w,h};drawCrop()};
+$('#cropReset').onclick=()=>{if(cropImg){const s=Math.min(900/cropImg.width,560/cropImg.height);cc.width=cropImg.width*s;cc.height=cropImg.height*s;cc.getContext('2d').drawImage(cropImg,0,0,cc.width,cc.height)}cropRect=null};
+
+$('#clearHistory').onclick=()=>{localStorage.removeItem(histKey);renderHistory()};
+function recharge(n){let cur=Number(localStorage.getItem(tokenKey)||8)+n;localStorage.setItem(tokenKey,cur);$('#tokenText').textContent=cur;alert(n+' demo tokens added. Connect your payment gateway for real recharge.')}
+renderHistory(); if(typeof syncProfileUI==='function') syncProfileUI();
+window.addEventListener('error',function(e){
+  console.error('Justcard runtime error:',e.error||e.message);
+});
+window.addEventListener('unhandledrejection',function(e){
+  console.error('Justcard promise error:',e.reason);
+});
+
+/* Photo Maker is a standalone page. Its JS is intentionally isolated from V15. */
+</script>
+</body>
+</html>

@@ -1,0 +1,1398 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Justcard — All-in-One Cyber Cafe &amp; CSC Multi-Service Portal</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script src="wallet-client.js"></script>
+  <style>
+    :root {
+      --primary: #7c3aed;
+      --primary-hover: #6d28d9;
+      --p-gradient: linear-gradient(135deg, #a855f7 0%, #7c3aed 50%, #6366f1 100%);
+      --p-glow: rgba(168, 85, 247, 0.35);
+      --bg: #fbf9fe;
+      --card-bg: #ffffff;
+      --border: #ede9fe;
+      --text: #0f172a;
+      --text-muted: #64748b;
+      --green: #059669;
+      --green-glow: rgba(16, 185, 129, 0.25);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+      background-color: var(--bg);
+      background-image: radial-gradient(at 0% 0%, rgba(168, 85, 247, 0.08) 0px, transparent 50%), radial-gradient(at 100% 0%, rgba(124, 58, 237, 0.08) 0px, transparent 50%), radial-gradient(at 50% 100%, rgba(99, 102, 241, 0.06) 0px, transparent 50%);
+      color: var(--text);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* Top Navbar */
+    header {
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--border);
+      height: 52px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 20px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: 0 2px 10px rgba(124, 58, 237, 0.04);
+    }
+    .header-left { display: flex; align-items: center; gap: 10px; text-decoration: none; }
+    .logo-icon {
+      width: 32px; height: 32px; border-radius: 9px;
+      background: var(--p-gradient); color: #fff;
+      display: flex; align-items: center; justify-content: center;
+      font-family: 'Outfit', sans-serif; font-size: 18px; font-weight: 900;
+      box-shadow: 0 3px 10px var(--p-glow);
+    }
+    .app-title { font-family: 'Outfit', sans-serif; font-size: 17px; font-weight: 800; color: #0f172a; display: flex; align-items: center; gap: 6px; }
+    .version-badge { background: #f3e8ff; color: #7e22ce; border: 1px solid #d8b4fe; font-size: 10.5px; font-weight: 800; padding: 1px 7px; border-radius: 20px; }
+
+    .nav-links { display: flex; align-items: center; gap: 18px; }
+    .nav-link { font-size: 13px; font-weight: 700; color: #475569; text-decoration: none; transition: color 0.15s; display: inline-flex; align-items: center; gap: 5px; }
+    .nav-link:hover { color: var(--primary); }
+
+    .header-right { display: flex; align-items: center; gap: 12px; }
+    .admin-pill {
+      background: #ffffff; color: #475569; border: 1.5px solid #e2e8f0;
+      border-radius: 24px; padding: 6px 14px; font-size: 12.5px; font-weight: 750;
+      text-decoration: none; display: inline-flex; align-items: center; gap: 6px;
+      transition: all 0.2s;
+    }
+    .admin-pill:hover { background: #faf5ff; color: var(--primary); border-color: #d8b4fe; transform: translateY(-1px); }
+
+    /* Section Wrappers */
+    .section-wrap {
+      max-width: 1240px;
+      margin: 0 auto;
+      padding: 24px 20px;
+    }
+    #retailerDashboardView.section-wrap {
+      padding: 14px 20px 24px;
+    }
+    .section-head {
+      text-align: center;
+      margin-bottom: 32px;
+    }
+    .section-head h2 {
+      font-family: 'Outfit', sans-serif;
+      font-size: clamp(22px, 3vw, 32px);
+      font-weight: 800;
+      color: #0f172a;
+      margin-bottom: 8px;
+    }
+    .section-head p {
+      font-size: 14px;
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+
+    /* 4 Services Grid */
+    .services-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(270px, 1fr));
+      gap: 22px;
+    }
+    .service-card {
+      background: #ffffff;
+      border: 1.5px solid var(--border);
+      border-radius: 18px;
+      padding: 24px;
+      box-shadow: 0 4px 20px -2px rgba(124, 58, 237, 0.08);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+      position: relative;
+      overflow: hidden;
+    }
+    .service-card:hover {
+      transform: translateY(-5px);
+      border-color: #c084fc;
+      box-shadow: 0 12px 30px -4px rgba(124, 58, 237, 0.16);
+    }
+    .service-card::before {
+      content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px;
+      background: var(--p-gradient); opacity: 0; transition: opacity 0.2s;
+    }
+    .service-card:hover::before { opacity: 1; }
+
+    .card-top { margin-bottom: 18px; }
+    .service-icon {
+      width: 52px; height: 52px; border-radius: 14px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 24px; margin-bottom: 14px;
+    }
+    .service-icon.pvc { background: #faf5ff; color: #7c3aed; border: 1px solid #ede9fe; }
+    .service-icon.doc { background: #ecfdf5; color: #059669; border: 1px solid #a7f3d0; }
+    .service-icon.photo { background: #fdf2f8; color: #ec4899; border: 1px solid #fbcfe8; }
+    .service-icon.resume { background: #eff6ff; color: #2563eb; border: 1px solid #bfdbfe; }
+
+    .service-rate-badge {
+      float: right;
+      background: #f3e8ff;
+      color: #7e22ce;
+      border: 1px solid #d8b4fe;
+      font-size: 11.5px;
+      font-weight: 800;
+      padding: 3px 10px;
+      border-radius: 20px;
+    }
+
+    .service-title {
+      font-family: 'Outfit', sans-serif;
+      font-size: 19px;
+      font-weight: 800;
+      color: #0f172a;
+      margin-bottom: 8px;
+    }
+    .service-desc {
+      font-size: 13px;
+      color: #475569;
+      line-height: 1.5;
+      margin-bottom: 14px;
+    }
+    .service-points {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+      font-size: 12px;
+      font-weight: 650;
+      color: #334155;
+    }
+    .service-points li { display: flex; align-items: center; gap: 8px; }
+    .service-points li i { color: #059669; font-size: 11px; }
+
+    .btn-launch {
+      width: 100%;
+      padding: 12px 16px;
+      border-radius: 11px;
+      background: var(--p-gradient);
+      color: #ffffff;
+      border: none;
+      font-size: 14px;
+      font-weight: 800;
+      cursor: pointer;
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      transition: all 0.2s;
+      margin-top: 18px;
+      box-shadow: 0 4px 14px var(--p-glow);
+    }
+    .btn-launch:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px var(--p-glow);
+      filter: brightness(1.05);
+    }
+
+    /* ==============================================================
+       RETAILER WORKSPACE DASHBOARD (COMPACT & SLEEK)
+       ============================================================== */
+    .retailer-hero-banner {
+      background: linear-gradient(135deg, #1e1b4b 0%, #31104b 50%, #0f172a 100%);
+      color: #ffffff;
+      border-radius: 14px;
+      padding: 14px 20px;
+      box-shadow: 0 8px 24px rgba(30, 27, 75, 0.2);
+      margin-bottom: 14px;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 14px;
+      position: relative;
+      overflow: hidden;
+    }
+    .retailer-hero-banner::after {
+      content: '';
+      position: absolute;
+      width: 260px;
+      height: 260px;
+      background: radial-gradient(circle, rgba(168,85,247,0.2) 0%, transparent 70%);
+      top: -80px;
+      right: -40px;
+      pointer-events: none;
+    }
+
+    .ret-info-side h2 {
+      font-family: 'Outfit', sans-serif;
+      font-size: 19px;
+      font-weight: 800;
+      margin-bottom: 4px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .ret-meta-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 6px;
+    }
+    .ret-tag {
+      background: rgba(255, 255, 255, 0.12);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      padding: 3px 10px;
+      border-radius: 14px;
+      font-size: 11px;
+      font-weight: 750;
+      color: #e2e8f0;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .ret-wallet-box {
+      background: rgba(255, 255, 255, 0.08);
+      backdrop-filter: blur(12px);
+      border: 1.5px solid rgba(255, 255, 255, 0.18);
+      border-radius: 12px;
+      padding: 10px 16px;
+      text-align: right;
+      min-width: 240px;
+    }
+    .ret-wallet-box .bal-label {
+      font-size: 10px;
+      text-transform: uppercase;
+      font-weight: 800;
+      letter-spacing: 0.5px;
+      color: #cbd5e1;
+    }
+    .ret-wallet-box .bal-amount {
+      font-family: 'Outfit', sans-serif;
+      font-size: 24px;
+      font-weight: 900;
+      color: #34d399;
+      margin: 1px 0 6px;
+      line-height: 1.1;
+    }
+    .ret-wallet-actions {
+      display: flex;
+      gap: 6px;
+      justify-content: flex-end;
+      flex-wrap: wrap;
+    }
+    .btn-ret-action {
+      background: #ffffff;
+      color: #0f172a;
+      border: none;
+      padding: 6px 12px;
+      border-radius: 7px;
+      font-size: 11.5px;
+      font-weight: 800;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      transition: all 0.15s;
+    }
+    .btn-ret-action:hover {
+      background: #faf5ff;
+      color: var(--primary);
+      transform: translateY(-1px);
+    }
+    .btn-ret-action.primary {
+      background: var(--p-gradient);
+      color: #ffffff;
+    }
+
+    /* Subscription Packages Grid */
+    .pkg-plans-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 18px;
+      margin: 18px 0 28px;
+    }
+    .pkg-card {
+      background: #ffffff;
+      border: 1.5px solid var(--border);
+      border-radius: 18px;
+      padding: 22px;
+      box-shadow: 0 4px 18px rgba(124, 58, 237, 0.06);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      position: relative;
+      transition: all 0.25s;
+    }
+    .pkg-card:hover {
+      transform: translateY(-4px);
+      border-color: #7c3aed;
+      box-shadow: 0 12px 28px rgba(124, 58, 237, 0.14);
+    }
+    .pkg-card.diamond {
+      border: 2px solid #a855f7;
+      background: linear-gradient(180deg, #fdfaff 0%, #ffffff 100%);
+    }
+    .pkg-top-tag {
+      position: absolute;
+      top: -10px;
+      right: 18px;
+      background: var(--p-gradient);
+      color: #fff;
+      font-size: 10px;
+      font-weight: 800;
+      padding: 3px 10px;
+      border-radius: 20px;
+      box-shadow: 0 2px 8px var(--p-glow);
+    }
+    .pkg-name {
+      font-family: 'Outfit', sans-serif;
+      font-size: 18px;
+      font-weight: 800;
+      color: #0f172a;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .pkg-duration {
+      font-size: 12px;
+      font-weight: 700;
+      color: #64748b;
+      margin: 4px 0 12px;
+    }
+    .pkg-price-wrap {
+      margin-bottom: 14px;
+    }
+    .pkg-price-val {
+      font-family: 'Outfit', sans-serif;
+      font-size: 32px;
+      font-weight: 900;
+      color: #7c3aed;
+    }
+    .pkg-features {
+      list-style: none;
+      font-size: 12px;
+      color: #334155;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      margin-bottom: 16px;
+    }
+    .pkg-features li { display: flex; align-items: center; gap: 7px; }
+    .pkg-features li i { color: #10b981; font-size: 11px; }
+
+    .btn-buy-pkg {
+      width: 100%;
+      padding: 10px 14px;
+      border-radius: 10px;
+      background: #f3e8ff;
+      color: #7e22ce;
+      border: 1.5px solid #d8b4fe;
+      font-size: 13px;
+      font-weight: 800;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      transition: all 0.2s;
+    }
+    .btn-buy-pkg:hover {
+      background: var(--p-gradient);
+      color: #ffffff;
+      border-color: transparent;
+      box-shadow: 0 4px 14px var(--p-glow);
+    }
+    .pkg-card.diamond .btn-buy-pkg {
+      background: var(--p-gradient);
+      color: #ffffff;
+      border-color: transparent;
+    }
+
+    /* Dashboard Widgets Section */
+    .dash-widgets-grid {
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: 22px;
+      margin-top: 30px;
+    }
+    @media (max-width: 900px) {
+      .dash-widgets-grid { grid-template-columns: 1fr; }
+      .ret-wallet-box { text-align: left; width: 100%; }
+      .ret-wallet-actions { justify-content: flex-start; }
+    }
+
+    .dash-card {
+      background: #ffffff;
+      border: 1.5px solid var(--border);
+      border-radius: 18px;
+      padding: 22px;
+      box-shadow: 0 4px 18px rgba(124, 58, 237, 0.05);
+    }
+    .dash-card-title {
+      font-family: 'Outfit', sans-serif;
+      font-size: 17px;
+      font-weight: 800;
+      color: #0f172a;
+      margin-bottom: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .mini-txn-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+    .mini-txn-table th { text-align: left; padding: 8px 10px; background: #f8fafc; color: #64748b; font-weight: 750; border-bottom: 1.5px solid var(--border); }
+    .mini-txn-table td { padding: 10px; border-bottom: 1px solid #f1f5f9; color: #1e293b; }
+
+    /* Public Hero Section */
+    .hero {
+      max-width: 1240px;
+      margin: 0 auto;
+      padding: 46px 20px 36px;
+      text-align: center;
+    }
+    .tag-badge {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: #f3e8ff; color: #7e22ce; border: 1.5px solid #d8b4fe;
+      padding: 6px 16px; border-radius: 30px; font-size: 12.5px; font-weight: 800;
+      margin-bottom: 18px; box-shadow: 0 2px 8px rgba(124, 58, 237, 0.1);
+    }
+    .hero h1 {
+      font-family: 'Outfit', sans-serif;
+      font-size: clamp(28px, 4.5vw, 48px);
+      font-weight: 900;
+      line-height: 1.22;
+      color: #0f172a;
+      max-width: 960px;
+      margin: 0 auto 16px;
+    }
+    .hero h1 .highlight {
+      background: var(--p-gradient);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .hero p {
+      font-size: clamp(14px, 1.8vw, 16.5px);
+      color: #475569;
+      max-width: 780px;
+      margin: 0 auto 26px;
+      line-height: 1.6;
+      font-weight: 500;
+    }
+    .hero-features-bar {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 10px;
+      margin-bottom: 30px;
+    }
+    .feat-pill {
+      background: #ffffff;
+      border: 1.5px solid var(--border);
+      border-radius: 20px;
+      padding: 6px 14px;
+      font-size: 12.5px;
+      font-weight: 750;
+      color: #1e293b;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.03);
+    }
+    .feat-pill i { color: var(--primary); }
+
+    .hero-actions {
+      display: flex;
+      justify-content: center;
+      gap: 14px;
+      flex-wrap: wrap;
+    }
+    .btn-hero {
+      padding: 13px 26px;
+      border-radius: 12px;
+      font-size: 14.5px;
+      font-weight: 800;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      text-decoration: none;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      border: none;
+    }
+    .btn-hero.primary {
+      background: var(--p-gradient);
+      color: #ffffff;
+      box-shadow: 0 6px 20px var(--p-glow);
+    }
+    .btn-hero.primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 26px var(--p-glow);
+    }
+    .btn-hero.secondary {
+      background: #ffffff;
+      color: #0f172a;
+      border: 1.5px solid #e2e8f0;
+    }
+    .btn-hero.secondary:hover {
+      background: #faf5ff;
+      border-color: #d8b4fe;
+      color: var(--primary);
+    }
+
+    /* Printer Highlights Section */
+    .printer-box {
+      background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
+      color: #ffffff;
+      border-radius: 24px;
+      padding: 40px 32px;
+      box-shadow: 0 20px 45px rgba(15, 23, 42, 0.2);
+      margin-bottom: 40px;
+    }
+    .printer-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 24px;
+      align-items: center;
+    }
+    .printer-content h3 {
+      font-family: 'Outfit', sans-serif;
+      font-size: 26px;
+      font-weight: 800;
+      margin-bottom: 12px;
+      color: #f8fafc;
+    }
+    .printer-content p {
+      font-size: 14px;
+      color: #cbd5e1;
+      line-height: 1.6;
+      margin-bottom: 20px;
+    }
+    .printer-models { display: flex; gap: 12px; flex-wrap: wrap; }
+    .model-badge {
+      background: rgba(255, 255, 255, 0.12);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      padding: 8px 14px;
+      border-radius: 10px;
+      font-size: 12.5px;
+      font-weight: 750;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    /* Benefits Grid */
+    .benefits-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 18px;
+    }
+    .benefit-item {
+      background: #ffffff;
+      border: 1.5px solid var(--border);
+      border-radius: 14px;
+      padding: 20px;
+      box-shadow: 0 2px 10px rgba(124, 58, 237, 0.04);
+    }
+    .benefit-item .icon { font-size: 26px; color: var(--primary); margin-bottom: 12px; }
+    .benefit-item h4 { font-family: 'Outfit', sans-serif; font-size: 16px; font-weight: 800; margin-bottom: 6px; color: #0f172a; }
+    .benefit-item p { font-size: 12.5px; color: #64748b; line-height: 1.5; }
+
+    /* Live Pricing Rate Card */
+    .pricing-card-wrap {
+      background: #ffffff;
+      border: 1.5px solid var(--border);
+      border-radius: 20px;
+      padding: 30px 24px;
+      box-shadow: 0 4px 20px rgba(124, 58, 237, 0.06);
+      text-align: center;
+      max-width: 860px;
+      margin: 0 auto;
+    }
+    .price-items-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+      gap: 14px;
+      margin: 24px 0 20px;
+    }
+    .rate-box {
+      background: #fbf9fe;
+      border: 1.5px solid var(--border);
+      border-radius: 12px;
+      padding: 16px 12px;
+      transition: transform 0.2s;
+    }
+    .rate-box:hover { transform: translateY(-2px); border-color: #c084fc; }
+    .rate-box .s-name { font-size: 12px; font-weight: 750; color: #64748b; margin-bottom: 6px; }
+    .rate-box .s-price { font-family: 'Outfit', sans-serif; font-size: 24px; font-weight: 900; color: #7c3aed; }
+
+    footer {
+      background: #ffffff;
+      border-top: 1px solid var(--border);
+      padding: 28px 20px;
+      text-align: center;
+      font-size: 13px;
+      color: #64748b;
+      margin-top: 40px;
+    }
+
+    @media (max-width: 768px) {
+      .nav-links { display: none; }
+      header { padding: 0 16px; }
+      .hero { padding: 36px 16px 24px; }
+      .hero h1 { font-size: 26px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- TOP NAVBAR -->
+  <header>
+    <a href="index.html" class="header-left">
+      <div class="logo-icon">J</div>
+      <div class="app-title">Justcard <span class="version-badge">Multi-Studio</span></div>
+    </a>
+
+    <nav class="nav-links" id="mainNavLinks">
+      <a href="single-pvc/index.html" class="nav-link"><i class="fa-solid fa-id-card"></i> PVC Studio</a>
+      <a href="a4-document/index.html" class="nav-link"><i class="fa-solid fa-file-lines"></i> A4 Studio</a>
+      <a href="photo-maker/index.html" class="nav-link"><i class="fa-solid fa-camera"></i> Photo Studio</a>
+      <a href="resume-builder/index.html" class="nav-link"><i class="fa-solid fa-graduation-cap"></i> Resume Maker</a>
+    </nav>
+
+    <div class="header-right">
+      <div class="jc-wallet-container"></div>
+      <a href="admin/index.html" class="admin-pill" title="Admin Pricing, Packages &amp; Balance Control">
+        <i class="fa-solid fa-crown" style="color:#7c3aed;"></i> Admin
+      </a>
+    </div>
+  </header>
+
+
+  <!-- =========================================================================
+       1. RETAILER SERVICE CONTROL PANEL (When Logged In)
+       ========================================================================= -->
+  <main id="retailerDashboardView" style="display: none;" class="section-wrap">
+    
+    <!-- Retailer Welcome Hero Card (Compact) -->
+    <div class="retailer-hero-banner">
+      <div class="ret-info-side">
+        <h2>
+          <span>👋 Namaste, <span id="rShopName">Retailer</span>!</span>
+        </h2>
+        <div class="ret-meta-tags">
+          <div class="ret-tag"><i class="fa-solid fa-phone" style="color:#38bdf8;"></i> <span id="rMobile">9999999999</span></div>
+          <div class="ret-tag"><i class="fa-solid fa-id-badge" style="color:#a855f7;"></i> <span id="rUserId">USR-1001</span></div>
+          <div class="ret-tag" id="rPlanTag" style="background:#f3e8ff;border-color:#d8b4fe;color:#7e22ce;">
+            <i class="fa-solid fa-crown"></i> <span id="rPlanName">Pay-Per-Print</span>
+          </div>
+          <div class="ret-tag" style="background:rgba(16,185,129,0.2);border-color:#10b981;color:#6ee7b7;"><i class="fa-solid fa-circle-check"></i> Active</div>
+        </div>
+      </div>
+
+      <div class="ret-wallet-box">
+        <div class="bal-label">Available Balance</div>
+        <div class="bal-amount">₹ <span id="rBalance">0.00</span></div>
+        <div class="ret-wallet-actions">
+          <button type="button" class="btn-ret-action primary" style="background:linear-gradient(135deg,#5f259f 0%,#7c3aed 100%);color:#fff;box-shadow:0 2px 8px rgba(95,37,159,0.35);" onclick="JustcardWallet.openRecharge()">
+            <i class="fa-solid fa-qrcode"></i> Add Money (PhonePe)
+          </button>
+          <button type="button" class="btn-ret-action" onclick="JustcardWallet.openWalletDashboard()">
+            <i class="fa-solid fa-wallet"></i> Plans &amp; History
+          </button>
+          <button type="button" class="btn-ret-action" onclick="toggleShowcaseView()" title="Read Portal Features &amp; Printer Guide">
+            <i class="fa-solid fa-globe"></i> Showcase
+          </button>
+          <button type="button" class="btn-ret-action" onclick="JustcardWallet.logout()" style="color:#dc2626;">
+            <i class="fa-solid fa-right-from-bracket"></i> Logout
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 4 Main Service Workspaces Grid -->
+    <div style="margin-bottom: 10px; display:flex; justify-content:space-between; align-items:center;">
+      <h3 style="font-family:'Outfit',sans-serif;font-size:18px;font-weight:800;color:#0f172a;">
+        🛠️ Retailer Service Studio Workspaces
+      </h3>
+      <span style="font-size:11.5px;color:#059669;font-weight:800;" id="rFreePrintNotice">⚡ Pay-Per-Print Enabled</span>
+    </div>
+
+    <div class="services-grid">
+      
+      <!-- SERVICE 1 -->
+      <div class="service-card">
+        <div class="card-top">
+          <span class="service-rate-badge rate-pvc-badge">₹5.00 / print</span>
+          <div class="service-icon pvc"><i class="fa-solid fa-id-card"></i></div>
+          <div class="service-title">Single Print PVC Studio</div>
+          <p class="service-desc">Aadhaar, PAN, Ayushman, Voter aur E-Shram card ka 1-Click auto crop &amp; exact PVC size print.</p>
+          <ul class="service-points">
+            <li><i class="fa-solid fa-check"></i> Canon &amp; Epson PVC Tray ready</li>
+            <li><i class="fa-solid fa-check"></i> Password protected PDF support</li>
+            <li><i class="fa-solid fa-check"></i> Direct WhatsApp Paste (Ctrl+V)</li>
+            <li><i class="fa-solid fa-check"></i> 85.60mm × 53.98mm physical size</li>
+          </ul>
+        </div>
+        <a href="single-pvc/index.html" class="btn-launch">
+          <i class="fa-solid fa-arrow-up-right-from-square"></i> Open PVC Studio
+        </a>
+      </div>
+
+      <!-- SERVICE 2 -->
+      <div class="service-card">
+        <div class="card-top">
+          <span class="service-rate-badge rate-a4-badge">₹2.00 / print</span>
+          <div class="service-icon doc"><i class="fa-solid fa-file-lines"></i></div>
+          <div class="service-title">A4 Document &amp; Xerox Studio</div>
+          <p class="service-desc">2-in-1, 4-in-1, 5-in-1 xerox formatting aur ID card front &amp; back single sheet clean print.</p>
+          <ul class="service-points">
+            <li><i class="fa-solid fa-check"></i> Instant 2-in-1 Xerox Generator</li>
+            <li><i class="fa-solid fa-check"></i> Auto Background Whitening</li>
+            <li><i class="fa-solid fa-check"></i> High Contrast Black &amp; White Boost</li>
+            <li><i class="fa-solid fa-check"></i> Direct WhatsApp Paste (Ctrl+V)</li>
+          </ul>
+        </div>
+        <a href="a4-document/index.html" class="btn-launch">
+          <i class="fa-solid fa-arrow-up-right-from-square"></i> Open A4 Studio
+        </a>
+      </div>
+
+      <!-- SERVICE 3 -->
+      <div class="service-card">
+        <div class="card-top">
+          <span class="service-rate-badge rate-photo-badge">₹3.00 / sheet</span>
+          <div class="service-icon photo"><i class="fa-solid fa-camera"></i></div>
+          <div class="service-title">Passport Photo Studio Pro</div>
+          <p class="service-desc">1-Click AI Photo Cutout, background color change aur 4×6 ya A4 sheet par instant multi-photo setup.</p>
+          <ul class="service-points">
+            <li><i class="fa-solid fa-check"></i> 1-Click AI Background Removal</li>
+            <li><i class="fa-solid fa-check"></i> White, Light Blue &amp; Red colors</li>
+            <li><i class="fa-solid fa-check"></i> 8 Photos (4×6) &amp; 32 Photos (A4)</li>
+            <li><i class="fa-solid fa-check"></i> Auto Cutting Border Lines</li>
+          </ul>
+        </div>
+        <a href="photo-maker/index.html" class="btn-launch">
+          <i class="fa-solid fa-arrow-up-right-from-square"></i> Open Photo Studio
+        </a>
+      </div>
+
+      <!-- SERVICE 4 -->
+      <div class="service-card">
+        <div class="card-top">
+          <span class="service-rate-badge rate-resume-badge">₹5.00 / PDF</span>
+          <div class="service-icon resume"><i class="fa-solid fa-graduation-cap"></i></div>
+          <div class="service-title">Resume &amp; Bio-Data Maker</div>
+          <p class="service-desc">Job seekers aur matrimony ke liye professional Resume &amp; Bio-Data templates in Hindi &amp; English.</p>
+          <ul class="service-points">
+            <li><i class="fa-solid fa-check"></i> Modern Professional CV Formats</li>
+            <li><i class="fa-solid fa-check"></i> Hindi &amp; English Bio-Data</li>
+            <li><i class="fa-solid fa-check"></i> Live Real-Time Form Preview</li>
+            <li><i class="fa-solid fa-check"></i> 1-Click HD PDF Download &amp; Print</li>
+          </ul>
+        </div>
+        <a href="resume-builder/index.html" class="btn-launch">
+          <i class="fa-solid fa-arrow-up-right-from-square"></i> Open Resume Studio
+        </a>
+      </div>
+
+    </div>
+
+    <!-- UNLIMITED SUBSCRIPTION PACKAGES SECTION (DASHBOARD) -->
+    <div style="margin-top: 36px;">
+      <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:14px;flex-wrap:wrap;gap:10px;">
+        <div>
+          <div style="background:#f3e8ff;color:#7e22ce;padding:4px 12px;border-radius:20px;font-size:11.5px;font-weight:800;display:inline-block;margin-bottom:6px;">
+            👑 UNLIMITED MEMBERSHIP PLANS
+          </div>
+          <h3 style="font-family:'Outfit',sans-serif;font-size:22px;font-weight:800;color:#0f172a;">
+            Subscription Packages (Sabhi Services Unlimited Free)
+          </h3>
+          <p style="font-size:13px;color:#64748b;">Package active rehne par aapke wallet se <b>koi charge (₹0.00)</b> nahi katega:</p>
+        </div>
+      </div>
+
+      <div class="pkg-plans-grid">
+        
+        <!-- SILVER -->
+        <div class="pkg-card">
+          <div>
+            <div class="pkg-name"><i class="fa-solid fa-medal" style="color:#94a3b8;"></i> Silver Plan</div>
+            <div class="pkg-duration">1 Month Unlimited Free</div>
+            <div class="pkg-price-wrap">
+              <span class="pkg-price-val" id="dashPriceSilver">₹299</span>
+              <small style="color:#64748b;font-size:11px;">/ 1 Month</small>
+            </div>
+            <ul class="pkg-features">
+              <li><i class="fa-solid fa-check-circle"></i> 1 Month 100% Free Prints</li>
+              <li><i class="fa-solid fa-check-circle"></i> Single Print PVC Unlimited</li>
+              <li><i class="fa-solid fa-check-circle"></i> A4 Document Xerox Unlimited</li>
+              <li><i class="fa-solid fa-check-circle"></i> AI Photo Studio Unlimited</li>
+              <li><i class="fa-solid fa-check-circle"></i> Resume Maker Unlimited</li>
+            </ul>
+          </div>
+          <button type="button" class="btn-buy-pkg" onclick="JustcardWallet.buyPackage('silver')">
+            <i class="fa-solid fa-bolt"></i> Activate Silver
+          </button>
+        </div>
+
+        <!-- GOLD -->
+        <div class="pkg-card">
+          <div>
+            <div class="pkg-name"><i class="fa-solid fa-medal" style="color:#f59e0b;"></i> Gold Plan</div>
+            <div class="pkg-duration">3 Months Unlimited Free</div>
+            <div class="pkg-price-wrap">
+              <span class="pkg-price-val" id="dashPriceGold">₹699</span>
+              <small style="color:#64748b;font-size:11px;">/ 3 Months</small>
+            </div>
+            <ul class="pkg-features">
+              <li><i class="fa-solid fa-check-circle"></i> 3 Months 100% Free Prints</li>
+              <li><i class="fa-solid fa-check-circle"></i> All 4 Studio Services</li>
+              <li><i class="fa-solid fa-check-circle"></i> Unlimited PDF Extractions</li>
+              <li><i class="fa-solid fa-check-circle"></i> High Priority AI Cutout</li>
+            </ul>
+          </div>
+          <button type="button" class="btn-buy-pkg" onclick="JustcardWallet.buyPackage('gold')">
+            <i class="fa-solid fa-bolt"></i> Activate Gold
+          </button>
+        </div>
+
+        <!-- PLATINUM -->
+        <div class="pkg-card">
+          <div>
+            <div class="pkg-name"><i class="fa-solid fa-gem" style="color:#06b6d4;"></i> Platinum Plan</div>
+            <div class="pkg-duration">6 Months Unlimited Free</div>
+            <div class="pkg-price-wrap">
+              <span class="pkg-price-val" id="dashPricePlatinum">₹1,199</span>
+              <small style="color:#64748b;font-size:11px;">/ 6 Months</small>
+            </div>
+            <ul class="pkg-features">
+              <li><i class="fa-solid fa-check-circle"></i> 6 Months 100% Free Prints</li>
+              <li><i class="fa-solid fa-check-circle"></i> All 4 Studio Services</li>
+              <li><i class="fa-solid fa-check-circle"></i> Bulk WhatsApp Paste</li>
+              <li><i class="fa-solid fa-check-circle"></i> Best for Busy Cyber Cafes</li>
+            </ul>
+          </div>
+          <button type="button" class="btn-buy-pkg" onclick="JustcardWallet.buyPackage('platinum')">
+            <i class="fa-solid fa-bolt"></i> Activate Platinum
+          </button>
+        </div>
+
+        <!-- DIAMOND -->
+        <div class="pkg-card diamond">
+          <span class="pkg-top-tag">MOST POPULAR</span>
+          <div>
+            <div class="pkg-name"><i class="fa-solid fa-crown" style="color:#a855f7;"></i> Diamond Plan</div>
+            <div class="pkg-duration">1 Year (12 Months) Unlimited</div>
+            <div class="pkg-price-wrap">
+              <span class="pkg-price-val" id="dashPriceDiamond">₹1,999</span>
+              <small style="color:#64748b;font-size:11px;">/ 1 Full Year</small>
+            </div>
+            <ul class="pkg-features">
+              <li><i class="fa-solid fa-check-circle"></i> 365 Days Unlimited Free Prints</li>
+              <li><i class="fa-solid fa-check-circle"></i> Maximum Profit &amp; Zero Worry</li>
+              <li><i class="fa-solid fa-check-circle"></i> All 4 Studios Included</li>
+              <li><i class="fa-solid fa-check-circle"></i> Priority WhatsApp Support</li>
+            </ul>
+          </div>
+          <button type="button" class="btn-buy-pkg" onclick="JustcardWallet.buyPackage('diamond')">
+            <i class="fa-solid fa-crown"></i> Activate Diamond (1 Year)
+          </button>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Dashboard Bottom Utilities & Recent Activity -->
+    <div class="dash-widgets-grid">
+      
+      <!-- Recent Passbook Transactions Mini Table -->
+      <div class="dash-card">
+        <div class="dash-card-title">
+          <span><i class="fa-solid fa-list-check" style="color:#7c3aed;"></i> Recent Passbook Transactions</span>
+          <button type="button" onclick="loadDashboardPassbook()" style="background:#f1f5f9;border:1px solid #e2e8f0;padding:4px 10px;border-radius:6px;font-size:11.5px;font-weight:750;cursor:pointer;">
+            <i class="fa-solid fa-rotate"></i> Refresh
+          </button>
+        </div>
+        <div style="overflow-x: auto;">
+          <table class="mini-txn-table">
+            <thead>
+              <tr>
+                <th>Time &amp; ID</th>
+                <th>Service / Action</th>
+                <th>Amount</th>
+                <th>Balance</th>
+              </tr>
+            </thead>
+            <tbody id="dashTxnTableBody">
+              <tr>
+                <td colspan="4" style="text-align:center;color:#94a3b8;padding:16px;">Loading transactions...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Quick Printer Setup Cheat Sheet -->
+      <div class="dash-card">
+        <div class="dash-card-title">
+          <span><i class="fa-solid fa-print" style="color:#059669;"></i> Printer Quick Setup</span>
+        </div>
+        <div style="font-size:12.5px;color:#334155;line-height:1.6;">
+          <div style="background:#f8fafc;border:1px solid #ede9fe;border-radius:10px;padding:10px;margin-bottom:10px;">
+            <b>Canon G-Series (G3010, G2020 etc.)</b>
+            <div style="color:#64748b;font-size:11.5px;">Paper Type: <b>Matte Photo Paper</b> | Quality: <b>High</b></div>
+          </div>
+          <div style="background:#f8fafc;border:1px solid #ede9fe;border-radius:10px;padding:10px;margin-bottom:10px;">
+            <b>Epson L-Series (L805, L3150, L3210 etc.)</b>
+            <div style="color:#64748b;font-size:11.5px;">Paper Type: <b>Epson Matte / Ultra Glossy</b> | Size: <b>A4 / 4×6</b></div>
+          </div>
+          <div style="background:#ecfdf5;border:1px dashed #10b981;border-radius:10px;padding:10px;font-size:11.5px;color:#065f46;">
+            <b>⚡ Need Recharge?</b> Admin ko GPay/PhonePe karein aur Mobile send karein. Balance turant add ho jayega.
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+  </main>
+
+
+  <!-- =========================================================================
+       2. PUBLIC FRONTEND LANDING VIEW (When Logged Out)
+       ========================================================================= -->
+  <main id="publicLandingView">
+
+    <!-- HERO SECTION -->
+    <section class="hero">
+      <div class="tag-badge">
+        <i class="fa-solid fa-bolt"></i> No. 1 Portal for Cyber Cafe &amp; CSC Jan Seva Kendra
+      </div>
+      <h1>
+        Ab PVC Card, Passport Photo Aur Document Print Karna Hua <span class="highlight">Sabse Aasaan!</span>
+      </h1>
+      <p>
+        Canon aur Epson Normal Inkjet Printer se banayein <b>True PVC Cards (85.6×54mm)</b>, <b>1-Click AI Passport Photos</b>, <b>2-in-1 A4 Xerox Documents</b> aur <b>Job-Ready Resumes</b> — Photoshop ki koi zaroorat nahi!
+      </p>
+
+      <!-- Key Highlights Badges -->
+      <div class="hero-features-bar">
+        <div class="feat-pill"><i class="fa-solid fa-print"></i> Canon &amp; Epson Direct Print</div>
+        <div class="feat-pill"><i class="fa-solid fa-wand-magic-sparkles"></i> 1-Click AI Background Removal</div>
+        <div class="feat-pill"><i class="fa-solid fa-paste"></i> WhatsApp Direct Paste (Ctrl+V)</div>
+        <div class="feat-pill"><i class="fa-solid fa-crown"></i> Unlimited Subscription Plans</div>
+      </div>
+
+      <!-- Hero Action Buttons -->
+      <div class="hero-actions">
+        <button type="button" class="btn-hero primary" onclick="JustcardWallet.openAuth('register')">
+          <i class="fa-solid fa-user-plus"></i> Retailer Account Banayein (₹10 Free Demo)
+        </button>
+        <button type="button" class="btn-hero secondary" onclick="JustcardWallet.openAuth('login')">
+          <i class="fa-solid fa-right-to-bracket"></i> Retailer Login Karein
+        </button>
+      </div>
+    </section>
+
+    <!-- 4 SERVICES SHOWCASE SECTION -->
+    <section class="section-wrap" id="services">
+      <div class="section-head">
+        <h2>Sabhi Cyber Cafe Services Ek Hi Portal Par</h2>
+        <p>Photoshop ki jhanjhat khatam — bas PDF ya photo upload karein aur 10 second me print ready</p>
+      </div>
+
+      <div class="services-grid">
+        
+        <!-- SERVICE 1 -->
+        <div class="service-card">
+          <div class="card-top">
+            <span class="service-rate-badge rate-pvc-badge">₹5.00 / print</span>
+            <div class="service-icon pvc"><i class="fa-solid fa-id-card"></i></div>
+            <div class="service-title">Single Print PVC Studio</div>
+            <p class="service-desc">Aadhaar, PAN, Ayushman, Voter aur E-Shram card ka 1-Click auto crop &amp; exact PVC size print.</p>
+            <ul class="service-points">
+              <li><i class="fa-solid fa-check"></i> Canon &amp; Epson PVC Tray ready</li>
+              <li><i class="fa-solid fa-check"></i> Password protected PDF support</li>
+              <li><i class="fa-solid fa-check"></i> Direct WhatsApp Paste (Ctrl+V)</li>
+              <li><i class="fa-solid fa-check"></i> 85.60mm × 53.98mm physical size</li>
+            </ul>
+          </div>
+          <a href="single-pvc/index.html" class="btn-launch">
+            <i class="fa-solid fa-arrow-right"></i> Open PVC Studio
+          </a>
+        </div>
+
+        <!-- SERVICE 2 -->
+        <div class="service-card">
+          <div class="card-top">
+            <span class="service-rate-badge rate-a4-badge">₹2.00 / print</span>
+            <div class="service-icon doc"><i class="fa-solid fa-file-lines"></i></div>
+            <div class="service-title">A4 Document &amp; Xerox Studio</div>
+            <p class="service-desc">2-in-1, 4-in-1, 5-in-1 xerox formatting aur ID card front &amp; back single sheet clean print.</p>
+            <ul class="service-points">
+              <li><i class="fa-solid fa-check"></i> Instant 2-in-1 Xerox Generator</li>
+              <li><i class="fa-solid fa-check"></i> Auto Background Whitening</li>
+              <li><i class="fa-solid fa-check"></i> High Contrast Black &amp; White Boost</li>
+              <li><i class="fa-solid fa-check"></i> Direct WhatsApp Paste (Ctrl+V)</li>
+            </ul>
+          </div>
+          <a href="a4-document/index.html" class="btn-launch">
+            <i class="fa-solid fa-arrow-right"></i> Open A4 Studio
+          </a>
+        </div>
+
+        <!-- SERVICE 3 -->
+        <div class="service-card">
+          <div class="card-top">
+            <span class="service-rate-badge rate-photo-badge">₹3.00 / sheet</span>
+            <div class="service-icon photo"><i class="fa-solid fa-camera"></i></div>
+            <div class="service-title">Passport Photo Studio Pro</div>
+            <p class="service-desc">1-Click AI Photo Cutout, background color change aur 4×6 ya A4 sheet par instant multi-photo setup.</p>
+            <ul class="service-points">
+              <li><i class="fa-solid fa-check"></i> 1-Click AI Background Removal</li>
+              <li><i class="fa-solid fa-check"></i> White, Light Blue &amp; Red colors</li>
+              <li><i class="fa-solid fa-check"></i> 8 Photos (4×6) &amp; 32 Photos (A4)</li>
+              <li><i class="fa-solid fa-check"></i> Auto Cutting Border Lines</li>
+            </ul>
+          </div>
+          <a href="photo-maker/index.html" class="btn-launch">
+            <i class="fa-solid fa-arrow-right"></i> Open Photo Studio
+          </a>
+        </div>
+
+        <!-- SERVICE 4 -->
+        <div class="service-card">
+          <div class="card-top">
+            <span class="service-rate-badge rate-resume-badge">₹5.00 / PDF</span>
+            <div class="service-icon resume"><i class="fa-solid fa-graduation-cap"></i></div>
+            <div class="service-title">Resume &amp; Bio-Data Maker</div>
+            <p class="service-desc">Job seekers aur matrimony ke liye professional Resume &amp; Bio-Data templates in Hindi &amp; English.</p>
+            <ul class="service-points">
+              <li><i class="fa-solid fa-check"></i> Modern Professional CV Formats</li>
+              <li><i class="fa-solid fa-check"></i> Hindi &amp; English Bio-Data</li>
+              <li><i class="fa-solid fa-check"></i> Live Real-Time Form Preview</li>
+              <li><i class="fa-solid fa-check"></i> 1-Click HD PDF Download &amp; Print</li>
+            </ul>
+          </div>
+          <a href="resume-builder/index.html" class="btn-launch">
+            <i class="fa-solid fa-arrow-right"></i> Open Resume Studio
+          </a>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- PRINTER HIGHLIGHTS SECTION -->
+    <section class="section-wrap" id="printers">
+      <div class="printer-box">
+        <div class="printer-grid">
+          <div class="printer-content">
+            <div style="background:rgba(168,85,247,0.25);color:#d8b4fe;padding:4px 12px;border-radius:20px;font-size:12px;font-weight:800;display:inline-block;margin-bottom:12px;">
+              🖨️ HARDWARE COMPATIBILITY
+            </div>
+            <h3>Canon &amp; Epson Inkjet Se Direct PVC Print</h3>
+            <p>
+              Ab kisi mehenge PVC thermal machine ki zaroorat nahi. Aapke paas jo regular Canon G-series ya Epson L-series printer hai, usi se direct card tray ya Dragon sheet se crystal-clear HD card print nikaliye.
+            </p>
+            <div class="printer-models">
+              <div class="model-badge"><i class="fa-solid fa-check-circle" style="color:#10b981;"></i> Canon G3010 / G2020 / G3000 / G3020</div>
+              <div class="model-badge"><i class="fa-solid fa-check-circle" style="color:#10b981;"></i> Epson L3110 / L3150 / L3210 / L3250 / L805</div>
+            </div>
+          </div>
+          <div style="text-align:center;background:rgba(255,255,255,0.06);padding:24px;border-radius:18px;border:1px solid rgba(255,255,255,0.12);">
+            <i class="fa-solid fa-id-card-clip" style="font-size:56px;color:#a855f7;margin-bottom:12px;display:block;"></i>
+            <h4 style="font-size:18px;font-family:'Outfit',sans-serif;margin-bottom:6px;">Exact Physical PVC Sizing</h4>
+            <p style="font-size:12.5px;color:#cbd5e1;">Single card size: 85.60mm × 53.98mm with optional cutting border.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SUBSCRIPTION PACKAGES SHOWCASE (PUBLIC) -->
+    <section class="section-wrap" id="packages">
+      <div class="section-head">
+        <h2>👑 Unlimited Subscription Plans</h2>
+        <p>Monthly ya Yearly package lene par sabhi 4 services 100% Free ho jayengi</p>
+      </div>
+
+      <div class="pkg-plans-grid">
+        <div class="pkg-card">
+          <div>
+            <div class="pkg-name"><i class="fa-solid fa-medal" style="color:#94a3b8;"></i> Silver Plan</div>
+            <div class="pkg-duration">1 Month Validity</div>
+            <div class="pkg-price-wrap">
+              <span class="pkg-price-val" id="pubPriceSilver">₹299</span>
+              <small style="color:#64748b;font-size:11px;">/ 1 Month</small>
+            </div>
+            <ul class="pkg-features">
+              <li><i class="fa-solid fa-check-circle"></i> 1 Month Unlimited Print</li>
+              <li><i class="fa-solid fa-check-circle"></i> All 4 Services Included</li>
+              <li><i class="fa-solid fa-check-circle"></i> Zero Wallet Deductions</li>
+            </ul>
+          </div>
+          <button type="button" class="btn-buy-pkg" onclick="JustcardWallet.openAuth('register')">Register &amp; Activate</button>
+        </div>
+
+        <div class="pkg-card">
+          <div>
+            <div class="pkg-name"><i class="fa-solid fa-medal" style="color:#f59e0b;"></i> Gold Plan</div>
+            <div class="pkg-duration">3 Months Validity</div>
+            <div class="pkg-price-wrap">
+              <span class="pkg-price-val" id="pubPriceGold">₹699</span>
+              <small style="color:#64748b;font-size:11px;">/ 3 Months</small>
+            </div>
+            <ul class="pkg-features">
+              <li><i class="fa-solid fa-check-circle"></i> 3 Months Unlimited Print</li>
+              <li><i class="fa-solid fa-check-circle"></i> All 4 Services Included</li>
+              <li><i class="fa-solid fa-check-circle"></i> High Speed Processing</li>
+            </ul>
+          </div>
+          <button type="button" class="btn-buy-pkg" onclick="JustcardWallet.openAuth('register')">Register &amp; Activate</button>
+        </div>
+
+        <div class="pkg-card">
+          <div>
+            <div class="pkg-name"><i class="fa-solid fa-gem" style="color:#06b6d4;"></i> Platinum Plan</div>
+            <div class="pkg-duration">6 Months Validity</div>
+            <div class="pkg-price-wrap">
+              <span class="pkg-price-val" id="pubPricePlatinum">₹1,199</span>
+              <small style="color:#64748b;font-size:11px;">/ 6 Months</small>
+            </div>
+            <ul class="pkg-features">
+              <li><i class="fa-solid fa-check-circle"></i> 6 Months Unlimited Print</li>
+              <li><i class="fa-solid fa-check-circle"></i> All 4 Services Included</li>
+              <li><i class="fa-solid fa-check-circle"></i> Best Cyber Cafe Value</li>
+            </ul>
+          </div>
+          <button type="button" class="btn-buy-pkg" onclick="JustcardWallet.openAuth('register')">Register &amp; Activate</button>
+        </div>
+
+        <div class="pkg-card diamond">
+          <span class="pkg-top-tag">MOST POPULAR</span>
+          <div>
+            <div class="pkg-name"><i class="fa-solid fa-crown" style="color:#a855f7;"></i> Diamond Plan</div>
+            <div class="pkg-duration">1 Year (12 Months) Validity</div>
+            <div class="pkg-price-wrap">
+              <span class="pkg-price-val" id="pubPriceDiamond">₹1,999</span>
+              <small style="color:#64748b;font-size:11px;">/ 1 Full Year</small>
+            </div>
+            <ul class="pkg-features">
+              <li><i class="fa-solid fa-check-circle"></i> 365 Days Unlimited Free Prints</li>
+              <li><i class="fa-solid fa-check-circle"></i> All 4 Services Free</li>
+              <li><i class="fa-solid fa-check-circle"></i> Priority WhatsApp Support</li>
+            </ul>
+          </div>
+          <button type="button" class="btn-buy-pkg" style="background:var(--p-gradient);color:#fff;" onclick="JustcardWallet.openAuth('register')">Register &amp; Activate</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- LIVE PRICING CHART -->
+    <section class="section-wrap" id="pricing">
+      <div class="pricing-card-wrap">
+        <div style="background:#f3e8ff;color:#7e22ce;padding:4px 14px;border-radius:20px;font-size:11.5px;font-weight:800;display:inline-block;margin-bottom:10px;">
+          💰 PAY-PER-PRINT RATES
+        </div>
+        <h2 style="font-family:'Outfit',sans-serif;font-size:26px;font-weight:800;color:#0f172a;margin-bottom:6px;">Live Per-Print Service Rates</h2>
+        <p style="font-size:13px;color:#64748b;">Agar aapke paas active subscription nahi hai to wallet se per-print katega:</p>
+
+        <div class="price-items-grid">
+          <div class="rate-box">
+            <div class="s-name">🪪 Single Print PVC</div>
+            <div class="s-price" id="rateSinglePrint">₹5.00</div>
+            <small style="color:#64748b;font-size:10.5px;">Per Card Print</small>
+          </div>
+          <div class="rate-box">
+            <div class="s-name">📄 A4 Document</div>
+            <div class="s-price" id="rateA4Document">₹2.00</div>
+            <small style="color:#64748b;font-size:10.5px;">Per A4 Print / PDF</small>
+          </div>
+          <div class="rate-box">
+            <div class="s-name">📷 Photo Maker</div>
+            <div class="s-price" id="ratePhotoMaker">₹3.00</div>
+            <small style="color:#64748b;font-size:10.5px;">Per 4×6 / A4 Sheet</small>
+          </div>
+          <div class="rate-box">
+            <div class="s-name">🎓 Resume Maker</div>
+            <div class="s-price" id="rateResumeMaker">₹5.00</div>
+            <small style="color:#64748b;font-size:10.5px;">Per Resume PDF</small>
+          </div>
+        </div>
+
+        <button type="button" class="btn-hero primary" onclick="JustcardWallet.openAuth('register')" style="font-size:13.5px;padding:10px 22px;">
+          <i class="fa-solid fa-gift"></i> Register Now &amp; Get ₹10.00 Free Demo Balance
+        </button>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- FOOTER -->
+  <footer>
+    <div style="max-width:1240px;margin:0 auto;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:16px;">
+      <div style="text-align:left;">
+        <div style="font-family:'Outfit',sans-serif;font-size:18px;font-weight:900;color:#0f172a;">Justcard Multi-Service Portal</div>
+        <div style="font-size:12px;color:#94a3b8;margin-top:2px;">Built for Cyber Cafes, CSC VLEs &amp; Jan Seva Kendras.</div>
+      </div>
+      <div style="display:flex;gap:16px;align-items:center;flex-wrap:wrap;">
+        <a href="single-pvc/index.html" style="color:#7c3aed;font-weight:750;text-decoration:none;">Single Print PVC</a>
+        <a href="a4-document/index.html" style="color:#7c3aed;font-weight:750;text-decoration:none;">A4 Studio</a>
+        <a href="photo-maker/index.html" style="color:#7c3aed;font-weight:750;text-decoration:none;">Photo Studio</a>
+        <a href="resume-builder/index.html" style="color:#7c3aed;font-weight:750;text-decoration:none;">Resume Maker</a>
+        <a href="admin/index.html" style="color:#dc2626;font-weight:750;text-decoration:none;">Admin Panel</a>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    let isExplicitShowcase = false;
+
+    // Load dynamic pricing and packages
+    async function loadLivePricingAndPackages() {
+      try {
+        const apiBase = (window.location.protocol === 'file:' || !window.location.origin || window.location.origin === 'null') ? 'http://localhost:3000' : '';
+        const res = await fetch(`${apiBase}/api/pricing`);
+        const data = await res.json();
+        if (data) {
+          if (data.pricing) {
+            const pvc = '₹' + Number(data.pricing.singlePrint || 5).toFixed(2);
+            const doc = '₹' + Number(data.pricing.a4Document || 2).toFixed(2);
+            const photo = '₹' + Number(data.pricing.photoMaker || 3).toFixed(2);
+            const resume = '₹' + Number(data.pricing.resumeMaker || 5).toFixed(2);
+
+            if (document.getElementById('rateSinglePrint')) document.getElementById('rateSinglePrint').innerText = pvc;
+            if (document.getElementById('rateA4Document')) document.getElementById('rateA4Document').innerText = doc;
+            if (document.getElementById('ratePhotoMaker')) document.getElementById('ratePhotoMaker').innerText = photo;
+            if (document.getElementById('rateResumeMaker')) document.getElementById('rateResumeMaker').innerText = resume;
+
+            document.querySelectorAll('.rate-pvc-badge').forEach(el => el.innerText = `${pvc} / print`);
+            document.querySelectorAll('.rate-a4-badge').forEach(el => el.innerText = `${doc} / print`);
+            document.querySelectorAll('.rate-photo-badge').forEach(el => el.innerText = `${photo} / sheet`);
+            document.querySelectorAll('.rate-resume-badge').forEach(el => el.innerText = `${resume} / PDF`);
+          }
+
+          if (data.packages) {
+            const s = '₹' + (data.packages.silver ? data.packages.silver.price : 299);
+            const g = '₹' + (data.packages.gold ? data.packages.gold.price : 699);
+            const p = '₹' + (data.packages.platinum ? data.packages.platinum.price : 1199);
+            const d = '₹' + (data.packages.diamond ? data.packages.diamond.price : 1999);
+
+            if (document.getElementById('dashPriceSilver')) document.getElementById('dashPriceSilver').innerText = s;
+            if (document.getElementById('dashPriceGold')) document.getElementById('dashPriceGold').innerText = g;
+            if (document.getElementById('dashPricePlatinum')) document.getElementById('dashPricePlatinum').innerText = p;
+            if (document.getElementById('dashPriceDiamond')) document.getElementById('dashPriceDiamond').innerText = d;
+
+            if (document.getElementById('pubPriceSilver')) document.getElementById('pubPriceSilver').innerText = s;
+            if (document.getElementById('pubPriceGold')) document.getElementById('pubPriceGold').innerText = g;
+            if (document.getElementById('pubPricePlatinum')) document.getElementById('pubPricePlatinum').innerText = p;
+            if (document.getElementById('pubPriceDiamond')) document.getElementById('pubPriceDiamond').innerText = d;
+          }
+        }
+      } catch (e) {
+        console.warn('Could not load dynamic pricing/packages:', e);
+      }
+    }
+
+    // Load recent transactions in Retailer Dashboard
+    async function loadDashboardPassbook() {
+      const user = window.JustcardWallet ? window.JustcardWallet.getUser() : null;
+      const tbody = document.getElementById('dashTxnTableBody');
+      if (!tbody || !user) return;
+
+      try {
+        const apiBase = (window.location.protocol === 'file:' || !window.location.origin || window.location.origin === 'null') ? 'http://localhost:3000' : '';
+        const res = await fetch(`${apiBase}/api/wallet/transactions?userId=${encodeURIComponent(user.id)}`);
+        const data = await res.json();
+        if (data && data.transactions && data.transactions.length > 0) {
+          const list = data.transactions.slice(0, 5);
+          tbody.innerHTML = list.map(t => {
+            const isDebit = t.type === 'debit';
+            const isFree = t.type === 'free';
+            const sign = isDebit ? '-' : (isFree ? '' : '+');
+            const color = isDebit ? '#dc2626' : (isFree ? '#7c3aed' : '#059669');
+            const d = new Date(t.timestamp).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' });
+            return `
+              <tr>
+                <td>
+                  <div style="font-weight:700;color:#0f172a;">${d}</div>
+                  <div style="font-size:10px;color:#94a3b8;">${t.id}</div>
+                </td>
+                <td style="font-weight:750;color:#334155;">${t.service || 'Wallet Adjustment'}</td>
+                <td style="font-weight:800;color:${color};">${isFree ? '<span style="background:#f3e8ff;color:#7e22ce;padding:2px 6px;border-radius:4px;font-size:11px;">FREE (₹0.00)</span>' : `${sign}₹${Number(t.amount || 0).toFixed(2)}`}</td>
+                <td style="font-weight:750;color:#64748b;">₹${Number(t.balanceAfter || 0).toFixed(2)}</td>
+              </tr>
+            `;
+          }).join('');
+        } else {
+          tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;color:#94a3b8;padding:14px;">No transactions recorded yet.</td></tr>';
+        }
+      } catch (e) {
+        tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;color:#dc2626;padding:14px;">Could not load recent passbook.</td></tr>';
+      }
+    }
+
+    function toggleShowcaseView() {
+      isExplicitShowcase = !isExplicitShowcase;
+      renderViewState();
+    }
+
+    function renderViewState() {
+      const user = window.JustcardWallet ? window.JustcardWallet.getUser() : null;
+      const publicView = document.getElementById('publicLandingView');
+      const dashView = document.getElementById('retailerDashboardView');
+
+      if (user && !isExplicitShowcase) {
+        publicView.style.display = 'none';
+        dashView.style.display = 'block';
+
+        document.getElementById('rShopName').innerText = user.shopName || 'Retailer';
+        document.getElementById('rMobile').innerText = user.mobile || '';
+        document.getElementById('rUserId').innerText = user.id || '';
+        document.getElementById('rBalance').innerText = Number(user.balance || 0).toFixed(2);
+
+        const pkg = user.packageStatus || (user.package && new Date(user.package.expiresAt) > new Date() ? user.package : null);
+        const isPlanActive = pkg && pkg.isActive !== false;
+
+        if (isPlanActive) {
+          const expStr = new Date(pkg.expiresAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+          document.getElementById('rPlanTag').style.background = '#d1fae5';
+          document.getElementById('rPlanTag').style.borderColor = '#10b981';
+          document.getElementById('rPlanTag').style.color = '#047857';
+          document.getElementById('rPlanName').innerText = `${pkg.name} (Valid till ${expStr} · ${pkg.daysRemaining}d left)`;
+          document.getElementById('rFreePrintNotice').innerText = `🎉 100% Free Prints Active (${pkg.name})`;
+          document.getElementById('rFreePrintNotice').style.color = '#7c3aed';
+        } else {
+          document.getElementById('rPlanTag').style.background = '#f3e8ff';
+          document.getElementById('rPlanTag').style.borderColor = '#d8b4fe';
+          document.getElementById('rPlanTag').style.color = '#7e22ce';
+          document.getElementById('rPlanName').innerText = 'Pay-Per-Print Plan';
+          document.getElementById('rFreePrintNotice').innerText = '⚡ Pay-Per-Print Enabled';
+          document.getElementById('rFreePrintNotice').style.color = '#059669';
+        }
+
+        loadDashboardPassbook();
+      } else {
+        dashView.style.display = 'none';
+        publicView.style.display = 'block';
+      }
+    }
+
+    window.addEventListener('justcard:auth-change', (e) => {
+      isExplicitShowcase = false;
+      renderViewState();
+    });
+
+    document.addEventListener('DOMContentLoaded', () => {
+      loadLivePricingAndPackages();
+      renderViewState();
+    });
+  </script>
+</body>
+</html>

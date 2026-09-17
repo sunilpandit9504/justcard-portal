@@ -1,0 +1,28 @@
+JUSTCARD V15 - NETWORK ERROR FIX
+
+The previous "NetworkError when attempting to fetch resource" happened when
+the Photo Maker was opened as file:// or when the local API proxy was not
+running.
+
+THIS VERSION FIXES BOTH:
+- data:image... is converted to Blob locally; no fetch(data:) is used.
+- file:// mode sends the API request to http://localhost:3000/api/remove-bg.
+- localhost CORS is enabled for the local Photo Maker.
+- API key stays on the Node server.
+
+WINDOWS:
+1. Install Node.js 18+.
+2. Double-click START_WINDOWS.bat.
+3. Paste your NEW Remove.bg API key.
+4. Browser opens:
+   http://localhost:3000/photo-maker/
+5. Use:
+   Upload -> Manual Crop -> Apply Crop & Remove BG -> Background Color -> Download.
+
+IMPORTANT:
+Do not open photo-maker/index.html directly for the normal workflow.
+Use START_WINDOWS.bat so the API proxy is running.
+
+SECURITY:
+The API key is NOT stored in frontend JavaScript or committed to the ZIP.
+Use a new key because the old key was posted in chat.

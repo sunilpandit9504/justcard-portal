@@ -1,0 +1,692 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Justcard — All-in-One Cyber Cafe &amp; CSC Multi-Service Portal</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script src="wallet-client.js"></script>
+  <style>
+    :root {
+      --primary: #7c3aed;
+      --primary-hover: #6d28d9;
+      --p-gradient: linear-gradient(135deg, #a855f7 0%, #7c3aed 50%, #6366f1 100%);
+      --p-glow: rgba(168, 85, 247, 0.35);
+      --bg: #fbf9fe;
+      --card-bg: #ffffff;
+      --border: #ede9fe;
+      --text: #0f172a;
+      --text-muted: #64748b;
+      --green: #059669;
+      --green-glow: rgba(16, 185, 129, 0.25);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+      background-color: var(--bg);
+      background-image: radial-gradient(at 0% 0%, rgba(168, 85, 247, 0.08) 0px, transparent 50%), radial-gradient(at 100% 0%, rgba(124, 58, 237, 0.08) 0px, transparent 50%), radial-gradient(at 50% 100%, rgba(99, 102, 241, 0.06) 0px, transparent 50%);
+      color: var(--text);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* Top Navbar */
+    header {
+      background: rgba(255, 255, 255, 0.94);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--border);
+      height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 24px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: 0 2px 12px rgba(124, 58, 237, 0.05);
+    }
+    .header-left { display: flex; align-items: center; gap: 12px; text-decoration: none; }
+    .logo-icon {
+      width: 36px; height: 36px; border-radius: 10px;
+      background: var(--p-gradient); color: #fff;
+      display: flex; align-items: center; justify-content: center;
+      font-family: 'Outfit', sans-serif; font-size: 22px; font-weight: 900;
+      box-shadow: 0 4px 14px var(--p-glow);
+    }
+    .app-title { font-family: 'Outfit', sans-serif; font-size: 20px; font-weight: 800; color: #0f172a; display: flex; align-items: center; gap: 8px; }
+    .version-badge { background: #f3e8ff; color: #7e22ce; border: 1px solid #d8b4fe; font-size: 11px; font-weight: 800; padding: 2px 8px; border-radius: 20px; }
+
+    .nav-links { display: flex; align-items: center; gap: 20px; }
+    .nav-link { font-size: 13px; font-weight: 700; color: #475569; text-decoration: none; transition: color 0.15s; }
+    .nav-link:hover { color: var(--primary); }
+
+    .header-right { display: flex; align-items: center; gap: 12px; }
+    .admin-pill {
+      background: #ffffff; color: #475569; border: 1.5px solid #e2e8f0;
+      border-radius: 24px; padding: 6px 14px; font-size: 12.5px; font-weight: 750;
+      text-decoration: none; display: inline-flex; align-items: center; gap: 6px;
+      transition: all 0.2s;
+    }
+    .admin-pill:hover { background: #faf5ff; color: var(--primary); border-color: #d8b4fe; transform: translateY(-1px); }
+
+    /* Hero Section */
+    .hero {
+      max-width: 1240px;
+      margin: 0 auto;
+      padding: 50px 20px 40px;
+      text-align: center;
+    }
+    .tag-badge {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: #f3e8ff; color: #7e22ce; border: 1.5px solid #d8b4fe;
+      padding: 6px 16px; border-radius: 30px; font-size: 12.5px; font-weight: 800;
+      margin-bottom: 20px; box-shadow: 0 2px 8px rgba(124, 58, 237, 0.1);
+    }
+    .hero h1 {
+      font-family: 'Outfit', sans-serif;
+      font-size: clamp(28px, 4.5vw, 48px);
+      font-weight: 900;
+      line-height: 1.22;
+      color: #0f172a;
+      max-width: 960px;
+      margin: 0 auto 18px;
+    }
+    .hero h1 .highlight {
+      background: var(--p-gradient);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .hero p {
+      font-size: clamp(14px, 1.8vw, 17px);
+      color: #475569;
+      max-width: 780px;
+      margin: 0 auto 28px;
+      line-height: 1.6;
+      font-weight: 500;
+    }
+
+    /* Badges Pill Bar */
+    .hero-features-bar {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 10px;
+      margin-bottom: 34px;
+    }
+    .feat-pill {
+      background: #ffffff;
+      border: 1.5px solid var(--border);
+      border-radius: 20px;
+      padding: 6px 14px;
+      font-size: 12.5px;
+      font-weight: 750;
+      color: #1e293b;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.03);
+    }
+    .feat-pill i { color: var(--primary); }
+
+    /* CTA Buttons */
+    .hero-actions {
+      display: flex;
+      justify-content: center;
+      gap: 14px;
+      flex-wrap: wrap;
+    }
+    .btn-hero {
+      padding: 13px 26px;
+      border-radius: 12px;
+      font-size: 14.5px;
+      font-weight: 800;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      text-decoration: none;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      border: none;
+    }
+    .btn-hero.primary {
+      background: var(--p-gradient);
+      color: #ffffff;
+      box-shadow: 0 6px 20px var(--p-glow);
+    }
+    .btn-hero.primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 26px var(--p-glow);
+    }
+    .btn-hero.secondary {
+      background: #ffffff;
+      color: #0f172a;
+      border: 1.5px solid #e2e8f0;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    }
+    .btn-hero.secondary:hover {
+      background: #faf5ff;
+      border-color: #d8b4fe;
+      color: var(--primary);
+      transform: translateY(-2px);
+    }
+
+    /* Section Headers */
+    .section-wrap {
+      max-width: 1240px;
+      margin: 0 auto;
+      padding: 40px 20px;
+    }
+    .section-head {
+      text-align: center;
+      margin-bottom: 36px;
+    }
+    .section-head h2 {
+      font-family: 'Outfit', sans-serif;
+      font-size: clamp(22px, 3vw, 32px);
+      font-weight: 800;
+      color: #0f172a;
+      margin-bottom: 8px;
+    }
+    .section-head p {
+      font-size: 14px;
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+
+    /* 4 Services Grid */
+    .services-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(270px, 1fr));
+      gap: 22px;
+    }
+    .service-card {
+      background: #ffffff;
+      border: 1.5px solid var(--border);
+      border-radius: 18px;
+      padding: 24px;
+      box-shadow: 0 4px 20px -2px rgba(124, 58, 237, 0.08);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+      position: relative;
+      overflow: hidden;
+    }
+    .service-card:hover {
+      transform: translateY(-5px);
+      border-color: #c084fc;
+      box-shadow: 0 12px 30px -4px rgba(124, 58, 237, 0.16);
+    }
+    .service-card::before {
+      content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px;
+      background: var(--p-gradient); opacity: 0; transition: opacity 0.2s;
+    }
+    .service-card:hover::before { opacity: 1; }
+
+    .card-top { margin-bottom: 20px; }
+    .service-icon {
+      width: 52px; height: 52px; border-radius: 14px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 24px; margin-bottom: 16px;
+    }
+    .service-icon.pvc { background: #faf5ff; color: #7c3aed; border: 1px solid #ede9fe; }
+    .service-icon.doc { background: #ecfdf5; color: #059669; border: 1px solid #a7f3d0; }
+    .service-icon.photo { background: #fdf2f8; color: #ec4899; border: 1px solid #fbcfe8; }
+    .service-icon.resume { background: #eff6ff; color: #2563eb; border: 1px solid #bfdbfe; }
+
+    .service-title {
+      font-family: 'Outfit', sans-serif;
+      font-size: 19px;
+      font-weight: 800;
+      color: #0f172a;
+      margin-bottom: 8px;
+    }
+    .service-desc {
+      font-size: 13px;
+      color: #475569;
+      line-height: 1.5;
+      margin-bottom: 16px;
+    }
+    .service-points {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+      font-size: 12px;
+      font-weight: 650;
+      color: #334155;
+    }
+    .service-points li { display: flex; align-items: center; gap: 8px; }
+    .service-points li i { color: #059669; font-size: 11px; }
+
+    .btn-launch {
+      width: 100%;
+      padding: 11px 16px;
+      border-radius: 10px;
+      background: #fbf9fe;
+      color: var(--primary);
+      border: 1.5px solid #ede9fe;
+      font-size: 13.5px;
+      font-weight: 800;
+      cursor: pointer;
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      transition: all 0.2s;
+      margin-top: 18px;
+    }
+    .service-card:hover .btn-launch {
+      background: var(--p-gradient);
+      color: #ffffff;
+      border-color: transparent;
+      box-shadow: 0 4px 14px var(--p-glow);
+    }
+
+    /* Printer Highlights Section */
+    .printer-box {
+      background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
+      color: #ffffff;
+      border-radius: 24px;
+      padding: 40px 32px;
+      box-shadow: 0 20px 45px rgba(15, 23, 42, 0.2);
+      margin-bottom: 40px;
+    }
+    .printer-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 24px;
+      align-items: center;
+    }
+    .printer-content h3 {
+      font-family: 'Outfit', sans-serif;
+      font-size: 26px;
+      font-weight: 800;
+      margin-bottom: 12px;
+      color: #f8fafc;
+    }
+    .printer-content p {
+      font-size: 14px;
+      color: #cbd5e1;
+      line-height: 1.6;
+      margin-bottom: 20px;
+    }
+    .printer-models {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .model-badge {
+      background: rgba(255, 255, 255, 0.12);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      padding: 8px 14px;
+      border-radius: 10px;
+      font-size: 12.5px;
+      font-weight: 750;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    /* Benefits Grid */
+    .benefits-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 18px;
+    }
+    .benefit-item {
+      background: #ffffff;
+      border: 1.5px solid var(--border);
+      border-radius: 14px;
+      padding: 20px;
+      box-shadow: 0 2px 10px rgba(124, 58, 237, 0.04);
+    }
+    .benefit-item .icon { font-size: 26px; color: var(--primary); margin-bottom: 12px; }
+    .benefit-item h4 { font-family: 'Outfit', sans-serif; font-size: 16px; font-weight: 800; margin-bottom: 6px; color: #0f172a; }
+    .benefit-item p { font-size: 12.5px; color: #64748b; line-height: 1.5; }
+
+    /* Live Pricing Rate Card */
+    .pricing-card-wrap {
+      background: #ffffff;
+      border: 1.5px solid var(--border);
+      border-radius: 20px;
+      padding: 30px 24px;
+      box-shadow: 0 4px 20px rgba(124, 58, 237, 0.06);
+      text-align: center;
+      max-width: 860px;
+      margin: 0 auto;
+    }
+    .price-items-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+      gap: 14px;
+      margin: 24px 0 20px;
+    }
+    .rate-box {
+      background: #fbf9fe;
+      border: 1.5px solid var(--border);
+      border-radius: 12px;
+      padding: 16px 12px;
+      transition: transform 0.2s;
+    }
+    .rate-box:hover { transform: translateY(-2px); border-color: #c084fc; }
+    .rate-box .s-name { font-size: 12px; font-weight: 750; color: #64748b; margin-bottom: 6px; }
+    .rate-box .s-price { font-family: 'Outfit', sans-serif; font-size: 24px; font-weight: 900; color: #7c3aed; }
+
+    /* Footer */
+    footer {
+      background: #ffffff;
+      border-top: 1px solid var(--border);
+      padding: 30px 20px;
+      text-align: center;
+      font-size: 13px;
+      color: #64748b;
+    }
+
+    @media (max-width: 768px) {
+      .nav-links { display: none; }
+      header { padding: 0 16px; }
+      .hero { padding: 36px 16px 24px; }
+      .hero h1 { font-size: 26px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- TOP NAVBAR -->
+  <header>
+    <a href="home.html" class="header-left">
+      <div class="logo-icon">J</div>
+      <div class="app-title">Justcard <span class="version-badge">Multi-Studio</span></div>
+    </a>
+
+    <nav class="nav-links">
+      <a href="#services" class="nav-link">Services</a>
+      <a href="#printers" class="nav-link">Printer Setup</a>
+      <a href="#pricing" class="nav-link">Live Pricing</a>
+      <a href="#howItWorks" class="nav-link">How It Works</a>
+    </nav>
+
+    <div class="header-right">
+      <div class="jc-wallet-container"></div>
+      <a href="/admin" class="admin-pill" title="Admin Pricing &amp; Balance Control">
+        <i class="fa-solid fa-crown" style="color:#7c3aed;"></i> Admin
+      </a>
+    </div>
+  </header>
+
+  <!-- HERO SECTION -->
+  <section class="hero">
+    <div class="tag-badge">
+      <i class="fa-solid fa-bolt"></i> No. 1 Portal for Cyber Cafe &amp; CSC Jan Seva Kendra
+    </div>
+    <h1>
+      Ab PVC Card, Passport Photo Aur Document Print Karna Hua <span class="highlight">Sabse Aasaan!</span>
+    </h1>
+    <p>
+      Canon aur Epson Normal Inkjet Printer se banayein <b>True PVC Cards (85.6×54mm)</b>, <b>1-Click AI Passport Photos</b>, <b>2-in-1 A4 Xerox Documents</b> aur <b>Job-Ready Resumes</b> — Photoshop ki koi zaroorat nahi!
+    </p>
+
+    <!-- Key Highlights Badges -->
+    <div class="hero-features-bar">
+      <div class="feat-pill"><i class="fa-solid fa-print"></i> Canon &amp; Epson Direct Print</div>
+      <div class="feat-pill"><i class="fa-solid fa-wand-magic-sparkles"></i> 1-Click AI Background Removal</div>
+      <div class="feat-pill"><i class="fa-solid fa-paste"></i> WhatsApp Direct Paste (Ctrl+V)</div>
+      <div class="feat-pill"><i class="fa-solid fa-wallet"></i> Instant Wallet Auto-Billing</div>
+      <div class="feat-pill"><i class="fa-solid fa-gift"></i> ₹10.00 Welcome Demo Bonus</div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="hero-actions">
+      <button type="button" class="btn-hero primary" onclick="JustcardWallet.openAuth('register')">
+        <i class="fa-solid fa-user-plus"></i> Create Free Account
+      </button>
+      <button type="button" class="btn-hero secondary" onclick="JustcardWallet.openAuth('login')">
+        <i class="fa-solid fa-right-to-bracket"></i> Retailer Login
+      </button>
+      <a href="single-pvc/index.html" class="btn-hero secondary">
+        <i class="fa-solid fa-id-card"></i> Open PVC Studio →
+      </a>
+    </div>
+  </section>
+
+  <!-- 4 CORE SERVICES SHOWCASE -->
+  <section class="section-wrap" id="services">
+    <div class="section-head">
+      <h2>🔥 4 Powerful Services Ek Hi Portal Par</h2>
+      <p>Aapke daily cyber cafe ke sabhi printing tasks ab 10 second me ready</p>
+    </div>
+
+    <div class="services-grid">
+      <!-- Service 1: Single Print PVC -->
+      <div class="service-card">
+        <div class="card-top">
+          <div class="service-icon pvc"><i class="fa-solid fa-id-card"></i></div>
+          <div class="service-title">1. Single Print PVC Studio</div>
+          <div class="service-desc">
+            Aadhaar, PAN, Voter ID, Ayushman Card ko standard 85.60 × 53.98 mm ratio me convert karein.
+          </div>
+          <ul class="service-points">
+            <li><i class="fa-solid fa-check"></i> Canon (55×91mm) &amp; Epson (4×6 Tray) Dedicated</li>
+            <li><i class="fa-solid fa-check"></i> X/Y Axis Micro Alignment &amp; Zoom Control</li>
+            <li><i class="fa-solid fa-check"></i> Cutting Border &amp; Auto-Bleed Support</li>
+          </ul>
+        </div>
+        <a href="single-pvc/index.html" class="btn-launch">Launch Single Print PVC <i class="fa-solid fa-arrow-right"></i></a>
+      </div>
+
+      <!-- Service 2: A4 Document Studio -->
+      <div class="service-card">
+        <div class="card-top">
+          <div class="service-icon doc"><i class="fa-solid fa-file-lines"></i></div>
+          <div class="service-title">2. A4 Document Studio</div>
+          <div class="service-desc">
+            Certificate, Marksheet, 2-in-1 photocopy Xerox format Side-by-Side ya Top-Bottom print karein.
+          </div>
+          <ul class="service-points">
+            <li><i class="fa-solid fa-check"></i> 2-in-1 Side-by-Side &amp; Top-Bottom Xerox Layout</li>
+            <li><i class="fa-solid fa-check"></i> Magic Color &amp; High-Contrast Xerox Filters</li>
+            <li><i class="fa-solid fa-check"></i> 4-Corner Perspective Angle Correction</li>
+          </ul>
+        </div>
+        <a href="a4-document/index.html" class="btn-launch">Launch A4 Document Studio <i class="fa-solid fa-arrow-right"></i></a>
+      </div>
+
+      <!-- Service 3: Photo Maker Studio -->
+      <div class="service-card">
+        <div class="card-top">
+          <div class="service-icon photo"><i class="fa-solid fa-camera-retro"></i></div>
+          <div class="service-title">3. AI Passport Photo Studio</div>
+          <div class="service-desc">
+            Customer ki photo se 1-click me background remove karein aur Indian tone studio face glow dein.
+          </div>
+          <ul class="service-points">
+            <li><i class="fa-solid fa-check"></i> 1-Click AI Auto Background Cutout</li>
+            <li><i class="fa-solid fa-check"></i> 4×6 Sheet (8 Photos) &amp; A4 Sheet (30 Photos)</li>
+            <li><i class="fa-solid fa-check"></i> Scissor Marks &amp; Dashed Cutting Guides</li>
+          </ul>
+        </div>
+        <a href="photo-maker/index.html" class="btn-launch">Launch Photo Studio <i class="fa-solid fa-arrow-right"></i></a>
+      </div>
+
+      <!-- Service 4: Resume Maker -->
+      <div class="service-card">
+        <div class="card-top">
+          <div class="service-icon resume"><i class="fa-solid fa-user-graduate"></i></div>
+          <div class="service-title">4. Bio-Data &amp; Resume Maker</div>
+          <div class="service-desc">
+            Job &amp; Matrimonial ke liye 1-Page standard A4 Bio-Data 2 minute me generate karein.
+          </div>
+          <ul class="service-points">
+            <li><i class="fa-solid fa-check"></i> Professional Royal Purple Header Bars</li>
+            <li><i class="fa-solid fa-check"></i> Dynamic Education &amp; Work Experience Rows</li>
+            <li><i class="fa-solid fa-check"></i> 1-Click Instant PDF &amp; Print Ready Layout</li>
+          </ul>
+        </div>
+        <a href="resume-builder/index.html" class="btn-launch">Launch Resume Maker <i class="fa-solid fa-arrow-right"></i></a>
+      </div>
+    </div>
+  </section>
+
+  <!-- PRINTER HIGHLIGHT SECTION -->
+  <section class="section-wrap" id="printers">
+    <div class="printer-box">
+      <div class="printer-grid">
+        <div class="printer-content">
+          <div style="background:rgba(255,255,255,0.15);padding:4px 12px;border-radius:20px;font-size:11.5px;font-weight:800;display:inline-block;margin-bottom:12px;">
+            🖨️ PRINTER COMPATIBILITY
+          </div>
+          <h3>Canon aur Epson Normal Inkjet se banayein PVC Card!</h3>
+          <p>
+            Mehenge dedicated PVC card printer ki zaroorat nahi hai. Apne normal desktop printer me Card Tray ya Glossy Paper lagayein aur exact standard <b>85.60 × 53.98 mm</b> card print karein.
+          </p>
+          <div class="printer-models">
+            <div class="model-badge"><i class="fa-solid fa-check-circle" style="color:#10b981;"></i> Canon G1010 / G2010 / G3010 / G3060</div>
+            <div class="model-badge"><i class="fa-solid fa-check-circle" style="color:#10b981;"></i> Epson L3110 / L3150 / L3210 / L3250 / L805</div>
+          </div>
+        </div>
+        <div style="text-align:center;background:rgba(255,255,255,0.06);padding:24px;border-radius:18px;border:1px solid rgba(255,255,255,0.12);">
+          <i class="fa-solid fa-id-card-clip" style="font-size:56px;color:#a855f7;margin-bottom:12px;display:block;"></i>
+          <h4 style="font-size:18px;font-family:'Outfit',sans-serif;margin-bottom:6px;">Exact Physical PVC Sizing</h4>
+          <p style="font-size:12.5px;color:#cbd5e1;">Single card size: 85.60mm × 53.98mm with optional cutting border.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- WHY JUSTCARD (SHOPKEEPER BENEFITS) -->
+  <section class="section-wrap">
+    <div class="section-head">
+      <h2>Kyun Hai Justcard Cyber Cafe Ka No. 1 Choice?</h2>
+      <p>Time bachayein, customer ko fastest service dein aur apna profit badhayein</p>
+    </div>
+
+    <div class="benefits-grid">
+      <div class="benefit-item">
+        <div class="icon"><i class="fa-solid fa-bolt-lightning"></i></div>
+        <h4>10 Second Speed</h4>
+        <p>Photoshop me 15 minute lagane ke bajaye 10 second me card crop, photo background change aur Xerox ready.</p>
+      </div>
+      <div class="benefit-item">
+        <div class="icon"><i class="fa-brands fa-whatsapp" style="color:#25d366;"></i></div>
+        <h4>WhatsApp Copy-Paste (Ctrl+V)</h4>
+        <p>Customer ke WhatsApp document ko copy karke direct page par Ctrl+V dabayein — file save karne ki jhanjhat khatam.</p>
+      </div>
+      <div class="benefit-item">
+        <div class="icon"><i class="fa-solid fa-wallet"></i></div>
+        <h4>Transparent Wallet Billing</h4>
+        <p>Koi monthly subscription nahi. Sirf tabhi paise katte hain jab aap card print ya download karte hain.</p>
+      </div>
+      <div class="benefit-item">
+        <div class="icon"><i class="fa-solid fa-shield-halved"></i></div>
+        <h4>Full Admin Control</h4>
+        <p>Admin panel se per-service rates manage karein, retailer balance top-up karein aur transaction passbook check karein.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- LIVE PRICING CHART -->
+  <section class="section-wrap" id="pricing">
+    <div class="pricing-card-wrap">
+      <div style="background:#f3e8ff;color:#7e22ce;padding:4px 14px;border-radius:20px;font-size:11.5px;font-weight:800;display:inline-block;margin-bottom:10px;">
+        💰 TRANSPARENT PER-PRINT RATES
+      </div>
+      <h2 style="font-family:'Outfit',sans-serif;font-size:26px;font-weight:800;color:#0f172a;margin-bottom:6px;">Live Service Rates Chart</h2>
+      <p style="font-size:13px;color:#64748b;">Aapke wallet se per-print/download ke liye katega:</p>
+
+      <div class="price-items-grid">
+        <div class="rate-box">
+          <div class="s-name">🪪 Single Print PVC</div>
+          <div class="s-price" id="rateSinglePrint">₹5.00</div>
+          <small style="color:#64748b;font-size:10.5px;">Per Card Print</small>
+        </div>
+        <div class="rate-box">
+          <div class="s-name">📄 A4 Document</div>
+          <div class="s-price" id="rateA4Document">₹2.00</div>
+          <small style="color:#64748b;font-size:10.5px;">Per A4 Print / PDF</small>
+        </div>
+        <div class="rate-box">
+          <div class="s-name">📷 Photo Maker</div>
+          <div class="s-price" id="ratePhotoMaker">₹3.00</div>
+          <small style="color:#64748b;font-size:10.5px;">Per 4×6 / A4 Sheet</small>
+        </div>
+        <div class="rate-box">
+          <div class="s-name">🎓 Resume Maker</div>
+          <div class="s-price" id="rateResumeMaker">₹5.00</div>
+          <small style="color:#64748b;font-size:10.5px;">Per Resume PDF</small>
+        </div>
+      </div>
+
+      <button type="button" class="btn-hero primary" onclick="JustcardWallet.openAuth('register')" style="font-size:13.5px;padding:10px 22px;">
+        <i class="fa-solid fa-gift"></i> Register Now &amp; Get ₹10.00 Free Demo Balance
+      </button>
+    </div>
+  </section>
+
+  <!-- HOW IT WORKS (3 SIMPLE STEPS) -->
+  <section class="section-wrap" id="howItWorks">
+    <div class="section-head">
+      <h2>Kaise Kaam Karta Hai? (3 Simple Steps)</h2>
+      <p>Bina kisi training ke koi bhi operator 1 minute me chalana shuru kar sakta hai</p>
+    </div>
+
+    <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(260px, 1fr));gap:20px;">
+      <div style="background:#fff;border:1.5px solid var(--border);border-radius:14px;padding:22px;text-align:center;">
+        <div style="width:42px;height:42px;border-radius:50%;background:var(--p-gradient);color:#fff;display:inline-flex;align-items:center;justify-content:center;font-weight:900;font-size:18px;margin-bottom:12px;">1</div>
+        <h4 style="font-family:'Outfit',sans-serif;font-size:17px;font-weight:800;margin-bottom:6px;">Create Free Account</h4>
+        <p style="font-size:12.5px;color:#64748b;">Apna Shop Name aur 10-digit Mobile number daalkar 10 second me sign up karein.</p>
+      </div>
+      <div style="background:#fff;border:1.5px solid var(--border);border-radius:14px;padding:22px;text-align:center;">
+        <div style="width:42px;height:42px;border-radius:50%;background:var(--p-gradient);color:#fff;display:inline-flex;align-items:center;justify-content:center;font-weight:900;font-size:18px;margin-bottom:12px;">2</div>
+        <h4 style="font-family:'Outfit',sans-serif;font-size:17px;font-weight:800;margin-bottom:6px;">Upload ya Paste Karein</h4>
+        <p style="font-size:12.5px;color:#64748b;">Aadhaar/PAN PDF, Photo ya Document upload karein ya WhatsApp se direct Ctrl+V karein.</p>
+      </div>
+      <div style="background:#fff;border:1.5px solid var(--border);border-radius:14px;padding:22px;text-align:center;">
+        <div style="width:42px;height:42px;border-radius:50%;background:var(--p-gradient);color:#fff;display:inline-flex;align-items:center;justify-content:center;font-weight:900;font-size:18px;margin-bottom:12px;">3</div>
+        <h4 style="font-family:'Outfit',sans-serif;font-size:17px;font-weight:800;margin-bottom:6px;">1-Click Print / Download</h4>
+        <p style="font-size:12.5px;color:#64748b;">Wallet se auto deduction ke sath turant HD print ya image/PDF download karein.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer>
+    <div style="max-width:1240px;margin:0 auto;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:16px;">
+      <div style="text-align:left;">
+        <div style="font-family:'Outfit',sans-serif;font-size:18px;font-weight:900;color:#0f172a;">Justcard Multi-Service Portal</div>
+        <div style="font-size:12px;color:#94a3b8;margin-top:2px;">Built for Cyber Cafes, CSC VLEs &amp; Jan Seva Kendras.</div>
+      </div>
+      <div style="display:flex;gap:16px;align-items:center;">
+        <a href="index.html" style="color:#7c3aed;font-weight:750;text-decoration:none;">Single Print PVC</a>
+        <a href="a4-document/index.html" style="color:#7c3aed;font-weight:750;text-decoration:none;">A4 Studio</a>
+        <a href="photo-maker/index.html" style="color:#7c3aed;font-weight:750;text-decoration:none;">Photo Studio</a>
+        <a href="resume-builder/index.html" style="color:#7c3aed;font-weight:750;text-decoration:none;">Resume Maker</a>
+        <a href="admin/index.html" style="color:#dc2626;font-weight:750;text-decoration:none;">Admin Panel</a>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    async function loadLivePricing() {
+      try {
+        const res = await fetch('/api/pricing');
+        const data = await res.json();
+        if (data && data.pricing) {
+          document.getElementById('rateSinglePrint').innerText = '₹' + Number(data.pricing.singlePrint || 5).toFixed(2);
+          document.getElementById('rateA4Document').innerText = '₹' + Number(data.pricing.a4Document || 2).toFixed(2);
+          document.getElementById('ratePhotoMaker').innerText = '₹' + Number(data.pricing.photoMaker || 3).toFixed(2);
+          document.getElementById('rateResumeMaker').innerText = '₹' + Number(data.pricing.resumeMaker || 5).toFixed(2);
+        }
+      } catch (e) {
+        console.warn('Could not load dynamic pricing:', e);
+      }
+    }
+    loadLivePricing();
+  </script>
+</body>
+</html>

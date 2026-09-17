@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Justcard — Bio-Data & Resume Builder V5</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<script src="../wallet-client.js"></script>
+<style>
+:root {
+  --bg: #fbf9fe;
+  --bg-subtle: #f5f0fb;
+  --card: #ffffff;
+  --text: #0f172a;
+  --text-secondary: #475569;
+  --muted: #94a3b8;
+  --line: #ede9fe;
+  --p: #7c3aed;
+  --p-hover: #6d28d9;
+  --p-gradient: linear-gradient(135deg, #a855f7 0%, #7c3aed 50%, #6366f1 100%);
+  --p-glow: rgba(168, 85, 247, 0.35);
+  --green: #10b981;
+  --green-glow: rgba(16, 185, 129, 0.25);
+  --red: #ef4444;
+  --radius-xl: 20px;
+  --radius-lg: 14px;
+  --radius-md: 10px;
+  --radius-sm: 8px;
+  --shadow-card: 0 4px 20px -2px rgba(124, 58, 237, 0.08), 0 2px 6px -1px rgba(15, 23, 42, 0.03);
+  --shadow-elevated: 0 20px 40px -8px rgba(168, 85, 247, 0.22), 0 6px 16px -2px rgba(15, 23, 42, 0.04);
+  --transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+*{box-sizing:border-box}
+body{
+  margin:0;
+  background:var(--bg);
+  background-image:radial-gradient(at 0% 0%, rgba(168, 85, 247, 0.08) 0px, transparent 50%), radial-gradient(at 100% 0%, rgba(124, 58, 237, 0.08) 0px, transparent 50%), radial-gradient(at 50% 100%, rgba(99, 102, 241, 0.06) 0px, transparent 50%);
+  font-family:'Plus Jakarta Sans',system-ui,-apple-system,sans-serif;
+  color:var(--text);
+  -webkit-font-smoothing:antialiased;
+}
+
+header{
+  position:sticky;
+  top:0;
+  z-index:40;
+  background:rgba(255, 255, 255, 0.94);
+  backdrop-filter:blur(16px);
+  -webkit-backdrop-filter:blur(16px);
+  border-bottom:1px solid var(--line);
+  box-shadow:0 4px 20px -4px rgba(124, 58, 237, 0.07);
+  height:58px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:0 20px;
+}
+
+.brand-left{display:flex;align-items:center;gap:12px}
+.back-home-btn{
+  background:#fff;
+  color:#475569;
+  border:1px solid var(--line);
+  border-radius:10px;
+  padding:7px 14px;
+  font-size:12.5px;
+  font-weight:700;
+  cursor:pointer;
+  text-decoration:none;
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  transition:var(--transition);
+  box-shadow:0 1px 3px rgba(0,0,0,0.02);
+}
+.back-home-btn:hover{background:#f3e8ff;color:#7e22ce;border-color:#d8b4fe}
+
+.logo{
+  width:36px;
+  height:36px;
+  border-radius:10px;
+  background:var(--p-gradient);
+  color:#fff;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-family:'Outfit',sans-serif;
+  font-size:22px;
+  font-weight:900;
+  box-shadow:0 4px 14px var(--p-glow);
+}
+
+.brand{
+  font-family:'Outfit',sans-serif;
+  font-weight:800;
+  font-size:19px;
+  color:#0f172a;
+  letter-spacing:-0.4px;
+}
+
+.ver{
+  font-size:11px;
+  font-weight:700;
+  color:#7e22ce;
+  background:#f3e8ff;
+  border:1px solid #d8b4fe;
+  border-radius:20px;
+  padding:2px 8px;
+}
+
+.app{
+  max-width:1540px;
+  margin:auto;
+  padding:22px 18px 50px;
+  display:grid;
+  grid-template-columns:460px 1fr;
+  gap:22px;
+}
+
+.panel{
+  background:var(--card);
+  border-radius:var(--radius-xl);
+  padding:22px;
+  border:1px solid var(--line);
+  box-shadow:var(--shadow-card);
+  height:max-content;
+}
+
+.panel h2{
+  font-family:'Outfit',sans-serif;
+  font-size:17px;
+  font-weight:800;
+  color:#0f172a;
+  margin:0 0 14px;
+  display:flex;
+  align-items:center;
+  gap:8px;
+}
+
+.sec{
+  border-top:1px solid var(--line);
+  margin-top:16px;
+  padding-top:16px;
+}
+.sec h2{
+  font-size:14px;
+  font-weight:800;
+  color:#6b21a8;
+  letter-spacing:0.3px;
+  margin-bottom:10px;
+}
+
+label{
+  display:block;
+  font-size:11.5px;
+  font-weight:750;
+  color:#334155;
+  margin:10px 0 5px;
+}
+
+input,textarea{
+  width:100%;
+  border:1.5px solid #e2e8f0;
+  background:#f8fafc;
+  border-radius:var(--radius-md);
+  padding:10px 12px;
+  font-family:inherit;
+  font-size:13px;
+  color:#1e293b;
+  outline:none;
+  transition:var(--transition);
+}
+
+input:focus,textarea:focus{
+  border-color:var(--p);
+  background:#fff;
+  box-shadow:0 0 0 4px rgba(124, 58, 237, 0.12);
+}
+
+textarea{min-height:64px;resize:vertical}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+
+.item{
+  border:1.5px solid #ede9fe;
+  background:#faf8ff;
+  padding:12px;
+  border-radius:var(--radius-md);
+  margin:10px 0;
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+}
+
+button{
+  border:0;
+  border-radius:var(--radius-md);
+  padding:10px 16px;
+  font-family:'Plus Jakarta Sans',sans-serif;
+  font-weight:750;
+  font-size:12.5px;
+  cursor:pointer;
+  margin:6px 6px 0 0;
+  transition:var(--transition);
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+}
+
+.blue{
+  background:var(--p-gradient);
+  color:#fff;
+  box-shadow:0 4px 14px var(--p-glow);
+}
+.blue:hover{
+  background:linear-gradient(135deg, #9333ea 0%, #6d28d9 50%, #4f46e5 100%);
+  transform:translateY(-1px);
+}
+
+.light{
+  background:#f3e8ff;
+  color:#7e22ce;
+  border:1px solid #d8b4fe;
+}
+.light:hover{background:#ede9fe}
+
+.red{
+  background:#fee2e2;
+  color:#dc2626;
+  border:1px solid #fecaca;
+}
+.red:hover{background:#fecaca}
+
+.preview{
+  overflow:auto;
+  display:flex;
+  justify-content:center;
+}
+
+.paper{
+  width:210mm;
+  min-height:297mm;
+  background:#fff;
+  padding:15mm 14mm;
+  box-shadow:0 10px 30px rgba(124, 58, 237, 0.12), 0 2px 10px rgba(0,0,0,0.05);
+  border-radius:4px;
+}
+
+.title{
+  text-align:center;
+  font:bold 24px "Times New Roman",serif;
+  margin-bottom:18px;
+  color:#111;
+}
+
+.toparea{display:grid;grid-template-columns:1fr 29mm;gap:8mm;align-items:start}
+.info{font:12.5px "Times New Roman",serif;line-height:1.55;color:#111}
+.info .n{font-weight:bold}
+.photo{width:27mm;height:34mm;object-fit:cover;border:1px solid #555;display:none}
+.bar{
+  height:9mm;
+  background:#7c3aed !important;
+  color:#ffffff !important;
+  border:1px solid #6d28d9 !important;
+  border-radius:2px;
+  padding:2mm 2.2mm;
+  font:bold 14px "Times New Roman",serif;
+  margin-top:5mm;
+  -webkit-print-color-adjust:exact !important;
+  print-color-adjust:exact !important;
+}
+
+.content{font:12px "Times New Roman",serif;line-height:1.42}
+.bullet{padding:4mm 7mm 2mm 10mm;font-size:11.5px}
+.edu{width:100%;border-collapse:collapse;font:11px "Times New Roman",serif}
+.edu th,.edu td{border:1px solid #222;padding:1.4mm 1mm;text-align:center}
+.edu th{font-weight:bold;background:#f3e8ff;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}
+.edu td:nth-child(2){text-align:left}
+.personal{display:grid;grid-template-columns:38mm 7mm 1fr;font:12px "Times New Roman",serif;line-height:1.55;padding:4mm 5mm}
+.declare{font:11.8px "Times New Roman",serif;line-height:1.45;padding:4mm 5mm 0}
+.exp{font:12px "Times New Roman",serif;padding:4mm 7mm 1mm;line-height:1.5}
+.bottom{display:flex;justify-content:space-between;margin:7mm 5mm 0;font:12px "Times New Roman",serif}
+.sign{text-align:right;font-weight:bold;padding-top:11mm}
+
+@media(max-width:1024px){
+  .app{grid-template-columns:1fr}
+  .preview{justify-content:flex-start}
+}
+
+@media print{
+  html,body{width:210mm!important;height:297mm!important;margin:0!important;padding:0!important;background:#fff!important}
+  header,.panel,#samePrintPreview{display:none!important}
+  .app{display:block!important;width:210mm!important;margin:0!important;padding:0!important}
+  .preview{display:block!important;width:210mm!important;margin:0!important;padding:0!important;overflow:visible!important}
+  .paper{width:210mm!important;height:297mm!important;min-height:297mm!important;max-height:297mm!important;margin:0!important;padding:12mm 12mm 10mm!important;border:0!important;box-shadow:none!important;overflow:hidden!important}
+  *{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}
+  @page{size:A4 portrait;margin:0}
+}
+</style>
+</head>
+<body>
+<header>
+  <div class="brand-left">
+    <a href="../home.html" class="back-home-btn"><i class="fa-solid fa-arrow-left"></i> Dashboard</a>
+    <div class="logo">J</div>
+    <div class="brand">Justcard</div>
+    <div class="ver">Bio-Data Builder V5</div>
+  </div>
+  <div style="display:flex;align-items:center;gap:12px;">
+    <div class="jc-wallet-container"></div>
+  </div>
+</header>
+
+<div class="app">
+<section class="panel">
+<h2><i class="fa-solid fa-pen-to-square" style="color:var(--p)"></i> Text / Details Edit Karein</h2>
+
+<div class="sec">
+<label>Full Name</label><input id="name" value="AMIT KUMAR">
+<div class="row"><div><label>Email ID</label><input id="email" value="amitkumar@gmail.com"></div><div><label>Mobile No</label><input id="mobile" value="9876543210"></div></div>
+<div class="row"><div><label>WhatsApp No</label><input id="whatsapp" value="9876543210"></div><div><label>Date of Birth</label><input id="dob" value="15/08/2000"></div></div>
+<label>Address</label><textarea id="address">Vill - Rampur, P.O - Rampur, P.S - Godda
+Dist - Godda, Jharkhand - 814133</textarea>
+<label>Upload Photo</label><input id="photo" type="file" accept="image/*">
+</div>
+
+<div class="sec"><h2>Objective</h2><textarea id="objective">To be associated with a progressive organization that gives me scope to apply my knowledge and skills, seek a challenging and rewarding job that ensures growth with my potential and provides me exposure to professional and personal growth along with the organization.</textarea></div>
+
+<div class="sec"><h2>Education Qualifications</h2><div id="eduForm"></div><button type="button" class="light" onclick="addEdu()">+ Add Education Row</button></div>
+
+<div class="sec"><h2>Extra Qualification</h2><textarea id="extra">Basic Know Computer Knowledge</textarea></div>
+
+<div class="sec"><h2>Work Experience</h2><div id="expForm"></div><button type="button" class="light" onclick="addExp()">+ Add Experience</button></div>
+
+<div class="sec"><h2>Personal Detail</h2>
+<div class="row"><div><label>Gender</label><input id="gender" value="Male"></div><div><label>Father's Name</label><input id="father" value="Ramesh Kumar"></div></div>
+<div class="row"><div><label>Mother's Name</label><input id="mother" value="Sunita Devi"></div><div><label>Marital Status</label><input id="marital" value="Unmarried"></div></div>
+<div class="row"><div><label>Hobbies</label><input id="hobbies"></div><div><label>Religion</label><input id="religion" value="Hindu"></div></div>
+<div class="row"><div><label>Nationality</label><input id="nationality" value="Indian"></div><div><label>Language Known</label><input id="language" value="Hindi"></div></div>
+</div>
+
+<div class="sec"><h2>Declaration</h2><textarea id="declaration">I hereby declare that the information given above is true and correct to the best of my knowledge and belief.</textarea>
+<div class="row"><div><label>Date</label><input id="date" value="31/08/2026"></div><div><label>Place</label><input id="place" value="GODDA"></div></div>
+<div style="margin-top:14px;display:flex;flex-wrap:wrap;gap:8px">
+<button type="button" class="blue" onclick="printA4()"><i class="fa-solid fa-print"></i> PRINT A4 / SAVE PDF</button>
+<button type="button" class="light" onclick="saveData()"><i class="fa-solid fa-floppy-disk"></i> SAVE</button>
+<button type="button" class="light" onclick="loadData()"><i class="fa-solid fa-rotate-right"></i> LOAD</button>
+<button type="button" class="red" onclick="resetData()"><i class="fa-solid fa-trash-can"></i> RESET</button>
+</div>
+</div>
+</section>
+
+<section class="preview">
+<div class="paper">
+<div class="title">Bio-Data</div>
+<div class="toparea">
+<div class="info">
+<div class="n">Name: <span id="rname">RAVI KUMAR</span></div>
+<div>Email ID: <span id="remail"></span></div>
+<div>Mobile No: <span id="rmobile"></span></div>
+<div>WhatsApp No: <span id="rwhatsapp"></span></div>
+<div>Address : <span id="raddress"></span></div>
+</div>
+<img id="rphoto" class="photo">
+</div>
+
+<div class="bar">Objective :-</div><div class="content bullet">• &nbsp; <span id="robjective"></span></div>
+<div class="bar">Education Qualifications :-</div>
+<table class="edu"><thead><tr><th>Sr.<br>No.</th><th>Class/ Degree</th><th>Board/University</th><th>Year</th><th>Percentage/Division</th></tr></thead><tbody id="redu"></tbody></table>
+
+<div id="extraBlock"><div class="bar">Extra Qualification :-</div><div class="content bullet">• &nbsp; <span id="rextra"></span></div></div>
+<div id="expBlock"><div class="bar">Work Experience :-</div><div id="rexp"></div></div>
+
+<div class="bar">Personal Detail :-</div><div class="personal" id="rpersonal"></div>
+<div class="bar">Declaration :-</div><div class="declare" id="rdeclaration"></div>
+<div class="bottom"><div>Date<span id="rdate">................</span><br><br>Place<span id="rplace">................</span></div><div class="sign"><span id="rsign">RAVI KUMAR</span></div></div>
+</div>
+</section>
+</div>
+
+<script>
+const F=["name","email","mobile","whatsapp","address","objective","extra","dob","gender","father","mother","marital","hobbies","religion","nationality","language","declaration","date","place"];
+const $=id=>document.getElementById(id);
+function esc(s){return String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[c]));}
+function addEdu(d={degree:"MATRIC",board:"JAC",year:"2012",result:"2ND"}){let x=document.createElement("div");x.className="item";x.innerHTML=`<div class="row3"><input placeholder="Class/Degree" value="${esc(d.degree)}"><input placeholder="Board/University" value="${esc(d.board)}"><input placeholder="Year" value="${esc(d.year)}"></div><input placeholder="Percentage/Division" value="${esc(d.result)}"><button type="button" class="red" onclick="this.parentElement.remove();update()">Remove</button>`;$("eduForm").appendChild(x);x.querySelectorAll("input").forEach(i=>i.oninput=update);update();}
+function addExp(d={post:"Fresher",company:"",duration:"",detail:""}){let x=document.createElement("div");x.className="item";x.innerHTML=`<div class="row"><input placeholder="Post / Job Title" value="${esc(d.post)}"><input placeholder="Company" value="${esc(d.company)}"></div><input placeholder="Duration" value="${esc(d.duration)}"><textarea placeholder="Work details">${esc(d.detail)}</textarea><button type="button" class="red" onclick="this.parentElement.remove();update()">Remove</button>`;$("expForm").appendChild(x);x.querySelectorAll("input,textarea").forEach(i=>i.oninput=update);update();}
+function update(){
+$("rname").textContent=$("name").value||"";
+$("remail").textContent=$("email").value||"";
+$("rmobile").textContent=$("mobile").value||"";
+$("rwhatsapp").textContent=$("whatsapp").value||"";
+$("raddress").textContent=$("address").value||"";
+$("robjective").textContent=$("objective").value||"";
+let rows=[...$("eduForm").children];$("redu").innerHTML=rows.map((x,n)=>{let i=x.querySelectorAll("input");return `<tr><td>${n+1}</td><td>${esc(i[0].value)}</td><td>${esc(i[1].value)}</td><td>${esc(i[2].value)}</td><td>${esc(i[3].value)}</td></tr>`}).join("");
+$("extraBlock").style.display=$("extra").value.trim()?"block":"none";$("rextra").textContent=$("extra").value||"";
+let ex=[...$("expForm").children];$("expBlock").style.display=ex.length?"block":"none";$("rexp").innerHTML=ex.map(x=>{let i=x.querySelectorAll("input"),t=x.querySelector("textarea");return `<div class="exp">• &nbsp; <b>${esc(i[0].value)}</b>${i[1].value?" — "+esc(i[1].value):""}${i[2].value?" ("+esc(i[2].value)+")":""}<br>${esc(t.value)}</div>`}).join("");
+let P=[["Date of Birth",$("dob").value],["Gender",$("gender").value],["Father’s Name",$("father").value],["Mother’s Name",$("mother").value],["Marital Status",$("marital").value],["Hobbies",$("hobbies").value],["Religion",$("religion").value],["Nationality",$("nationality").value],["Language Known",$("language").value]];
+$("rpersonal").innerHTML=P.filter(a=>a[1]).map(a=>`<div>${esc(a[0])}</div><div>:</div><div>${esc(a[1])}</div>`).join("");
+$("rdeclaration").textContent=$("declaration").value||"";$("rdate").textContent=$("date").value||"................";$("rplace").textContent=$("place").value||"................";$("rsign").textContent=$("name").value||"";
+}
+F.forEach(id=>$(id).addEventListener("input",update));
+$("photo").onchange=e=>{let f=e.target.files[0];if(!f)return;let r=new FileReader();r.onload=()=>{$("rphoto").src=r.result;$("rphoto").style.display="block";localStorage.v3photo=r.result};r.readAsDataURL(f)};
+function openSamePrintPreview(){update();const p=document.querySelector(".paper"),h=document.getElementById("samePrintPreviewPage");h.innerHTML="";const c=p.cloneNode(true);c.style.margin="0";c.style.boxShadow="none";c.style.border="0";h.appendChild(c);document.getElementById("samePrintPreview").style.display="block";document.body.style.overflow="hidden"}
+function closeSamePrintPreview(){document.getElementById("samePrintPreview").style.display="none";document.body.style.overflow=""}
+function printA4(){
+  update();
+  function executePrint() {
+    document.title=(document.getElementById("name").value||"Bio-Data")+" - A4";
+    setTimeout(()=>window.print(),100);
+  }
+  if (window.JustcardWallet) {
+    window.JustcardWallet.chargeService('resumeMaker', 'Resume Maker (Bio-Data PDF)', () => {
+      executePrint();
+    });
+  } else {
+    executePrint();
+  }
+}
+function collect(){return{f:Object.fromEntries(F.map(id=>[id,$(id).value])),edu:[...$("eduForm").children].map(x=>{let i=x.querySelectorAll("input");return{degree:i[0].value,board:i[1].value,year:i[2].value,result:i[3].value}}),exp:[...$("expForm").children].map(x=>{let i=x.querySelectorAll("input"),t=x.querySelector("textarea");return{post:i[0].value,company:i[1].value,duration:i[2].value,detail:t.value}})}}
+function saveData(){localStorage.v3=JSON.stringify(collect());alert("Saved successfully.");}
+function loadData(){let d=JSON.parse(localStorage.v3||"null");if(!d)return;F.forEach(id=>$(id).value=d.f[id]||"");$("eduForm").innerHTML="";$("expForm").innerHTML="";(d.edu||[]).forEach(addEdu);(d.exp||[]).forEach(addExp);if(localStorage.v3photo){$("rphoto").src=localStorage.v3photo;$("rphoto").style.display="block"}update();}
+function resetData(){if(confirm("Reset all data?")){localStorage.removeItem("v3");localStorage.removeItem("v3photo");location.reload();}}
+addEdu({degree:"MATRIC",board:"JAC",year:"2012",result:"2ND"});addEdu({degree:"INTER",board:"JAC",year:"2014",result:"2ND"});addExp({post:"Office Assistant",company:"Private Organization",duration:"1 Year",detail:"Handled documentation, customer support and basic computer-related office work."});update();
+</script>
+<div id="samePrintPreview" style="display:none;position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,.72);overflow:auto">
+<div style="width:210mm;min-height:297mm;margin:18px auto;background:#fff;position:relative;box-shadow:0 4px 24px #0008">
+<div style="position:fixed;right:18px;top:12px;z-index:100000;display:flex;gap:7px"><button type="button" onclick="closeSamePrintPreview()" style="padding:9px 12px;border:0;border-radius:5px;font-weight:bold">CLOSE</button><button type="button" class="blue" onclick="printA4()" style="padding:9px 12px;border:0;border-radius:5px;font-weight:bold">PRINT A4</button></div>
+<div id="samePrintPreviewPage"></div></div></div></body>
+</html>

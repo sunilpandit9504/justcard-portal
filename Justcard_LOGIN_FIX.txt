@@ -1,0 +1,3 @@
+LOGIN FIX
+The Resume Builder integration had a global JavaScript variable named "$" which conflicted with the main Justcard V15 "$" selector. This caused the main application script to stop parsing/executing, so the login form did not work.
+Fixed by isolating the Resume Builder selector as rb$ and keeping the V15 selector unchanged.

@@ -1,0 +1,20 @@
+{
+  "rewrites": [
+    {
+      "source": "/resume-builder",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/resume-builder/",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/photo-maker",
+      "destination": "/photo-maker/index.html"
+    },
+    {
+      "source": "/photo-maker/",
+      "destination": "/photo-maker/index.html"
+    }
+  ]
+}

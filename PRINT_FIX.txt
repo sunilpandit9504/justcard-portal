@@ -1,0 +1,2 @@
+Resume Builder A4 Print Fix
+PRINT A4 now prints only the integrated Resume Builder on one A4 portrait page.

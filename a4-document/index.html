@@ -1,0 +1,1813 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>A4 Document &amp; Photo Studio — Justcard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="../wallet-client.js"></script>
+<style>
+:root {
+  --p: #7c3aed;
+  --p-hover: #6d28d9;
+  --p-gradient: linear-gradient(135deg, #a855f7 0%, #7c3aed 50%, #6366f1 100%);
+  --p-glow: rgba(168, 85, 247, 0.35);
+  --bg-light: #fbf9fe;
+  --panel-bg: #ffffff;
+  --panel-card: #f8fafc;
+  --border: #ede9fe;
+  --text-dark: #0f172a;
+  --text-muted: #64748b;
+  --green: #10b981;
+  --green-hover: #059669;
+  --accent-purple: #a855f7;
+  --shadow-card: 0 4px 20px -2px rgba(124, 58, 237, 0.08), 0 2px 6px -1px rgba(15, 23, 42, 0.03);
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  background-color: var(--bg-light);
+  background-image: radial-gradient(at 0% 0%, rgba(168, 85, 247, 0.08) 0px, transparent 50%), radial-gradient(at 100% 0%, rgba(124, 58, 237, 0.08) 0px, transparent 50%), radial-gradient(at 50% 100%, rgba(99, 102, 241, 0.06) 0px, transparent 50%);
+  color: var(--text-dark);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+header {
+  background: rgba(255, 255, 255, 0.94);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-bottom: 1px solid var(--border);
+  box-shadow: 0 4px 20px -4px rgba(124, 58, 237, 0.07);
+  height: 54px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 18px;
+  position: sticky;
+  top: 0;
+  z-index: 50;
+}
+.header-left { display: flex; align-items: center; gap: 12px; }
+.back-btn {
+  background: #ffffff;
+  color: #475569;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 6px 14px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+}
+.back-btn:hover { background: #f3e8ff; color: #7e22ce; border-color: #d8b4fe; }
+.logo-icon {
+  width: 34px;
+  height: 34px;
+  border-radius: 9px;
+  background: var(--p-gradient);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Outfit', sans-serif;
+  font-size: 20px;
+  font-weight: 900;
+  box-shadow: 0 4px 14px var(--p-glow);
+}
+.app-title { font-family: 'Outfit', sans-serif; font-size: 18px; font-weight: 800; color: #0f172a; display: flex; align-items: center; gap: 8px; }
+.badge { background: #f3e8ff; color: #7e22ce; border: 1px solid #d8b4fe; font-size: 11px; font-weight: 800; padding: 2px 8px; border-radius: 20px; }
+
+.main-layout {
+  display: grid;
+  grid-template-columns: 390px 1fr;
+  flex: 1;
+  height: calc(100vh - 54px);
+  overflow: hidden;
+}
+
+/* Sidebar controls */
+.sidebar {
+  background: #ffffff;
+  border-right: 1px solid var(--border);
+  padding: 16px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.sec-card {
+  background: #fbf9fe;
+  border: 1.5px solid var(--border);
+  border-radius: 12px;
+  padding: 14px;
+  box-shadow: 0 2px 8px rgba(124, 58, 237, 0.04);
+}
+.sec-title {
+  font-family: 'Outfit', sans-serif;
+  font-size: 12px;
+  font-weight: 800;
+  color: #6b21a8;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.upload-zone {
+  border: 2px dashed #d8b4fe;
+  background: #faf5ff;
+  border-radius: 10px;
+  padding: 12px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+.upload-zone:hover, .upload-zone.dragover {
+  background: #f3e8ff;
+  border-color: #a855f7;
+}
+.upload-zone i { font-size: 22px; color: var(--p); }
+.upload-zone b { font-size: 13px; color: #0f172a; }
+.upload-zone small { font-size: 11px; color: var(--text-muted); }
+.file-name { font-size: 11.5px; color: #7e22ce; font-weight: 700; word-break: break-all; }
+
+.btn {
+  border: 0;
+  border-radius: 8px;
+  padding: 9px 14px;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  transition: all 0.2s;
+  text-decoration: none;
+}
+.btn-primary { background: var(--p-gradient); color: #fff; box-shadow: 0 3px 10px var(--p-glow); }
+.btn-primary:hover { opacity: 0.92; transform: translateY(-1px); }
+.btn-green { background: linear-gradient(135deg, #059669 0%, #10b981 100%); color: #fff; box-shadow: 0 3px 10px rgba(16, 185, 129, 0.25); }
+.btn-green:hover { opacity: 0.92; transform: translateY(-1px); }
+.btn-outline { background: #ffffff; color: #475569; border: 1.5px solid #e2e8f0; }
+.btn-outline:hover { background: #f8fafc; color: var(--p); border-color: #d8b4fe; }
+.btn-danger { background: #fee2e2; color: #dc2626; border: 1px solid #fecaca; font-size: 11px; padding: 3px 8px; border-radius: 6px; font-weight: 700; }
+.btn-danger:hover { background: #fecaca; }
+
+.btn-skew {
+  background: var(--p-gradient);
+  color: #fff;
+  width: 100%;
+  margin-top: 6px;
+  font-size: 11.5px;
+  padding: 8px 10px;
+  box-shadow: 0 3px 10px var(--p-glow);
+}
+.btn-skew:hover { opacity: 0.92; }
+
+.btn-crop-normal {
+  background: linear-gradient(135deg, #059669 0%, #10b981 100%);
+  color: #fff;
+  width: 100%;
+  margin-top: 8px;
+  font-size: 12px;
+  padding: 8px 12px;
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.25);
+}
+.btn-crop-normal:hover { opacity: 0.92; }
+
+.form-group { margin-bottom: 10px; }
+.form-group:last-child { margin-bottom: 0; }
+.form-group label { display: block; font-size: 11.5px; font-weight: 750; color: #334155; margin-bottom: 4px; }
+.select-field {
+  width: 100%;
+  background: #ffffff;
+  border: 1.5px solid #e2e8f0;
+  color: #1e293b;
+  padding: 8px 10px;
+  border-radius: 8px;
+  font-size: 12.5px;
+  font-family: inherit;
+  outline: none;
+  transition: all 0.2s;
+}
+.select-field:focus { border-color: var(--p); box-shadow: 0 0 0 3px rgba(124,58,237,0.12); }
+
+.filter-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+.filter-btn {
+  background: #ffffff;
+  border: 1.5px solid #e2e8f0;
+  color: #475569;
+  padding: 8px;
+  border-radius: 8px;
+  font-size: 11.5px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.filter-btn:hover { border-color: var(--p); color: var(--p); background: #faf5ff; }
+.filter-btn.active { background: var(--p-gradient); color: #fff; border-color: transparent; box-shadow: 0 2px 8px var(--p-glow); }
+
+.slider-row { display: flex; flex-direction: column; gap: 4px; margin-top: 8px; }
+.slider-header { display: flex; justify-content: space-between; font-size: 11px; color: #334155; font-weight: 700; }
+.slider-header span:last-child { color: var(--p); }
+input[type="range"] { width: 100%; accent-color: var(--p); height: 5px; border-radius: 4px; background: #e2e8f0; }
+
+/* Workspace preview */
+.workspace {
+  background: #f1f5f9;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  overflow: auto;
+}
+.a4-preview-sheet {
+  background: #fff;
+  width: 100%;
+  max-width: 420px;
+  aspect-ratio: 210 / 297;
+  box-shadow: 0 10px 30px rgba(124, 58, 237, 0.12), 0 2px 10px rgba(0,0,0,0.06);
+  border-radius: 4px;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  position: relative;
+  overflow: hidden;
+  box-sizing: border-box;
+  transition: all 0.2s ease;
+}
+.a4-preview-sheet.landscape {
+  max-width: 580px;
+  aspect-ratio: 297 / 210;
+  flex-direction: row;
+}
+.doc-img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  display: block;
+  margin: auto;
+}
+.empty-placeholder {
+  color: #94a3b8;
+  text-align: center;
+  padding: 30px;
+}
+
+/* ============================================================
+   MODALS (NORMAL PVC CROP + PERSPECTIVE CROP)
+   ============================================================ */
+.crop-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.88);
+  backdrop-filter: blur(8px);
+  z-index: 100;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+.crop-modal-overlay.open { display: flex; }
+.crop-modal-box {
+  width: min(1120px, 98vw);
+  height: min(740px, 95vh);
+  background: #1e293b;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-shadow: 0 25px 60px rgba(0,0,0,0.5);
+}
+.crop-modal-header {
+  height: 48px;
+  padding: 0 16px;
+  background: #0f172a;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.crop-modal-header b { font-size: 14px; font-weight: 800; color: #fff; display: flex; align-items: center; gap: 8px; }
+.crop-modal-body {
+  display: grid;
+  grid-template-columns: 260px 1fr 240px;
+  flex: 1;
+  overflow: hidden;
+}
+.crop-canvas-area {
+  background: #090d16;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+#pvcCropCanvas, #perspectiveCanvas {
+  display: block;
+  max-width: 100%;
+  max-height: 100%;
+  cursor: crosshair;
+  touch-action: none;
+}
+.crop-side-controls {
+  background: #1e293b;
+  border-right: 1px solid var(--border);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  overflow-y: auto;
+}
+.crop-right-preview {
+  background: #1e293b;
+  border-left: 1px solid var(--border);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  overflow-y: auto;
+}
+.side-tab-btn {
+  background: #0f172a;
+  border: 1.5px solid var(--border);
+  border-radius: 8px;
+  padding: 10px;
+  color: #cbd5e1;
+  font-weight: 700;
+  font-size: 12px;
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.side-tab-btn.active {
+  border-color: #6366f1;
+  background: rgba(99, 102, 241, 0.15);
+  color: #fff;
+}
+.crop-preview-box {
+  background: #0f172a;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 8px;
+  min-height: 100px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+.crop-preview-box img {
+  width: 100%;
+  height: auto;
+  border-radius: 4px;
+  display: block;
+}
+.crop-candidate-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+}
+.crop-candidate-thumb {
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  overflow: hidden;
+  cursor: pointer;
+  background: #0f172a;
+}
+.crop-candidate-thumb img { width: 100%; display: block; }
+.crop-candidate-thumb:hover { border-color: #818cf8; }
+
+.crop-inst {
+  font-size: 11.5px;
+  color: #cbd5e1;
+  background: #0f172a;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 12px;
+  line-height: 1.5;
+}
+.crop-inst b { color: #818cf8; }
+
+@media print {
+  body * { visibility: hidden; }
+  #printStage, #printStage * { visibility: visible; }
+  #printStage { position: absolute; left: 0; top: 0; width: 100%; height: 100%; margin: 0; padding: 0; background: #fff; }
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-left">
+    <a href="../home.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i> Dashboard</a>
+    <div class="logo-icon">J</div>
+    <div class="app-title">Justcard <span style="font-weight:600;font-size:14px;color:#64748b">— A4 Document Studio</span></div>
+    <span class="badge">PRO</span>
+  </div>
+  <div style="display:flex;align-items:center;gap:12px;">
+    <div class="jc-wallet-container"></div>
+    <button type="button" class="btn btn-green" id="topPrintBtn"><i class="fa-solid fa-print"></i> Print A4 Now</button>
+  </div>
+</header>
+
+<div class="main-layout">
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <!-- Front Upload -->
+    <div class="sec-card">
+      <div class="sec-title">
+        <span><i class="fa-solid fa-file-arrow-up"></i> 1. Front Document / Photo</span>
+        <button type="button" class="btn-danger" id="clearFrontBtn" style="display:none">✕ Remove</button>
+      </div>
+      <label for="frontFileInput" class="upload-zone" id="frontDropZone">
+        <i class="fa-solid fa-cloud-arrow-up"></i>
+        <b id="frontLabelText">Click or Drag Front Photo / PDF</b>
+        <small>Supports JPG, PNG, WEBP, PDF</small>
+        <span class="file-name" id="frontFileName"></span>
+      </label>
+      <input type="file" id="frontFileInput" accept="image/*,application/pdf" style="display:none">
+      
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:6px">
+        <button type="button" class="btn btn-crop-normal" id="openFrontNormalCropBtn" style="display:none;margin-top:0">
+          <i class="fa-solid fa-crop-simple"></i> ✂ Crop Front
+        </button>
+        <button type="button" class="btn btn-skew" id="openFrontPerspectiveBtn" style="display:none;margin-top:0">
+          <i class="fa-solid fa-vector-square"></i> 📐 4-Corner
+        </button>
+      </div>
+    </div>
+
+    <!-- Back Upload -->
+    <div class="sec-card">
+      <div class="sec-title">
+        <span><i class="fa-solid fa-file-arrow-up"></i> 2. Back Document (Optional)</span>
+        <button type="button" class="btn-danger" id="clearBackBtn" style="display:none">✕ Remove</button>
+      </div>
+      <label for="backFileInput" class="upload-zone" id="backDropZone">
+        <i class="fa-solid fa-cloud-arrow-up"></i>
+        <b id="backLabelText">Click or Drag Back Photo / PDF</b>
+        <small>2-in-1 Side-by-Side ya Top-Bottom ke liye</small>
+        <span class="file-name" id="backFileName"></span>
+      </label>
+      <input type="file" id="backFileInput" accept="image/*,application/pdf" style="display:none">
+      
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:6px">
+        <button type="button" class="btn btn-crop-normal" id="openBackNormalCropBtn" style="display:none;margin-top:0">
+          <i class="fa-solid fa-crop-simple"></i> ✂ Crop Back
+        </button>
+        <button type="button" class="btn btn-skew" id="openBackPerspectiveBtn" style="display:none;margin-top:0">
+          <i class="fa-solid fa-vector-square"></i> 📐 4-Corner
+        </button>
+      </div>
+    </div>
+
+    <!-- Quick Paste (Ctrl+V) -->
+    <div style="display:flex;gap:8px">
+      <button type="button" class="btn btn-outline" id="pasteBtn" style="flex:1"><i class="fa-solid fa-clipboard"></i> Paste (Ctrl+V)</button>
+      <button type="button" class="btn btn-outline" id="resetBtn"><i class="fa-solid fa-rotate-left"></i> Reset</button>
+    </div>
+
+    <!-- Layout Controls -->
+    <div class="sec-card">
+      <div class="sec-title"><span><i class="fa-solid fa-table-cells-large"></i> Print Layout</span></div>
+      <div class="form-group">
+        <label>Layout Mode</label>
+        <select id="layoutMode" class="select-field">
+          <option value="full" selected>📄 Full Page A4 (Single Document)</option>
+          <option value="side_by_side">📑 2-in-1 Side-by-Side (Front + Back Document)</option>
+          <option value="top_bottom">📑 2-in-1 Top &amp; Bottom (Front + Back Document)</option>
+          <option value="card">🪪 True PVC Card 2-in-1 Side-by-Side (85.6 × 54 mm)</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>A4 Paper Orientation</label>
+        <select id="paperOrientation" class="select-field">
+          <option value="portrait">A4 Portrait (खड़ा)</option>
+          <option value="landscape">A4 Landscape (आड़ा)</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Margins</label>
+        <select id="marginMode" class="select-field">
+          <option value="standard">Standard (6mm Margins)</option>
+          <option value="small">Compact (3mm Margins)</option>
+          <option value="none">Borderless (0mm Margins)</option>
+        </select>
+      </div>
+      <button type="button" class="btn btn-crop-normal" id="autoFitTruePvcBtn">
+        <i class="fa-solid fa-id-card"></i> 🪪 Normal Crop &amp; Fit to True PVC (Front + Back)
+      </button>
+    </div>
+
+    <!-- Enhancer & Filters -->
+    <div class="sec-card">
+      <div class="sec-title"><span><i class="fa-solid fa-wand-magic-sparkles"></i> Image Enhancer</span></div>
+      <div class="filter-grid">
+        <button type="button" class="filter-btn active" data-filter="original">🌟 Original</button>
+        <button type="button" class="filter-btn" data-filter="magic">🪄 Magic Clean</button>
+        <button type="button" class="filter-btn" data-filter="bw">🖨 B&amp;W Xerox</button>
+        <button type="button" class="filter-btn" data-filter="contrast">🔍 High Contrast</button>
+      </div>
+      <div class="slider-row">
+        <div class="slider-header"><span>Brightness</span><span id="brightVal">0</span></div>
+        <input type="range" id="brightRange" min="-100" max="100" value="0">
+      </div>
+      <div class="slider-row">
+        <div class="slider-header"><span>Contrast</span><span id="contrastVal">0</span></div>
+        <input type="range" id="contrastRange" min="-100" max="100" value="0">
+      </div>
+      <div style="display:flex;gap:6px;margin-top:10px">
+        <button type="button" class="btn btn-outline" id="rotLeftBtn" style="flex:1"><i class="fa-solid fa-rotate-left"></i> Rotate -90°</button>
+        <button type="button" class="btn btn-outline" id="rotRightBtn" style="flex:1"><i class="fa-solid fa-rotate-right"></i> Rotate +90°</button>
+      </div>
+    </div>
+
+    <!-- Actions -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;padding-bottom:10px">
+      <button type="button" class="btn btn-green" id="bottomPrintBtn"><i class="fa-solid fa-print"></i> Print A4</button>
+      <button type="button" class="btn btn-primary" id="downloadPdfBtn"><i class="fa-solid fa-file-pdf"></i> Save PDF</button>
+      <button type="button" class="btn btn-outline" id="downloadImgBtn" style="grid-column:span 2"><i class="fa-solid fa-image"></i> Download Clean Image</button>
+    </div>
+  </div>
+
+  <!-- Workspace Preview -->
+  <div class="workspace">
+    <div class="a4-preview-sheet" id="a4SheetPreview">
+      <div class="empty-placeholder">
+        <i class="fa-solid fa-file-arrow-up" style="font-size:40px;color:#6366f1;margin-bottom:10px;display:block"></i>
+        <b style="color:#f8fafc;font-size:15px">Koi bhi Document ya Photo Upload Karein</b>
+        <p style="font-size:12px;margin-top:6px;color:#94a3b8">Left side se Browse karein, Drag &amp; Drop karein ya WhatsApp se Copy karke Ctrl+V dabayein.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================
+     1. NORMAL RECTANGULAR PVC CROP MODAL (Front + Back HD Box Crop)
+     ============================================================ -->
+<div class="crop-modal-overlay" id="normalPvcCropModal">
+  <div class="crop-modal-box">
+    <div class="crop-modal-header">
+      <b><i class="fa-solid fa-crop-simple" style="color:#10b981"></i> ✂ Normal PVC Card Box Crop (HD 85.6 × 54 mm Output)</b>
+      <button type="button" class="btn btn-outline" id="closeNormalCropModal" style="padding:4px 10px;font-size:12px">✕ Close</button>
+    </div>
+    <div class="crop-modal-body">
+      <!-- Left Controls -->
+      <div class="crop-side-controls">
+        <div style="font-size:11px;font-weight:800;color:#94a3b8;text-transform:uppercase">SELECT CARD SIDE</div>
+        <button type="button" class="side-tab-btn active" id="pvcSideFrontBtn">
+          <span><b>▣ FRONT</b></span>
+          <small id="pvcFrontStatusText" style="color:#10b981">Ready</small>
+        </button>
+        <button type="button" class="side-tab-btn" id="pvcSideBackBtn">
+          <span><b>▣ BACK</b></span>
+          <small id="pvcBackStatusText" style="color:#94a3b8">Optional</small>
+        </button>
+
+        <div style="font-size:11px;font-weight:800;color:#94a3b8;text-transform:uppercase;margin-top:6px">CROP TOOLS</div>
+        <button type="button" class="btn btn-primary" id="pvcAutoDetectBtn" style="font-size:12px">
+          <i class="fa-solid fa-wand-magic-sparkles"></i> ✨ Auto Detect Card Box
+        </button>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
+          <button type="button" class="btn btn-outline" id="pvcZoomPlus">🔍 + Zoom</button>
+          <button type="button" class="btn btn-outline" id="pvcZoomMinus">🔍 − Zoom</button>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
+          <button type="button" class="btn btn-outline" id="pvcRotLeft">↶ −1°</button>
+          <button type="button" class="btn btn-outline" id="pvcRotRight">↷ +1°</button>
+        </div>
+
+        <button type="button" class="btn btn-outline" id="pvcResetBoxBtn">↺ Reset Box</button>
+
+        <div class="form-group" style="margin-top:6px">
+          <label style="font-size:11px;font-weight:700;color:#94a3b8">Crop Box Ratio</label>
+          <select id="pvcBoxRatioSelect" class="select-field" style="padding:6px 10px;font-size:12px">
+            <option value="free" selected>🔓 Free / Actual Size (No Stretch / Actual Height)</option>
+            <option value="pvc">🪪 Standard PVC Card (85.6 × 54 mm)</option>
+            <option value="a4_p">📄 A4 Portrait Document (1 : 1.414)</option>
+            <option value="a4_l">📄 A4 Landscape Document (1.414 : 1)</option>
+          </select>
+        </div>
+
+        <div class="crop-inst" style="margin-top:auto">
+          <b>Actual Height / Natural Size:</b><br>
+          "Free / Actual Size" me document apni actual height me bina kisi stretch ke crop hoga.
+        </div>
+      </div>
+
+      <!-- Center Stage -->
+      <div class="crop-canvas-area" id="pvcCanvasArea">
+        <canvas id="pvcCropCanvas"></canvas>
+      </div>
+
+      <!-- Right Previews -->
+      <div class="crop-right-preview">
+        <div style="font-size:11px;font-weight:800;color:#94a3b8;text-transform:uppercase">LIVE HD PREVIEW</div>
+        
+        <div>
+          <div style="font-size:11px;font-weight:700;color:#a5b4fc;margin-bottom:4px">FRONT PREVIEW</div>
+          <div class="crop-preview-box" id="pvcFrontPreviewBox"><small style="color:#64748b">Crop box draw karein</small></div>
+        </div>
+
+        <div>
+          <div style="font-size:11px;font-weight:700;color:#10b981;margin-bottom:4px">BACK PREVIEW</div>
+          <div class="crop-preview-box" id="pvcBackPreviewBox"><small style="color:#64748b">Optional Back crop</small></div>
+        </div>
+
+        <div style="font-size:11px;font-weight:800;color:#94a3b8;text-transform:uppercase;margin-top:6px">DETECTED BOXES</div>
+        <div id="pvcCandidateList" class="crop-candidate-grid"></div>
+
+        <button type="button" class="btn btn-green" id="applyNormalCropBtn" style="margin-top:auto;padding:12px;font-size:13px">
+          <i class="fa-solid fa-check"></i> ✓ Apply Clean Crop (Actual Height)
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================
+     2. 4-POINT CORNER / PERSPECTIVE DE-SKEW MODAL (Advanced)
+     ============================================================ -->
+<div class="crop-modal-overlay" id="perspectiveModal">
+  <div class="crop-modal-box">
+    <div class="crop-modal-header">
+      <b><i class="fa-solid fa-vector-square" style="color:#818cf8"></i> 📐 4-Corner Perspective Crop &amp; De-Skew (Tedha Document Sidha Karein)</b>
+      <button type="button" class="btn btn-outline" id="closeCropModal" style="padding:4px 10px;font-size:12px">✕ Close</button>
+    </div>
+    <div class="crop-modal-body" style="grid-template-columns:1fr 280px">
+      <div class="crop-canvas-area" id="cropCanvasArea">
+        <canvas id="perspectiveCanvas"></canvas>
+      </div>
+      <div class="crop-side-controls">
+        <div class="crop-inst">
+          <b>Kaise use karein:</b><br>
+          Screen par dikh rahe 4 corner points ko mouse ya touch se drag karke WhatsApp document ke 4 kono par set karein, phir <b>"✓ Apply &amp; Straighten"</b> dabayein.
+        </div>
+
+        <div class="form-group">
+          <label>Target Aspect Ratio</label>
+          <select id="cropTargetRatio" class="select-field">
+            <option value="auto" selected>🔄 Auto / Actual Size (No Stretch / Actual Height)</option>
+            <option value="pvc_card">🪪 PVC Card Ratio (85.6 × 54 mm)</option>
+            <option value="a4_portrait">📄 Standard A4 Portrait (1 : 1.414)</option>
+            <option value="a4_landscape">📄 Standard A4 Landscape (1.414 : 1)</option>
+          </select>
+        </div>
+
+        <div style="display:flex;gap:6px">
+          <button type="button" class="btn btn-outline" id="autoFitPointsBtn" style="flex:1"><i class="fa-solid fa-wand-magic-sparkles"></i> Auto Fit</button>
+          <button type="button" class="btn btn-outline" id="resetPointsBtn" style="flex:1"><i class="fa-solid fa-rotate-left"></i> Reset</button>
+        </div>
+
+        <div style="display:flex;gap:6px">
+          <button type="button" class="btn btn-outline" id="cropRotLeft" style="flex:1">↶ -90°</button>
+          <button type="button" class="btn btn-outline" id="cropRotRight" style="flex:1">↷ +90°</button>
+        </div>
+
+        <button type="button" class="btn btn-green" id="applyPerspectiveBtn" style="margin-top:auto;padding:12px;font-size:14px">
+          <i class="fa-solid fa-check"></i> ✓ Apply &amp; Straighten
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+let state = {
+  front: null,
+  frontName: '',
+  frontOriginal: null,
+  back: null,
+  backName: '',
+  backOriginal: null,
+  rotation: 0,
+  filter: 'original',
+  brightness: 0,
+  contrast: 0
+};
+
+// PDF.js loader
+let pdfjsLib = null;
+async function getPdfJs() {
+  if (pdfjsLib) return pdfjsLib;
+  pdfjsLib = await import('https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.4.168/pdf.min.mjs');
+  pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.4.168/pdf.worker.min.mjs';
+  return pdfjsLib;
+}
+
+// Upload processor
+async function processFile(file, side) {
+  if (!file) return;
+  const isPdf = file.type === 'application/pdf' || (file.name && file.name.toLowerCase().endsWith('.pdf'));
+  
+  if (isPdf) {
+    try {
+      const lib = await getPdfJs();
+      const buf = await file.arrayBuffer();
+      const pdf = await lib.getDocument({ data: buf }).promise;
+      const page = await pdf.getPage(1);
+      const vp = page.getViewport({ scale: 3.0 });
+      const c = document.createElement('canvas');
+      c.width = Math.ceil(vp.width);
+      c.height = Math.ceil(vp.height);
+      await page.render({ canvasContext: c.getContext('2d'), viewport: vp }).promise;
+      const data = c.toDataURL('image/png');
+      state[side] = data;
+      state[side + 'Original'] = data;
+      state[side + 'Name'] = file.name;
+    } catch (err) {
+      console.error(err);
+      alert('PDF open karne me error: ' + (err.message || err));
+      return;
+    }
+  } else {
+    await new Promise(resolve => {
+      const r = new FileReader();
+      r.onload = e => {
+        state[side] = e.target.result;
+        state[side + 'Original'] = e.target.result;
+        state[side + 'Name'] = file.name || (side + '_image.png');
+        resolve();
+      };
+      r.readAsDataURL(file);
+    });
+  }
+
+  updateUploadUI(side);
+  renderSheet();
+}
+
+function updateUploadUI(side) {
+  const isFront = side === 'front';
+  const nameEl = document.getElementById(isFront ? 'frontFileName' : 'backFileName');
+  const labelEl = document.getElementById(isFront ? 'frontLabelText' : 'backLabelText');
+  const clearEl = document.getElementById(isFront ? 'clearFrontBtn' : 'clearBackBtn');
+  const normalCropBtn = document.getElementById(isFront ? 'openFrontNormalCropBtn' : 'openBackNormalCropBtn');
+  const skewBtn = document.getElementById(isFront ? 'openFrontPerspectiveBtn' : 'openBackPerspectiveBtn');
+
+  if (state[side]) {
+    nameEl.textContent = '✓ ' + state[side + 'Name'];
+    labelEl.textContent = 'Change ' + (isFront ? 'Front' : 'Back') + ' File';
+    clearEl.style.display = 'inline-block';
+    normalCropBtn.style.display = 'inline-flex';
+    skewBtn.style.display = 'inline-flex';
+  } else {
+    nameEl.textContent = '';
+    labelEl.textContent = isFront ? 'Click or Drag Front Photo / PDF' : 'Click or Drag Back Photo / PDF';
+    clearEl.style.display = 'none';
+    normalCropBtn.style.display = 'none';
+    skewBtn.style.display = 'none';
+  }
+}
+
+// Event Listeners for inputs
+document.getElementById('frontFileInput').addEventListener('change', function() {
+  if (this.files && this.files[0]) processFile(this.files[0], 'front');
+});
+
+document.getElementById('backFileInput').addEventListener('change', function() {
+  if (this.files && this.files[0]) processFile(this.files[0], 'back');
+});
+
+// Drag and drop setup
+['frontDropZone', 'backDropZone'].forEach(id => {
+  const el = document.getElementById(id);
+  const side = id === 'frontDropZone' ? 'front' : 'back';
+  
+  el.addEventListener('dragover', e => {
+    e.preventDefault();
+    el.classList.add('dragover');
+  });
+  ['dragleave', 'drop'].forEach(ev => el.addEventListener(ev, () => el.classList.remove('dragover')));
+  el.addEventListener('drop', e => {
+    e.preventDefault();
+    if (e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0]) {
+      processFile(e.dataTransfer.files[0], side);
+    }
+  });
+});
+
+// Paste
+function handlePasteBlob(blob, name = 'Pasted_Image.png') {
+  const side = !state.front ? 'front' : 'back';
+  const file = new File([blob], name, { type: blob.type || 'image/png' });
+  processFile(file, side);
+}
+
+window.addEventListener('paste', e => {
+  const items = e.clipboardData?.items;
+  if (!items) return;
+  for (let i = 0; i < items.length; i++) {
+    if (items[i].type.indexOf('image') !== -1) {
+      const file = items[i].getAsFile();
+      if (file) {
+        handlePasteBlob(file, 'Pasted_' + (!state.front ? 'Front' : 'Back') + '.png');
+        break;
+      }
+    }
+  }
+});
+
+document.getElementById('pasteBtn').onclick = async () => {
+  try {
+    if (navigator.clipboard && navigator.clipboard.read) {
+      const items = await navigator.clipboard.read();
+      for (const item of items) {
+        const imageType = item.types.find(t => t.startsWith('image/'));
+        if (imageType) {
+          const blob = await item.getType(imageType);
+          handlePasteBlob(blob);
+          return;
+        }
+      }
+      alert('Clipboard me image nahi mili. WhatsApp Web se image copy karke yahan paste karein.');
+    } else {
+      alert('Kripya keyboard par Ctrl + V dabayein.');
+    }
+  } catch (err) {
+    alert('Clipboard access ke liye keyboard par Ctrl + V dabayein.');
+  }
+};
+
+// Clear & Reset
+document.getElementById('clearFrontBtn').onclick = e => {
+  e.preventDefault();
+  state.front = null;
+  state.frontOriginal = null;
+  state.frontName = '';
+  document.getElementById('frontFileInput').value = '';
+  updateUploadUI('front');
+  renderSheet();
+};
+
+document.getElementById('clearBackBtn').onclick = e => {
+  e.preventDefault();
+  state.back = null;
+  state.backOriginal = null;
+  state.backName = '';
+  document.getElementById('backFileInput').value = '';
+  updateUploadUI('back');
+  renderSheet();
+};
+
+document.getElementById('resetBtn').onclick = () => {
+  state.front = null;
+  state.frontOriginal = null;
+  state.frontName = '';
+  state.back = null;
+  state.backOriginal = null;
+  state.backName = '';
+  state.rotation = 0;
+  state.filter = 'original';
+  state.brightness = 0;
+  state.contrast = 0;
+  document.getElementById('frontFileInput').value = '';
+  document.getElementById('backFileInput').value = '';
+  document.getElementById('brightRange').value = 0;
+  document.getElementById('contrastRange').value = 0;
+  document.getElementById('brightVal').textContent = '0';
+  document.getElementById('contrastVal').textContent = '0';
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.toggle('active', b.dataset.filter === 'original'));
+  updateUploadUI('front');
+  updateUploadUI('back');
+  renderSheet();
+};
+
+// Filters & Adjustments
+function getFilterCss() {
+  let b = 100 + Number(state.brightness || 0);
+  let c = 100 + Number(state.contrast || 0);
+  let extra = '';
+  if (state.filter === 'magic') {
+    b += 10; c += 28; extra = ' saturate(1.15)';
+  } else if (state.filter === 'bw') {
+    extra = ' grayscale(100%) contrast(140%)';
+  } else if (state.filter === 'contrast') {
+    c += 45;
+  }
+  return `brightness(${b}%) contrast(${c}%)${extra}`;
+}
+
+document.querySelectorAll('.filter-btn').forEach(btn => {
+  btn.onclick = () => {
+    state.filter = btn.dataset.filter;
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.toggle('active', b === btn));
+    renderSheet();
+  };
+});
+
+document.getElementById('brightRange').oninput = function() {
+  state.brightness = Number(this.value);
+  document.getElementById('brightVal').textContent = this.value;
+  renderSheet();
+};
+
+document.getElementById('contrastRange').oninput = function() {
+  state.contrast = Number(this.value);
+  document.getElementById('contrastVal').textContent = this.value;
+  renderSheet();
+};
+
+document.getElementById('rotLeftBtn').onclick = () => {
+  state.rotation = (state.rotation + 270) % 360;
+  renderSheet();
+};
+
+document.getElementById('rotRightBtn').onclick = () => {
+  state.rotation = (state.rotation + 90) % 360;
+  renderSheet();
+};
+
+// Select options
+['layoutMode', 'paperOrientation', 'marginMode'].forEach(id => {
+  const el = document.getElementById(id);
+  if (el) el.onchange = renderSheet;
+});
+
+// Render Sheet Preview
+function renderSheet() {
+  const container = document.getElementById('a4SheetPreview');
+  const f = state.front;
+  const b = state.back;
+
+  if (!f && !b) {
+    container.className = 'a4-preview-sheet';
+    container.innerHTML = `
+      <div class="empty-placeholder">
+        <i class="fa-solid fa-file-arrow-up" style="font-size:40px;color:#6366f1;margin-bottom:10px;display:block"></i>
+        <b style="color:#f8fafc;font-size:15px">Koi bhi Document ya Photo Upload Karein</b>
+        <p style="font-size:12px;margin-top:6px;color:#94a3b8">Left side se Browse karein, Drag &amp; Drop karein ya WhatsApp se Copy karke Ctrl+V dabayein.</p>
+      </div>
+    `;
+    return;
+  }
+
+  const isLandscape = document.getElementById('paperOrientation')?.value === 'landscape';
+  const layout = document.getElementById('layoutMode')?.value || 'full';
+  const margins = document.getElementById('marginMode')?.value || 'standard';
+  const pad = margins === 'none' ? '0' : margins === 'small' ? '4mm' : '8mm';
+  const filterStyle = getFilterCss();
+  const rotStyle = state.rotation ? `transform:rotate(${state.rotation}deg);` : '';
+
+  container.className = 'a4-preview-sheet' + (isLandscape ? ' landscape' : '');
+  container.style.padding = pad;
+
+  if (layout === 'card') {
+    // ONLY when PVC Card is chosen: fix into standard PVC card size
+    html = `
+      <div style="display:flex;flex-direction:column;align-items:center;width:100%;padding-top:8mm">
+        <div style="font-size:12px;font-weight:800;color:#f8fafc;margin-bottom:6mm;letter-spacing:0.5px;display:flex;align-items:center;gap:6px">
+          <span>🪪 True PVC Card Size (85.60 × 53.98 mm) — 2-in-1 Side-by-Side</span>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(2, 85.60mm);gap:6mm;align-items:start;justify-content:center;align-content:start;width:100%">
+          ${f ? `
+            <div style="width:85.60mm;height:53.98mm;border:1.5px dashed #4f46e5;border-radius:3.18mm;overflow:hidden;background:#fff;box-shadow:0 4px 14px rgba(0,0,0,0.18);position:relative">
+              <img src="${f}" style="width:100%;height:100%;object-fit:fill;filter:${filterStyle};${rotStyle}" alt="Front PVC Card">
+              <span style="position:absolute;top:2px;left:4px;font-size:9px;font-weight:800;color:#fff;background:#4f46e5;padding:1px 5px;border-radius:3px">FRONT</span>
+              <span style="position:absolute;bottom:2px;right:4px;font-size:9px;font-weight:700;color:#fff;background:rgba(15,23,42,0.75);padding:1px 5px;border-radius:3px">85.6 × 54 mm</span>
+            </div>
+          ` : `
+            <div style="width:85.60mm;height:53.98mm;border:1.5px dashed #94a3b8;border-radius:3.18mm;display:flex;flex-direction:column;align-items:center;justify-content:center;background:#1e293b;color:#94a3b8;font-size:11px;font-weight:700;text-align:center;padding:8px">
+              <i class="fa-solid fa-plus" style="margin-bottom:4px;color:#94a3b8"></i>
+              Upload Front Side
+            </div>
+          `}
+          ${b ? `
+            <div style="width:85.60mm;height:53.98mm;border:1.5px dashed #10b981;border-radius:3.18mm;overflow:hidden;background:#fff;box-shadow:0 4px 14px rgba(0,0,0,0.18);position:relative">
+              <img src="${b}" style="width:100%;height:100%;object-fit:fill;filter:${filterStyle};${rotStyle}" alt="Back PVC Card">
+              <span style="position:absolute;top:2px;left:4px;font-size:9px;font-weight:800;color:#fff;background:#10b981;padding:1px 5px;border-radius:3px">BACK</span>
+              <span style="position:absolute;bottom:2px;right:4px;font-size:9px;font-weight:700;color:#fff;background:rgba(15,23,42,0.75);padding:1px 5px;border-radius:3px">85.6 × 54 mm</span>
+            </div>
+          ` : `
+            <div style="width:85.60mm;height:53.98mm;border:1.5px dashed #94a3b8;border-radius:3.18mm;display:flex;flex-direction:column;align-items:center;justify-content:center;background:#1e293b;color:#94a3b8;font-size:11px;font-weight:700;text-align:center;padding:8px">
+              <i class="fa-solid fa-plus" style="margin-bottom:4px;color:#94a3b8"></i>
+              Upload Back Side (Optional)
+            </div>
+          `}
+        </div>
+      </div>
+    `;
+  } else if (layout === 'side_by_side') {
+    // Normal 2-in-1 Side-by-Side: Xerox photocopy style placed at TOP with compact height & blank bottom page
+    const list = [f, b].filter(Boolean);
+    html = `
+      <div style="width:100%;display:flex;flex-direction:column;justify-content:flex-start;align-items:center;padding-top:10mm">
+        <div style="display:grid;grid-template-columns:${list.length > 1 ? '1fr 1fr' : '1fr'};gap:6mm;width:100%;align-items:start;justify-content:center">
+          ${list.map(src => `
+            <div style="width:100%;display:flex;align-items:flex-start;justify-content:center;overflow:hidden">
+              <img class="doc-img" src="${src}" style="filter:${filterStyle};${rotStyle};width:100%;max-width:100%;height:auto;max-height:95mm;object-fit:contain;margin:0 auto;display:block">
+            </div>
+          `).join('')}
+        </div>
+      </div>
+    `;
+  } else if (layout === 'top_bottom') {
+    // Normal 2-in-1 Top-Bottom: Xerox photocopy style placed at TOP with compact height & blank bottom page
+    const list = [f, b].filter(Boolean);
+    html = `
+      <div style="width:100%;display:flex;flex-direction:column;justify-content:flex-start;align-items:center;padding-top:10mm">
+        <div style="display:grid;grid-template-rows:${list.length > 1 ? 'auto auto' : 'auto'};gap:6mm;width:100%;align-items:start;justify-content:center">
+          ${list.map(src => `
+            <div style="width:100%;display:flex;align-items:flex-start;justify-content:center;overflow:hidden">
+              <img class="doc-img" src="${src}" style="filter:${filterStyle};${rotStyle};width:100%;max-width:100%;height:auto;max-height:80mm;object-fit:contain;margin:0 auto;display:block">
+            </div>
+          `).join('')}
+        </div>
+      </div>
+    `;
+  } else {
+    // Full Page: natural full document without distortion
+    const src = f || b;
+    html = `
+      <div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;overflow:hidden">
+        <img class="doc-img" src="${src}" style="filter:${filterStyle};${rotStyle};width:100%;height:100%;object-fit:contain;margin:auto;display:block">
+      </div>
+    `;
+  }
+
+  container.innerHTML = html;
+}
+
+// ============================================================
+// 1. NORMAL RECTANGULAR PVC CROP ENGINE (Classic Box Crop)
+// ============================================================
+let normCropSide = 'front';
+let normCropImgs = { front: null, back: null };
+let normCropResults = { front: null, back: null };
+let normZoom = 1, normAngle = 0;
+let normRect = null, normStart = null, normDragging = false;
+const pvcCanvas = document.getElementById('pvcCropCanvas');
+const pvcCtx = pvcCanvas.getContext('2d');
+const PVC_RATIO = 85.60 / 53.98; // 1.5858
+
+function openNormalPvcCropper(side = 'front') {
+  normCropSide = side;
+  const src = state[side + 'Original'] || state[side] || state.frontOriginal || state.front;
+  if (!src) {
+    alert('Pehle Document photo ya PDF upload karein.');
+    return;
+  }
+  document.getElementById('normalPvcCropModal').classList.add('open');
+  setNormalCropSide(side);
+}
+
+document.getElementById('autoFitTruePvcBtn').onclick = () => openNormalPvcCropper('front');
+document.getElementById('openFrontNormalCropBtn').onclick = () => openNormalPvcCropper('front');
+document.getElementById('openBackNormalCropBtn').onclick = () => openNormalPvcCropper('back');
+document.getElementById('closeNormalCropModal').onclick = () => document.getElementById('normalPvcCropModal').classList.remove('open');
+
+function setNormalCropSide(side) {
+  normCropSide = side;
+  normZoom = 1; normAngle = 0; normRect = null;
+  document.getElementById('pvcSideFrontBtn').classList.toggle('active', side === 'front');
+  document.getElementById('pvcSideBackBtn').classList.toggle('active', side === 'back');
+
+  const src = state[side + 'Original'] || state[side];
+  if (!src) {
+    drawNormalCropEditor();
+    return;
+  }
+  const im = new Image();
+  im.onload = () => {
+    normCropImgs[side] = im;
+    autoDetectNormalCrop(false);
+  };
+  im.src = src;
+}
+
+document.getElementById('pvcSideFrontBtn').onclick = () => setNormalCropSide('front');
+document.getElementById('pvcSideBackBtn').onclick = () => setNormalCropSide('back');
+
+function drawNormalCropEditor() {
+  const im = normCropImgs[normCropSide];
+  if (!im || !im.width) return;
+  const area = document.getElementById('pvcCanvasArea');
+  const maxW = area.clientWidth - 30;
+  const maxH = area.clientHeight - 30;
+  const scale = Math.min(maxW / im.width, maxH / im.height) * normZoom;
+
+  pvcCanvas.width = Math.max(1, Math.round(im.width * scale));
+  pvcCanvas.height = Math.max(1, Math.round(im.height * scale));
+
+  const ctx = pvcCtx;
+  ctx.clearRect(0, 0, pvcCanvas.width, pvcCanvas.height);
+  ctx.save();
+  ctx.translate(pvcCanvas.width / 2, pvcCanvas.height / 2);
+  ctx.rotate((normAngle * Math.PI) / 180);
+  ctx.drawImage(im, -im.width * scale / 2, -im.height * scale / 2, im.width * scale, im.height * scale);
+  ctx.restore();
+
+  if (normRect) {
+    // Dark mask outside
+    ctx.save();
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.55)';
+    ctx.fillRect(0, 0, pvcCanvas.width, pvcCanvas.height);
+
+    ctx.globalCompositeOperation = 'destination-out';
+    ctx.fillRect(normRect.x, normRect.y, normRect.w, normRect.h);
+    ctx.restore();
+
+    // Box outline & corner marks
+    ctx.save();
+    ctx.strokeStyle = '#10b981';
+    ctx.lineWidth = 2.5;
+    ctx.setLineDash([6, 4]);
+    ctx.strokeRect(normRect.x, normRect.y, normRect.w, normRect.h);
+
+    // Corner handle circles
+    ctx.fillStyle = '#10b981';
+    const corners = [
+      [normRect.x, normRect.y],
+      [normRect.x + normRect.w, normRect.y],
+      [normRect.x + normRect.w, normRect.y + normRect.h],
+      [normRect.x, normRect.y + normRect.h]
+    ];
+    corners.forEach(([cx, cy]) => {
+      ctx.beginPath();
+      ctx.arc(cx, cy, 6, 0, Math.PI * 2);
+      ctx.fill();
+    });
+    ctx.restore();
+
+    updateNormalCropPreview();
+  }
+}
+
+function autoDetectNormalCrop(showMsg = true) {
+  const im = normCropImgs[normCropSide];
+  if (!im || !im.width) {
+    if (showMsg) alert('Is side ke liye image nahi hai.');
+    return;
+  }
+  normZoom = 1;
+  drawNormalCropEditor();
+
+  const W = pvcCanvas.width, H = pvcCanvas.height;
+  const boxes = [];
+  function addBox(x, y, w, h) {
+    if (w < 20 || h < 15) return;
+    boxes.push({ x, y, w, h });
+  }
+
+  let w = W * 0.72, h = w / PVC_RATIO;
+  if (h < H * 0.85) addBox((W - w) / 2, (H - h) / 2, w, h);
+
+  let w2 = W * 0.48, h2 = w2 / PVC_RATIO;
+  if (h2 < H * 0.9) {
+    addBox(W * 0.02, (H - h2) / 2, w2, h2);
+    addBox(W - W * 0.02 - w2, (H - h2) / 2, w2, h2);
+  }
+
+  let h3 = H * 0.42, w3 = h3 * PVC_RATIO;
+  if (w3 < W * 0.9) {
+    addBox((W - w3) / 2, H * 0.05, w3, h3);
+    addBox((W - w3) / 2, H - H * 0.05 - h3, w3, h3);
+  }
+
+  if (boxes[0]) normRect = boxes[0];
+  drawNormalCropEditor();
+
+  const listEl = document.getElementById('pvcCandidateList');
+  listEl.innerHTML = boxes.map((b, i) => `
+    <div class="crop-candidate-thumb" data-cand="${i}">
+      <img src="${candidateThumbData(b)}">
+    </div>
+  `).join('');
+
+  document.querySelectorAll('#pvcCandidateList .crop-candidate-thumb').forEach(el => {
+    el.onclick = () => {
+      normRect = boxes[Number(el.dataset.cand)];
+      drawNormalCropEditor();
+    };
+  });
+}
+
+function candidateThumbData(b) {
+  const im = normCropImgs[normCropSide];
+  const sx = im.width / pvcCanvas.width, sy = im.height / pvcCanvas.height;
+  const c = document.createElement('canvas');
+  c.width = 200;
+  c.height = Math.max(20, Math.round(200 * (b.h / (b.w || 1))));
+  c.getContext('2d').drawImage(im, b.x * sx, b.y * sy, b.w * sx, b.h * sy, 0, 0, c.width, c.height);
+  return c.toDataURL('image/png');
+}
+
+// Mouse / Pointer drag for box
+function getPvcCanvasMousePos(e) {
+  const r = pvcCanvas.getBoundingClientRect();
+  return {
+    x: (e.clientX - r.left) * (pvcCanvas.width / r.width),
+    y: (e.clientY - r.top) * (pvcCanvas.height / r.height)
+  };
+}
+
+pvcCanvas.addEventListener('pointerdown', e => {
+  if (!normCropImgs[normCropSide]) return;
+  normDragging = true;
+  normStart = getPvcCanvasMousePos(e);
+  normRect = { x: normStart.x, y: normStart.y, w: 2, h: 2 };
+  pvcCanvas.setPointerCapture(e.pointerId);
+});
+
+pvcCanvas.addEventListener('pointermove', e => {
+  if (!normDragging || !normStart) return;
+  const p = getPvcCanvasMousePos(e);
+  const minX = Math.min(normStart.x, p.x);
+  const minY = Math.min(normStart.y, p.y);
+  let w = Math.abs(p.x - normStart.x);
+  let h = Math.abs(p.y - normStart.y);
+
+  const ratioMode = document.getElementById('pvcBoxRatioSelect')?.value || 'free';
+  if (ratioMode === 'pvc') {
+    const r = 85.60 / 53.98;
+    if (w / h > r) h = w / r;
+    else if (h) w = h * r;
+  } else if (ratioMode === 'a4_p') {
+    const r = 210 / 297;
+    if (w / h > r) h = w / r;
+    else if (h) w = h * r;
+  } else if (ratioMode === 'a4_l') {
+    const r = 297 / 210;
+    if (w / h > r) h = w / r;
+    else if (h) w = h * r;
+  }
+  // If 'free', w and h are completely free without any ratio lock!
+
+  normRect = { x: minX, y: minY, w, h };
+  drawNormalCropEditor();
+});
+
+pvcCanvas.addEventListener('pointerup', () => { normDragging = false; });
+pvcCanvas.addEventListener('pointercancel', () => { normDragging = false; });
+
+const pvcRatioSel = document.getElementById('pvcBoxRatioSelect');
+if (pvcRatioSel) {
+  pvcRatioSel.onchange = () => {
+    if (!normRect || !normCropImgs[normCropSide]) return;
+    const mode = pvcRatioSel.value;
+    let targetRatio = null;
+    if (mode === 'pvc') targetRatio = 85.60 / 53.98;
+    else if (mode === 'a4_p') targetRatio = 210 / 297;
+    else if (mode === 'a4_l') targetRatio = 297 / 210;
+
+    if (targetRatio) {
+      normRect.h = normRect.w / targetRatio;
+      if (normRect.y + normRect.h > pvcCanvas.height) {
+        normRect.h = pvcCanvas.height - normRect.y;
+        normRect.w = normRect.h * targetRatio;
+      }
+    }
+    drawNormalCropEditor();
+  };
+}
+
+document.getElementById('pvcAutoDetectBtn').onclick = () => autoDetectNormalCrop(true);
+document.getElementById('pvcResetBoxBtn').onclick = () => autoDetectNormalCrop(false);
+document.getElementById('pvcZoomPlus').onclick = () => { normZoom = Math.min(3, normZoom + 0.15); drawNormalCropEditor(); };
+document.getElementById('pvcZoomMinus').onclick = () => { normZoom = Math.max(0.5, normZoom - 0.15); drawNormalCropEditor(); };
+document.getElementById('pvcRotLeft').onclick = () => { normAngle -= 1; drawNormalCropEditor(); };
+document.getElementById('pvcRotRight').onclick = () => { normAngle += 1; drawNormalCropEditor(); };
+
+function exportNormalCroppedCard() {
+  const im = normCropImgs[normCropSide];
+  if (!im || !normRect || normRect.w < 10 || normRect.h < 10) return null;
+  const sx = im.width / pvcCanvas.width, sy = im.height / pvcCanvas.height;
+  const x = Math.max(0, normRect.x * sx), y = Math.max(0, normRect.y * sy);
+  const w = Math.min(im.width - x, normRect.w * sx), h = Math.min(im.height - y, normRect.h * sy);
+
+  const ratioMode = document.getElementById('pvcBoxRatioSelect')?.value || 'free';
+  const c = document.createElement('canvas');
+
+  if (ratioMode === 'pvc') {
+    c.width = 2400;
+    c.height = 1513; // 85.60 : 53.98 standard PVC
+  } else {
+    // Preserve 100% natural, actual aspect ratio and actual height without stretching
+    c.width = Math.max(10, Math.round(w));
+    c.height = Math.max(10, Math.round(h));
+  }
+
+  const ctx = c.getContext('2d');
+  ctx.imageSmoothingEnabled = true;
+  ctx.imageSmoothingQuality = 'high';
+  ctx.drawImage(im, x, y, w, h, 0, 0, c.width, c.height);
+  return c.toDataURL('image/png');
+}
+
+function updateNormalCropPreview() {
+  const data = exportNormalCroppedCard();
+  if (!data) return;
+  normCropResults[normCropSide] = data;
+  const box = document.getElementById(normCropSide === 'front' ? 'pvcFrontPreviewBox' : 'pvcBackPreviewBox');
+  if (box) box.innerHTML = `<img src="${data}" alt="Cropped ${normCropSide}">`;
+}
+
+document.getElementById('applyNormalCropBtn').onclick = () => {
+  const d = exportNormalCroppedCard();
+  if (!d && !normCropResults.front && !normCropResults.back) {
+    alert('Card box select karein.');
+    return;
+  }
+  if (d) normCropResults[normCropSide] = d;
+
+  if (normCropResults.front) state.front = normCropResults.front;
+  if (normCropResults.back) state.back = normCropResults.back;
+
+  document.getElementById('normalPvcCropModal').classList.remove('open');
+  renderSheet();
+};
+
+// ============================================================
+// 2. 4-POINT CORNER PERSPECTIVE CROP & DE-SKEW ENGINE (Advanced)
+// ============================================================
+let cropActiveSide = 'front';
+let cropImg = null;
+let cropPoints = [
+  { x: 0.1, y: 0.1 }, // TL
+  { x: 0.9, y: 0.1 }, // TR
+  { x: 0.9, y: 0.9 }, // BR
+  { x: 0.1, y: 0.9 }  // BL
+];
+let activeDragPoint = -1;
+const cropCanvas = document.getElementById('perspectiveCanvas');
+const cropCtx = cropCanvas.getContext('2d');
+
+function openPerspectiveEditor(side) {
+  cropActiveSide = side;
+  const src = state[side + 'Original'] || state[side];
+  if (!src) {
+    alert('Pehle Document photo upload karein.');
+    return;
+  }
+  cropImg = new Image();
+  cropImg.onload = () => {
+    cropPoints = [
+      { x: cropImg.width * 0.05, y: cropImg.height * 0.05 },
+      { x: cropImg.width * 0.95, y: cropImg.height * 0.05 },
+      { x: cropImg.width * 0.95, y: cropImg.height * 0.95 },
+      { x: cropImg.width * 0.05, y: cropImg.height * 0.95 }
+    ];
+    document.getElementById('perspectiveModal').classList.add('open');
+    drawPerspectiveEditor();
+  };
+  cropImg.src = src;
+}
+
+document.getElementById('openFrontPerspectiveBtn').onclick = () => openPerspectiveEditor('front');
+document.getElementById('openBackPerspectiveBtn').onclick = () => openPerspectiveEditor('back');
+document.getElementById('closeCropModal').onclick = () => document.getElementById('perspectiveModal').classList.remove('open');
+
+function drawPerspectiveEditor() {
+  if (!cropImg || !cropImg.width) return;
+  const area = document.getElementById('cropCanvasArea');
+  const maxW = area.clientWidth - 30;
+  const maxH = area.clientHeight - 30;
+  const scale = Math.min(maxW / cropImg.width, maxH / cropImg.height, 1);
+
+  cropCanvas.width = Math.round(cropImg.width * scale);
+  cropCanvas.height = Math.round(cropImg.height * scale);
+
+  const ctx = cropCtx;
+  ctx.clearRect(0, 0, cropCanvas.width, cropCanvas.height);
+  ctx.drawImage(cropImg, 0, 0, cropCanvas.width, cropCanvas.height);
+
+  const sX = cropCanvas.width / cropImg.width;
+  const sY = cropCanvas.height / cropImg.height;
+  const pts = cropPoints.map(p => ({ x: p.x * sX, y: p.y * sY }));
+
+  ctx.save();
+  ctx.fillStyle = 'rgba(0, 0, 0, 0.55)';
+  ctx.fillRect(0, 0, cropCanvas.width, cropCanvas.height);
+
+  ctx.globalCompositeOperation = 'destination-out';
+  ctx.beginPath();
+  ctx.moveTo(pts[0].x, pts[0].y);
+  ctx.lineTo(pts[1].x, pts[1].y);
+  ctx.lineTo(pts[2].x, pts[2].y);
+  ctx.lineTo(pts[3].x, pts[3].y);
+  ctx.closePath();
+  ctx.fill();
+  ctx.restore();
+
+  ctx.save();
+  ctx.strokeStyle = '#6366f1';
+  ctx.lineWidth = 2.5;
+  ctx.setLineDash([6, 4]);
+  ctx.beginPath();
+  ctx.moveTo(pts[0].x, pts[0].y);
+  ctx.lineTo(pts[1].x, pts[1].y);
+  ctx.lineTo(pts[2].x, pts[2].y);
+  ctx.lineTo(pts[3].x, pts[3].y);
+  ctx.closePath();
+  ctx.stroke();
+  ctx.restore();
+
+  const colors = ['#ef4444', '#3b82f6', '#10b981', '#f59e0b'];
+  const labels = ['Top-Left', 'Top-Right', 'Bottom-Right', 'Bottom-Left'];
+
+  pts.forEach((p, idx) => {
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, 14, 0, Math.PI * 2);
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
+    ctx.fill();
+
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, 9, 0, Math.PI * 2);
+    ctx.fillStyle = colors[idx];
+    ctx.fill();
+    ctx.lineWidth = 2.5;
+    ctx.strokeStyle = '#fff';
+    ctx.stroke();
+
+    ctx.font = 'bold 10px Plus Jakarta Sans, sans-serif';
+    ctx.fillStyle = '#fff';
+    ctx.shadowColor = '#000';
+    ctx.shadowBlur = 4;
+    ctx.fillText(labels[idx], p.x + 12, p.y - 6);
+    ctx.restore();
+  });
+}
+
+function getCanvasMousePos(e) {
+  const rect = cropCanvas.getBoundingClientRect();
+  const x = (e.clientX - rect.left) * (cropCanvas.width / rect.width);
+  const y = (e.clientY - rect.top) * (cropCanvas.height / rect.height);
+  const sX = cropCanvas.width / cropImg.width;
+  const sY = cropCanvas.height / cropImg.height;
+  return { x: x / sX, y: y / sY, canvasX: x, canvasY: y };
+}
+
+cropCanvas.addEventListener('pointerdown', e => {
+  if (!cropImg) return;
+  const pos = getCanvasMousePos(e);
+  const sX = cropCanvas.width / cropImg.width;
+  const sY = cropCanvas.height / cropImg.height;
+
+  activeDragPoint = -1;
+  let minDist = 30;
+
+  cropPoints.forEach((p, idx) => {
+    const dist = Math.hypot(p.x * sX - pos.canvasX, p.y * sY - pos.canvasY);
+    if (dist < minDist) {
+      minDist = dist;
+      activeDragPoint = idx;
+    }
+  });
+
+  if (activeDragPoint !== -1) {
+    cropCanvas.setPointerCapture(e.pointerId);
+  }
+});
+
+cropCanvas.addEventListener('pointermove', e => {
+  if (activeDragPoint === -1 || !cropImg) return;
+  const pos = getCanvasMousePos(e);
+  cropPoints[activeDragPoint].x = Math.max(0, Math.min(cropImg.width, pos.x));
+  cropPoints[activeDragPoint].y = Math.max(0, Math.min(cropImg.height, pos.y));
+  drawPerspectiveEditor();
+});
+
+cropCanvas.addEventListener('pointerup', () => { activeDragPoint = -1; });
+cropCanvas.addEventListener('pointercancel', () => { activeDragPoint = -1; });
+
+function rotateCropImage(angle) {
+  if (!cropImg) return;
+  const c = document.createElement('canvas');
+  const is90 = Math.abs(angle) === 90 || Math.abs(angle) === 270;
+  c.width = is90 ? cropImg.height : cropImg.width;
+  c.height = is90 ? cropImg.width : cropImg.height;
+  const ctx = c.getContext('2d');
+  ctx.translate(c.width / 2, c.height / 2);
+  ctx.rotate((angle * Math.PI) / 180);
+  ctx.drawImage(cropImg, -cropImg.width / 2, -cropImg.height / 2);
+  cropImg.src = c.toDataURL('image/png');
+}
+
+document.getElementById('cropRotLeft').onclick = () => rotateCropImage(-90);
+document.getElementById('cropRotRight').onclick = () => rotateCropImage(90);
+
+document.getElementById('resetPointsBtn').onclick = () => {
+  if (!cropImg) return;
+  cropPoints = [
+    { x: cropImg.width * 0.05, y: cropImg.height * 0.05 },
+    { x: cropImg.width * 0.95, y: cropImg.height * 0.05 },
+    { x: cropImg.width * 0.95, y: cropImg.height * 0.95 },
+    { x: cropImg.width * 0.05, y: cropImg.height * 0.95 }
+  ];
+  drawPerspectiveEditor();
+};
+
+document.getElementById('autoFitPointsBtn').onclick = () => {
+  if (!cropImg) return;
+  cropPoints = [
+    { x: cropImg.width * 0.02, y: cropImg.height * 0.02 },
+    { x: cropImg.width * 0.98, y: cropImg.height * 0.02 },
+    { x: cropImg.width * 0.98, y: cropImg.height * 0.98 },
+    { x: cropImg.width * 0.02, y: cropImg.height * 0.98 }
+  ];
+  drawPerspectiveEditor();
+};
+
+function warpPerspective(img, pts, targetW, targetH) {
+  const outCanvas = document.createElement('canvas');
+  outCanvas.width = targetW;
+  outCanvas.height = targetH;
+  const ctx = outCanvas.getContext('2d');
+
+  const p0 = pts[0], p1 = pts[1], p2 = pts[2], p3 = pts[3];
+  const grid = 24;
+
+  function getQuadPt(u, v) {
+    const topX = p0.x + (p1.x - p0.x) * u, topY = p0.y + (p1.y - p0.y) * u;
+    const botX = p3.x + (p2.x - p3.x) * u, botY = p3.y + (p2.y - p3.y) * u;
+    return {
+      x: topX + (botX - topX) * v,
+      y: topY + (botY - topY) * v
+    };
+  }
+
+  function drawTriangle(x0, y0, x1, y1, x2, y2, u0, v0, u1, v1, u2, v2) {
+    ctx.save();
+    ctx.beginPath();
+    ctx.moveTo(x0, y0);
+    ctx.lineTo(x1, y1);
+    ctx.lineTo(x2, y2);
+    ctx.closePath();
+    ctx.clip();
+
+    const delta = (u0 * (v1 - v2) + u1 * (v2 - v0) + u2 * (v0 - v1));
+    if (Math.abs(delta) < 0.0001) { ctx.restore(); return; }
+
+    const a = (x0 * (v1 - v2) + x1 * (v2 - v0) + x2 * (v0 - v1)) / delta;
+    const b = (y0 * (v1 - v2) + y1 * (v2 - v0) + y2 * (v0 - v1)) / delta;
+    const c = (x0 * (u2 - u1) + x1 * (u0 - u2) + x2 * (u1 - u0)) / delta;
+    const d = (y0 * (u2 - u1) + y1 * (u0 - u2) + y2 * (u1 - u0)) / delta;
+    const e = (x0 * (u1 * v2 - u2 * v1) + x1 * (u2 * v0 - u0 * v2) + x2 * (u0 * v1 - u1 * v0)) / delta;
+    const f = (y0 * (u1 * v2 - u2 * v1) + y1 * (u2 * v0 - u0 * v2) + y2 * (u0 * v1 - u1 * v0)) / delta;
+
+    ctx.transform(a, b, c, d, e, f);
+    ctx.drawImage(img, 0, 0);
+    ctx.restore();
+  }
+
+  for (let gy = 0; gy < grid; gy++) {
+    for (let gx = 0; gx < grid; gx++) {
+      const uA = gx / grid, uB = (gx + 1) / grid;
+      const vA = gy / grid, vB = (gy + 1) / grid;
+
+      const destX0 = uA * targetW, destY0 = vA * targetH;
+      const destX1 = uB * targetW, destY1 = vA * targetH;
+      const destX2 = uB * targetW, destY2 = vB * targetH;
+      const destX3 = uA * targetW, destY3 = vB * targetH;
+
+      const src0 = getQuadPt(uA, vA);
+      const src1 = getQuadPt(uB, vA);
+      const src2 = getQuadPt(uB, vB);
+      const src3 = getQuadPt(uA, vB);
+
+      drawTriangle(
+        destX0, destY0, destX1, destY1, destX2, destY2,
+        src0.x, src0.y, src1.x, src1.y, src2.x, src2.y
+      );
+      drawTriangle(
+        destX0, destY0, destX2, destY2, destX3, destY3,
+        src0.x, src0.y, src2.x, src2.y, src3.x, src3.y
+      );
+    }
+  }
+
+  return outCanvas.toDataURL('image/png');
+}
+
+document.getElementById('applyPerspectiveBtn').onclick = () => {
+  if (!cropImg) return;
+  const ratioType = document.getElementById('cropTargetRatio').value;
+  
+  let targetW = 2100, targetH = 2970;
+  if (ratioType === 'a4_landscape') {
+    targetW = 2970; targetH = 2100;
+  } else if (ratioType === 'pvc_card') {
+    targetW = 2400; targetH = 1513;
+  } else if (ratioType === 'auto') {
+    const topW = Math.hypot(cropPoints[1].x - cropPoints[0].x, cropPoints[1].y - cropPoints[0].y);
+    const botW = Math.hypot(cropPoints[2].x - cropPoints[3].x, cropPoints[2].y - cropPoints[3].y);
+    const leftH = Math.hypot(cropPoints[3].x - cropPoints[0].x, cropPoints[3].y - cropPoints[0].y);
+    const rightH = Math.hypot(cropPoints[2].x - cropPoints[1].x, cropPoints[2].y - cropPoints[1].y);
+    targetW = Math.round(Math.max(topW, botW));
+    targetH = Math.round(Math.max(leftH, rightH));
+  }
+
+  const straightenedData = warpPerspective(cropImg, cropPoints, targetW, targetH);
+  state[cropActiveSide] = straightenedData;
+  document.getElementById('perspectiveModal').classList.remove('open');
+  renderSheet();
+};
+
+// Filtered Canvas Export
+function getExportImage(srcData) {
+  return new Promise(resolve => {
+    if (!srcData) return resolve(null);
+    const img = new Image();
+    img.onload = () => {
+      const rot = ((state.rotation % 360) + 360) % 360;
+      const isRot = rot === 90 || rot === 270;
+      const c = document.createElement('canvas');
+      c.width = isRot ? img.height : img.width;
+      c.height = isRot ? img.width : img.height;
+      const ctx = c.getContext('2d');
+      ctx.save();
+      ctx.translate(c.width / 2, c.height / 2);
+      ctx.rotate((rot * Math.PI) / 180);
+      ctx.filter = getFilterCss();
+      ctx.drawImage(img, -img.width / 2, -img.height / 2);
+      ctx.restore();
+      resolve(c.toDataURL('image/png'));
+    };
+    img.onerror = () => resolve(srcData);
+    img.src = srcData;
+  });
+}
+
+// Print dialog with Wallet Charge
+async function doPrint() {
+  const f = state.front, b = state.back;
+  if (!f && !b) {
+    alert('Pehle Document photo ya PDF upload karein.');
+    return;
+  }
+
+  function executeActualPrint() {
+    (async () => {
+      const pf = await getExportImage(f);
+      const pb = await getExportImage(b);
+      const isLandscape = document.getElementById('paperOrientation')?.value === 'landscape';
+      const layout = document.getElementById('layoutMode')?.value || 'full';
+      const margins = document.getElementById('marginMode')?.value || 'standard';
+      const marginMm = margins === 'none' ? 0 : margins === 'small' ? 3 : 6;
+      const list = [pf, pb].filter(Boolean);
+
+      let gridStyle = '', cards = '';
+      if (layout === 'card') {
+        gridStyle = 'display:grid;grid-template-columns:repeat(2, 85.60mm);gap:6mm;align-items:start;justify-content:center;align-content:start;width:100%;padding-top:8mm;';
+        const imgStyle = 'width:85.60mm !important;height:53.98mm !important;object-fit:fill !important;border:1px dashed #94a3b8;border-radius:3.18mm;box-sizing:border-box;';
+        cards = list.map(src => `<div style="width:85.60mm;height:53.98mm;border:1px dashed #94a3b8;border-radius:3.18mm;overflow:hidden;box-sizing:border-box"><img src="${src}" alt="PVC card" style="${imgStyle}"></div>`).join('');
+      } else if (layout === 'side_by_side') {
+        gridStyle = 'display:flex;flex-direction:column;justify-content:flex-start;align-items:center;width:100%;height:100%;padding-top:10mm;';
+        const imgStyle = 'width:100%;max-width:100%;height:auto;max-height:95mm;object-fit:contain;margin:0 auto;display:block;';
+        cards = `
+          <div style="display:grid;grid-template-columns:${list.length > 1 ? '1fr 1fr' : '1fr'};gap:6mm;width:100%;align-items:start;justify-content:center">
+            ${list.map(src => `<div style="width:100%;display:flex;align-items:flex-start;justify-content:center;overflow:hidden"><img src="${src}" alt="document" style="${imgStyle}"></div>`).join('')}
+          </div>
+        `;
+      } else if (layout === 'top_bottom') {
+        gridStyle = 'display:flex;flex-direction:column;justify-content:flex-start;align-items:center;width:100%;height:100%;padding-top:10mm;';
+        const imgStyle = 'width:100%;max-width:100%;height:auto;max-height:80mm;object-fit:contain;margin:0 auto;display:block;';
+        cards = `
+          <div style="display:grid;grid-template-rows:${list.length > 1 ? 'auto auto' : 'auto'};gap:6mm;width:100%;align-items:start;justify-content:center">
+            ${list.map(src => `<div style="width:100%;display:flex;align-items:flex-start;justify-content:center;overflow:hidden"><img src="${src}" alt="document" style="${imgStyle}"></div>`).join('')}
+          </div>
+        `;
+      } else {
+        gridStyle = 'display:flex;align-items:center;justify-content:center;width:100%;height:100%;';
+        const imgStyle = 'width:100%;height:100%;object-fit:contain;margin:auto;display:block;';
+        cards = `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;overflow:hidden"><img src="${list[0]}" alt="document" style="${imgStyle}"></div>`;
+      }
+
+      const popup = window.open('', '_blank', 'width=950,height=950');
+      if (!popup) {
+        alert('Browser pop-up allow karein print window open karne ke liye.');
+        return;
+      }
+      popup.document.open();
+      popup.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>Justcard Print</title><style>
+        @page{size:A4 ${isLandscape ? 'landscape' : 'portrait'};margin:0}
+        *{box-sizing:border-box}
+        html,body{margin:0;padding:0;background:#fff;width:100%;height:100%}
+        .page{width:${isLandscape ? '297mm' : '210mm'};height:${isLandscape ? '210mm' : '297mm'};position:relative;background:#fff;padding:${marginMm}mm;overflow:hidden;box-sizing:border-box;${gridStyle}}
+        img{display:block}
+        @media print{html,body{width:100%;height:100%;overflow:hidden}.page{margin:0;box-shadow:none}}
+      </style></head><body><div class="page">${cards}</div><script>
+        const imgs=[...document.images];
+        Promise.all(imgs.map(i=>i.complete?Promise.resolve():new Promise(r=>{i.onload=r;i.onerror=r})))
+          .then(()=>setTimeout(()=>window.print(),260));
+      <\/script></body></html>`);
+      popup.document.close();
+    })();
+  }
+
+  if (window.JustcardWallet) {
+    window.JustcardWallet.chargeService('a4Document', 'A4 Document Studio (Print)', () => {
+      executeActualPrint();
+    });
+  } else {
+    executeActualPrint();
+  }
+}
+
+document.getElementById('topPrintBtn').onclick = doPrint;
+document.getElementById('bottomPrintBtn').onclick = doPrint;
+
+// Download PDF
+document.getElementById('downloadPdfBtn').onclick = async () => {
+  const current = state.front || state.back;
+  if (!current) {
+    alert('Pehle document upload karein.');
+    return;
+  }
+
+  function executePdfDownload() {
+    (async () => {
+      const processed = await getExportImage(current);
+      const isLandscape = document.getElementById('paperOrientation').value === 'landscape';
+      const doc = new window.jspdf.jsPDF({ orientation: isLandscape ? 'landscape' : 'portrait', unit: 'mm', format: 'a4' });
+      const pageW = isLandscape ? 297 : 210, pageH = isLandscape ? 210 : 297;
+      const margins = document.getElementById('marginMode').value;
+      const marginMm = margins === 'none' ? 0 : margins === 'small' ? 3 : 6;
+      const availW = pageW - marginMm * 2, availH = pageH - marginMm * 2;
+
+      const im = new Image();
+      im.onload = () => {
+        const imgRatio = im.width / im.height, pageRatio = availW / availH;
+        let drawW, drawH;
+        if (imgRatio > pageRatio) {
+          drawW = availW; drawH = availW / imgRatio;
+        } else {
+          drawH = availH; drawW = availH * imgRatio;
+        }
+        const posX = marginMm + (availW - drawW) / 2, posY = marginMm + (availH - drawH) / 2;
+        doc.addImage(processed, 'PNG', posX, posY, drawW, drawH);
+        doc.save('Justcard_A4_Document.pdf');
+      };
+      im.src = processed;
+    })();
+  }
+
+  if (window.JustcardWallet) {
+    window.JustcardWallet.chargeService('a4Document', 'A4 Document Studio (PDF)', () => {
+      executePdfDownload();
+    });
+  } else {
+    executePdfDownload();
+  }
+};
+
+// Download Image
+document.getElementById('downloadImgBtn').onclick = async () => {
+  const current = state.front || state.back;
+  if (!current) {
+    alert('Pehle document upload karein.');
+    return;
+  }
+  function executeImgDownload() {
+    (async () => {
+      const processed = await getExportImage(current);
+      const a = document.createElement('a');
+      a.href = processed;
+      a.download = 'Justcard_Document_Clean.png';
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+    })();
+  }
+
+  if (window.JustcardWallet) {
+    window.JustcardWallet.chargeService('a4Document', 'A4 Document Studio (Clean Image)', () => {
+      executeImgDownload();
+    });
+  } else {
+    executeImgDownload();
+  }
+};
+</script>
+</body>
+</html>

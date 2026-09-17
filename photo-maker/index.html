@@ -1,0 +1,1705 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Justcard — Passport Photo Studio Pro</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- MediaPipe Selfie Segmentation AI Libraries -->
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/selfie_segmentation/selfie_segmentation.js" crossorigin="anonymous"></script>
+    <script src="../wallet-client.js"></script>
+    
+    <style>
+        :root {
+            --primary: #7c3aed;
+            --primary-hover: #6d28d9;
+            --primary-light: #a855f7;
+            --p-gradient: linear-gradient(135deg, #a855f7 0%, #7c3aed 50%, #6366f1 100%);
+            --p-glow: rgba(168, 85, 247, 0.35);
+            --bg-light: #fbf9fe;
+            --panel-bg: #ffffff;
+            --toolbar-bg: #ffffff;
+            --border-color: #ede9fe;
+            --text-dark: #0f172a;
+            --text-muted: #64748b;
+            --accent: #10b981;
+            --accent-pink: #ec4899;
+            --accent-purple: #a855f7;
+            --accent-amber: #f59e0b;
+            --accent-blue: #38bdf8;
+            --shadow-card: 0 4px 20px -2px rgba(124, 58, 237, 0.08), 0 2px 6px -1px rgba(15, 23, 42, 0.03);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', 'Segoe UI', system-ui, -apple-system, sans-serif; }
+        body {
+            background-color: var(--bg-light);
+            background-image: radial-gradient(at 0% 0%, rgba(168, 85, 247, 0.08) 0px, transparent 50%), radial-gradient(at 100% 0%, rgba(124, 58, 237, 0.08) 0px, transparent 50%), radial-gradient(at 50% 100%, rgba(99, 102, 241, 0.06) 0px, transparent 50%);
+            color: var(--text-dark);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+        }
+        
+        /* 1. TOP HEADER / BRAND & ACTIONS BAR */
+        .top-navbar {
+            background: rgba(255, 255, 255, 0.94);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border-bottom: 1px solid var(--border-color);
+            box-shadow: 0 4px 20px -4px rgba(124, 58, 237, 0.07);
+            height: 54px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 18px;
+            gap: 12px;
+            z-index: 100;
+            flex-shrink: 0;
+        }
+        .nav-left { display: flex; align-items: center; gap: 12px; }
+        .back-btn {
+            background: #ffffff;
+            color: #475569;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 6px 14px;
+            cursor: pointer;
+            font-weight: 700;
+            font-size: 12.5px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: all .2s;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+        }
+        .back-btn:hover { background: #f3e8ff; color: #7e22ce; border-color: #d8b4fe; }
+        .logo-icon {
+            width: 34px; height: 34px; border-radius: 9px;
+            background: var(--p-gradient); color: #fff;
+            display: flex; align-items: center; justify-content: center;
+            font-family: 'Outfit', sans-serif; font-size: 20px; font-weight: 900;
+            box-shadow: 0 4px 14px var(--p-glow);
+        }
+        .nav-title { font-family: 'Outfit', sans-serif; font-size: 18px; font-weight: 800; color: #0f172a; display: flex; align-items: center; gap: 8px; }
+        .version-badge { background: #f3e8ff; color: #7e22ce; border: 1px solid #d8b4fe; font-size: 11px; padding: 2px 8px; border-radius: 20px; font-weight: 800; }
+
+        .nav-center-actions { display: flex; align-items: center; gap: 8px; }
+        .upload-pill-btn {
+            position: relative; overflow: hidden; cursor: pointer;
+            background: var(--p-gradient); color: #fff;
+            padding: 7px 16px; border-radius: 8px; font-weight: 750; font-size: 12.5px;
+            display: flex; align-items: center; gap: 6px; box-shadow: 0 4px 14px var(--p-glow);
+            transition: all .2s;
+        }
+        .upload-pill-btn:hover { transform: translateY(-1px); box-shadow: 0 6px 18px var(--p-glow); }
+        .upload-pill-btn input { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; }
+        .btn-nav-tool {
+            background: #ffffff; color: #475569; border: 1.5px solid #e2e8f0;
+            border-radius: 8px; padding: 7px 13px; cursor: pointer; font-weight: 700;
+            font-size: 12px; display: flex; align-items: center; gap: 6px; transition: all .15s;
+        }
+        .btn-nav-tool:hover { background: #f8fafc; color: var(--primary); border-color: var(--primary-light); }
+
+        .nav-right-status { display: flex; align-items: center; gap: 8px; font-size: 11px; color: #64748b; font-weight: 700; }
+        .ai-pill-badge { background: #ecfdf5; color: #047857; border: 1px solid #a7f3d0; padding: 4px 10px; border-radius: 14px; display: flex; align-items: center; gap: 5px; font-size: 11px; font-weight: 800; }
+
+        /* 2. TOP TOOLBAR RIBBON (HEADER ADJUSTMENT CONTROLS) */
+        .header-toolbar {
+            background: var(--panel-bg); border-bottom: 1px solid var(--border-color);
+            display: flex; flex-direction: column; z-index: 90; flex-shrink: 0;
+            box-shadow: 0 4px 16px -2px rgba(124, 58, 237, 0.06);
+        }
+
+        /* Ribbon Tab Selector */
+        .ribbon-tabs {
+            display: flex; align-items: center; gap: 6px; padding: 4px 16px 0;
+            background: rgba(248, 250, 252, 0.85); border-bottom: 1px solid #ede9fe;
+            overflow-x: auto; scrollbar-width: none;
+        }
+        .ribbon-tabs::-webkit-scrollbar { display: none; }
+        .ribbon-tab {
+            background: transparent; border: none; border-bottom: 2px solid transparent;
+            color: #64748b; padding: 8px 14px; font-size: 12.5px; font-weight: 700;
+            cursor: pointer; display: flex; align-items: center; gap: 6px; transition: all .15s;
+            white-space: nowrap; border-radius: 8px 8px 0 0;
+        }
+        .ribbon-tab:hover { color: #0f172a; background: #ffffff; }
+        .ribbon-tab.active {
+            color: #7c3aed; border-bottom-color: #7c3aed;
+            background: #ffffff; box-shadow: 0 -2px 6px rgba(124,58,237,0.06);
+        }
+        .ribbon-tab .tab-badge { font-size: 9.5px; padding: 1px 6px; border-radius: 10px; background: #f3e8ff; color: #7e22ce; font-weight: 800; }
+
+        /* Ribbon Controls Content Shelf */
+        .ribbon-shelf {
+            background: #ffffff; padding: 8px 16px; min-height: 52px;
+            display: flex; align-items: center; justify-content: flex-start; gap: 14px;
+            overflow-x: auto; overflow-y: hidden; scrollbar-width: thin;
+        }
+        .ribbon-shelf::-webkit-scrollbar { height: 4px; }
+        .ribbon-shelf::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 2px; }
+
+        .shelf-pane { display: none; align-items: center; gap: 12px; flex-wrap: nowrap; width: 100%; }
+        .shelf-pane.active { display: flex; }
+
+        /* Compact Tool Group */
+        .tool-group {
+            display: flex; align-items: center; gap: 8px; background: #f8fafc;
+            padding: 6px 12px; border-radius: 10px; border: 1.5px solid #e2e8f0;
+            flex-shrink: 0;
+        }
+        .tool-group-title { font-size: 11px; font-weight: 800; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; margin-right: 4px; }
+
+        /* Compact Sliders */
+        .ribbon-slider-box {
+            display: flex; flex-direction: column; gap: 2px; min-width: 115px; max-width: 155px;
+            flex-shrink: 0;
+        }
+        .ribbon-slider-header { display: flex; justify-content: space-between; align-items: center; font-size: 11px; font-weight: 700; color: #334155; }
+        .ribbon-slider-header .val { color: var(--primary); font-weight: 800; font-size: 11px; }
+        .ribbon-slider-box input[type="range"] {
+            width: 100%; accent-color: var(--primary); background: #e2e8f0;
+            height: 5px; border-radius: 3px; outline: none; cursor: pointer;
+        }
+
+        /* 1-Click Glow Button in Ribbon */
+        .btn-oneclick-glow {
+            background: var(--p-gradient);
+            color: #fff; border: 0; border-radius: 8px; padding: 7px 14px; font-weight: 800;
+            font-size: 11.5px; cursor: pointer; display: flex; align-items: center; gap: 6px;
+            box-shadow: 0 3px 12px var(--p-glow); transition: all .15s; white-space: nowrap; flex-shrink: 0;
+        }
+        .btn-oneclick-glow:hover { transform: scale(1.03); box-shadow: 0 6px 18px var(--p-glow); }
+
+        /* Presets Chips */
+        .preset-chip-list { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
+        .preset-chip {
+            background: #ffffff; border: 1.5px solid #e2e8f0; color: #475569;
+            padding: 5px 10px; border-radius: 8px; font-size: 11px; font-weight: 700;
+            cursor: pointer; transition: all .15s; white-space: nowrap;
+        }
+        .preset-chip:hover { border-color: var(--primary); color: var(--primary); background: #faf5ff; }
+        .preset-chip.active { background: var(--p-gradient); color: #fff; border-color: transparent; box-shadow: 0 2px 8px var(--p-glow); }
+
+        /* Background Swatches in Ribbon */
+        .ribbon-swatches { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
+        .swatch {
+            width: 24px; height: 24px; border-radius: 6px; cursor: pointer;
+            border: 2px solid #cbd5e1; transition: transform .15s; flex-shrink: 0;
+        }
+        .swatch:hover { transform: scale(1.15); }
+        .swatch.active { border-color: var(--primary); box-shadow: 0 0 0 2px var(--primary); transform: scale(1.1); }
+
+        .ribbon-toggle {
+            display: flex; align-items: center; gap: 6px; font-size: 11.5px; font-weight: 750;
+            color: #1e293b; cursor: pointer; user-select: none; flex-shrink: 0;
+        }
+        .ribbon-toggle input { accent-color: var(--primary); width: 16px; height: 16px; cursor: pointer; }
+
+        /* 3. CENTER WORKSPACE & CANVAS AREA */
+        .workspace-stage {
+            flex: 1; background: #f1f5f9; display: flex; flex-direction: column;
+            align-items: center; justify-content: flex-start; position: relative;
+            padding: 16px; overflow-y: auto; gap: 14px;
+        }
+
+        .canvas-card {
+            position: relative; box-shadow: 0 10px 30px rgba(124, 58, 237, 0.12), 0 2px 10px rgba(0,0,0,0.06);
+            border-radius: 12px; overflow: hidden; border: 1.5px solid #ede9fe; background: #fff;
+            max-height: calc(100vh - 220px); display: flex; align-items: center; justify-content: center;
+        }
+        canvas { display: block; max-height: calc(100vh - 230px); max-width: 90vw; object-fit: contain; }
+
+        /* Floating Compare Button */
+        .compare-floating-pill {
+            position: absolute; top: 10px; right: 10px; z-index: 40;
+            background: rgba(255, 255, 255, 0.94); backdrop-filter: blur(8px); color: #0f172a;
+            border: 1px solid #ede9fe; border-radius: 20px; padding: 5px 12px;
+            font-size: 11px; font-weight: 800; cursor: pointer; display: flex; align-items: center; gap: 6px;
+            user-select: none; transition: all .15s; box-shadow: 0 4px 14px rgba(124, 58, 237, 0.1);
+        }
+        .compare-floating-pill:hover { background: #f3e8ff; color: #7e22ce; transform: translateY(-1px); }
+        .compare-floating-pill:active { background: var(--p-gradient); color: #fff; }
+
+        /* Crop Overlay Controls */
+        .crop-toolbar { display: none; gap: 8px; margin-top: 4px; justify-content: center; z-index: 50; }
+        .crop-toolbar.active { display: flex; }
+        .crop-toolbar button {
+            border: 1px solid var(--border-color); background: #1e293b; color: #fff;
+            padding: 7px 14px; border-radius: 6px; cursor: pointer; font-weight: 700; font-size: 12px;
+            display: flex; align-items: center; gap: 6px;
+        }
+        .crop-toolbar button.primary { background: var(--primary); border-color: var(--primary); }
+        .crop-status { display: none; margin-top: 4px; text-align: center; color: #93c5fd; font-size: 11px; font-weight: 600; }
+        .crop-status.active { display: block; }
+        .canvas-card.crop-active canvas { cursor: crosshair; }
+
+        /* 4. DEDICATED BOTTOM ACTION BAR (MATCHING 1-CLICK STUDIO GLOW BUTTON DESIGN) */
+        .bottom-action-bar {
+            display: flex; align-items: center; justify-content: center;
+            gap: 12px; width: 100%; max-width: 860px; flex-wrap: wrap; z-index: 30;
+            margin-bottom: 12px; padding: 6px 12px;
+        }
+        .btn-action-bottom {
+            flex: 1; min-width: 170px; padding: 11px 22px; border-radius: 9px;
+            background: var(--p-gradient);
+            border: 0;
+            font-weight: 800; cursor: pointer; display: flex; align-items: center; justify-content: center;
+            gap: 8px; font-size: 13.5px; transition: all 0.2s ease;
+            color: #fff; text-align: center; position: relative;
+            box-shadow: 0 4px 16px var(--p-glow);
+            letter-spacing: 0.3px; user-select: none;
+        }
+        .btn-action-bottom:hover {
+            transform: translateY(-2px) scale(1.02);
+            box-shadow: 0 7px 22px var(--p-glow);
+            opacity: 0.97;
+        }
+        .btn-action-bottom:active {
+            transform: translateY(0px) scale(0.98);
+            box-shadow: 0 2px 8px var(--p-glow);
+        }
+        .btn-action-bottom i { font-size: 14px; }
+
+        /* Reset Button */
+        .btn-action-bottom.reset {
+            background: #ffffff;
+            color: #475569;
+            border: 1.5px solid #e2e8f0;
+            max-width: 125px; min-width: 95px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.03);
+        }
+        .btn-action-bottom.reset:hover {
+            background: #faf5ff;
+            color: #7c3aed;
+            border-color: #d8b4fe;
+            box-shadow: 0 4px 14px rgba(124, 58, 237, 0.14);
+        }
+
+        /* Loading Spinner */
+        .loading-overlay {
+            position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(15, 23, 42, 0.88); backdrop-filter: blur(4px);
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            gap: 12px; z-index: 50; font-size: 13px; font-weight: 700; color: #f8fafc;
+        }
+        .spinner { width: 36px; height: 36px; border: 3px solid rgba(255,255,255,0.15); border-top-color: var(--primary-light); border-radius: 50%; animation: spin 0.8s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* Notification Toast */
+        #pmToast {
+            position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+            background: #1e293b; color: #f8fafc; padding: 10px 20px; border-radius: 8px;
+            font-size: 12.5px; font-weight: 700; box-shadow: 0 8px 24px rgba(0,0,0,0.6);
+            border: 1px solid #334155; z-index: 99999; transition: opacity .3s;
+            pointer-events: none; display: none; max-width: 90%; text-align: center;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 1. TOP NAVBAR -->
+    <header class="top-navbar">
+        <div class="nav-left">
+            <button type="button" class="back-btn" onclick="location.href='../home.html'">
+                <i class="fa-solid fa-arrow-left"></i> Dashboard
+            </button>
+            <div class="logo-icon">J</div>
+            <div class="nav-title">
+                Justcard <span style="font-weight:600;font-size:13.5px;color:#64748b">— Passport Photo Studio Pro</span>
+                <span class="version-badge">AI Studio</span>
+            </div>
+        </div>
+
+        <!-- Center Upload & Crop triggers -->
+        <div class="nav-center-actions">
+            <div class="upload-pill-btn">
+                <i class="fa-solid fa-cloud-arrow-up"></i> Upload Photo
+                <input type="file" id="upload" accept="image/*">
+            </div>
+            <button type="button" class="btn-nav-tool" onclick="pasteFromClipboard()" title="Paste from WhatsApp (Ctrl+V)">
+                <i class="fa-solid fa-paste"></i> Paste (Ctrl+V)
+            </button>
+            <button type="button" class="btn-nav-tool" onclick="startManualCrop()" title="Re-Crop 35×45mm">
+                <i class="fa-solid fa-crop-simple"></i> Re-Crop
+            </button>
+            <button type="button" class="btn-nav-tool" onclick="resetFilters()" title="Reset All Adjustments">
+                <i class="fa-solid fa-rotate-left"></i> Reset
+            </button>
+        </div>
+
+        <!-- Right AI Engine status & Wallet -->
+        <div class="nav-right-status">
+            <div class="jc-wallet-container"></div>
+            <div class="ai-pill-badge" id="aiStatusPill">
+                <i class="fa-solid fa-circle-check"></i> <span id="aiModelBadge">MediaPipe Ready</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- 2. HEADER TOOLBAR RIBBON (ALL TOOLS IN HEADER) -->
+    <section class="header-toolbar">
+        <!-- Ribbon Tabs -->
+        <div class="ribbon-tabs">
+            <button type="button" class="ribbon-tab active" data-tab="faceEnhance" onclick="switchRibbonTab('faceEnhance')">
+                <i class="fa-solid fa-face-smile" style="color:var(--accent-amber);"></i> Face Enhance Suite
+                <span class="tab-badge">PRO</span>
+            </button>
+            <button type="button" class="ribbon-tab" data-tab="bgCutout" onclick="switchRibbonTab('bgCutout')">
+                <i class="fa-solid fa-scissors" style="color:var(--accent-pink);"></i> Auto AI Background
+                <span class="tab-badge">CUTOUT</span>
+            </button>
+            <button type="button" class="ribbon-tab" data-tab="colorLighting" onclick="switchRibbonTab('colorLighting')">
+                <i class="fa-solid fa-sliders" style="color:var(--accent-blue);"></i> Light &amp; Color
+            </button>
+            <button type="button" class="ribbon-tab" data-tab="presets" onclick="switchRibbonTab('presets')">
+                <i class="fa-solid fa-wand-magic-sparkles" style="color:var(--accent-purple);"></i> Quick Presets
+            </button>
+            <button type="button" class="ribbon-tab" data-tab="allTools" onclick="switchRibbonTab('allTools')">
+                <i class="fa-solid fa-border-all"></i> All Controls
+            </button>
+        </div>
+
+        <!-- Shelf Controls (Live Header Sliders & Buttons) -->
+        <div class="ribbon-shelf">
+            <!-- TAB 1: FACE ENHANCE SUITE -->
+            <div id="pane-faceEnhance" class="shelf-pane active">
+                <button type="button" class="btn-oneclick-glow" onclick="applyOneClickEnhance()">
+                    <i class="fa-solid fa-wand-sparkles"></i> ✨ 1-Click Studio Face Glow
+                </button>
+
+                <!-- Skin Smooth (Blemish/Noise Softener) -->
+                <div class="tool-group">
+                    <span class="tool-group-title"><i class="fa-solid fa-sparkles" style="color:#f472b6;"></i> Skin</span>
+                    <div class="ribbon-slider-box">
+                        <div class="ribbon-slider-header">
+                            <span>Smooth &amp; Glow</span>
+                            <span id="skinSmoothVal" class="val">0</span>
+                        </div>
+                        <input type="range" id="skinSmooth" min="0" max="100" value="0" oninput="renderPhoto()">
+                    </div>
+                </div>
+
+                <!-- Face Light (Shadow Lift) -->
+                <div class="tool-group">
+                    <span class="tool-group-title"><i class="fa-solid fa-sun" style="color:#fbbf24;"></i> Face</span>
+                    <div class="ribbon-slider-box">
+                        <div class="ribbon-slider-header">
+                            <span>Shadow Lift / Light</span>
+                            <span id="faceLightVal" class="val">0</span>
+                        </div>
+                        <input type="range" id="faceLight" min="-50" max="50" value="0" oninput="renderPhoto()">
+                    </div>
+                </div>
+
+                <!-- Skin Warmth (Indian Tone Balance) -->
+                <div class="tool-group">
+                    <span class="tool-group-title"><i class="fa-solid fa-temperature-half" style="color:#fb923c;"></i> Tone</span>
+                    <div class="ribbon-slider-box">
+                        <div class="ribbon-slider-header">
+                            <span>Skin Warmth</span>
+                            <span id="skinWarmthVal" class="val">0</span>
+                        </div>
+                        <input type="range" id="skinWarmth" min="-50" max="50" value="0" oninput="renderPhoto()">
+                    </div>
+                </div>
+
+                <!-- Eye & Detail Sharpness -->
+                <div class="tool-group">
+                    <span class="tool-group-title"><i class="fa-solid fa-eye" style="color:#38bdf8;"></i> Detail</span>
+                    <div class="ribbon-slider-box">
+                        <div class="ribbon-slider-header">
+                            <span>Eye &amp; Hair Sharpness</span>
+                            <span id="sharpnessVal" class="val">0</span>
+                        </div>
+                        <input type="range" id="sharpness" min="0" max="100" value="0" oninput="renderPhoto()">
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 2: AI BACKGROUND CUTOUT -->
+            <div id="pane-bgCutout" class="shelf-pane">
+                <div class="tool-group">
+                    <label class="ribbon-toggle">
+                        <input type="checkbox" id="removeBgToggle" checked onchange="handleBgToggle()">
+                        <span><i class="fa-solid fa-scissors" style="color:var(--accent-pink);"></i> Auto AI Cutout</span>
+                    </label>
+                </div>
+
+                <!-- Edge Feather / Smoothness (Supports Negative / Inward Choke & Decimal Step) -->
+                <div class="tool-group">
+                    <div class="ribbon-slider-box" style="min-width:165px">
+                        <div class="ribbon-slider-header">
+                            <span>Edge Feather</span>
+                            <div style="display:flex;align-items:center;gap:3px">
+                                <button type="button" onclick="nudgeFeather(-0.5)" style="background:#334155;color:#fff;border:none;border-radius:3px;padding:0 5px;font-size:11px;cursor:pointer;line-height:15px;font-weight:700;" title="Minus 0.5px Feather">−</button>
+                                <span id="featherVal" class="val" style="min-width:44px;text-align:right">0.0 px</span>
+                                <button type="button" onclick="nudgeFeather(0.5)" style="background:#334155;color:#fff;border:none;border-radius:3px;padding:0 5px;font-size:11px;cursor:pointer;line-height:15px;font-weight:700;" title="Plus 0.5px Feather">＋</button>
+                            </div>
+                        </div>
+                        <input type="range" id="edgeFeather" min="-5" max="10" step="0.1" value="0.0" oninput="renderPhoto()">
+                    </div>
+                </div>
+
+                <!-- Background Colors -->
+                <div class="tool-group">
+                    <span class="tool-group-title">BG Color:</span>
+                    <div class="ribbon-swatches">
+                        <div class="swatch active" style="background-color: #ffffff; border: 1px solid #94a3b8;" title="Studio White" onclick="setBg('#ffffff', this)"></div>
+                        <div class="swatch" style="background-color: #2563eb;" title="Royal Blue" onclick="setBg('#2563eb', this)"></div>
+                        <div class="swatch" style="background-color: #38bdf8;" title="Sky Blue" onclick="setBg('#38bdf8', this)"></div>
+                        <div class="swatch" style="background-color: #e2e8f0;" title="Light Grey" onclick="setBg('#e2e8f0', this)"></div>
+                        <div class="swatch" style="background-color: #ef4444;" title="ID Red" onclick="setBg('#ef4444', this)"></div>
+                        <div class="swatch" style="background-color: #0f172a;" title="Dark Navy" onclick="setBg('#0f172a', this)"></div>
+                    </div>
+                    <input type="color" id="customColor" value="#ffffff" onchange="setBg(this.value, null)" oninput="setBg(this.value, null)" style="width:28px;height:24px;cursor:pointer;background:none;border:1px solid var(--border-color);border-radius:4px;" title="Custom Color">
+                </div>
+            </div>
+
+            <!-- TAB 3: LIGHT & COLOR ADJUSTMENTS -->
+            <div id="pane-colorLighting" class="shelf-pane">
+                <div class="tool-group">
+                    <div class="ribbon-slider-box">
+                        <div class="ribbon-slider-header"><span>Brightness</span><span id="brightVal" class="val">100%</span></div>
+                        <input type="range" id="brightness" min="50" max="150" value="100" oninput="renderPhoto()">
+                    </div>
+                </div>
+
+                <div class="tool-group">
+                    <div class="ribbon-slider-box">
+                        <div class="ribbon-slider-header"><span>Contrast</span><span id="contrastVal" class="val">100%</span></div>
+                        <input type="range" id="contrast" min="50" max="150" value="100" oninput="renderPhoto()">
+                    </div>
+                </div>
+
+                <div class="tool-group">
+                    <div class="ribbon-slider-box">
+                        <div class="ribbon-slider-header"><span>3D Depth</span><span id="depthToolVal" class="val">0</span></div>
+                        <input type="range" id="depthTool" min="-100" max="100" value="0" oninput="renderPhoto()">
+                    </div>
+                </div>
+
+                <div class="tool-group">
+                    <div class="ribbon-slider-box">
+                        <div class="ribbon-slider-header"><span>Contrast Depth</span><span id="contrastDepthVal" class="val">0</span></div>
+                        <input type="range" id="contrastDepth" min="0" max="100" value="0" oninput="renderPhoto()">
+                    </div>
+                </div>
+
+                <div class="tool-group">
+                    <div class="ribbon-slider-box">
+                        <div class="ribbon-slider-header"><span>Saturation</span><span id="satVal" class="val">100%</span></div>
+                        <input type="range" id="saturation" min="50" max="150" value="100" oninput="renderPhoto()">
+                    </div>
+                </div>
+
+                <div class="tool-group">
+                    <div class="ribbon-slider-box">
+                        <div class="ribbon-slider-header"><span>Vignette (Shadow)</span><span id="vignetteVal" class="val">0%</span></div>
+                        <input type="range" id="vignette" min="0" max="100" value="0" oninput="renderPhoto()">
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 4: QUICK PRESETS -->
+            <div id="pane-presets" class="shelf-pane">
+                <button type="button" class="btn-oneclick-glow" onclick="applyOneClickEnhance()">
+                    <i class="fa-solid fa-wand-sparkles"></i> ✨ Studio Master Glow
+                </button>
+                <div class="preset-chip-list">
+                    <button type="button" class="preset-chip active" onclick="applyPreset('original')">Natural ID</button>
+                    <button type="button" class="preset-chip" onclick="applyPreset('studio')">Studio Glow</button>
+                    <button type="button" class="preset-chip" onclick="applyPreset('crisp')">Crisp Sharp</button>
+                    <button type="button" class="preset-chip" onclick="applyPreset('warm')">Warm Golden</button>
+                    <button type="button" class="preset-chip" onclick="applyPreset('soft')">Soft Skin</button>
+                    <button type="button" class="preset-chip" onclick="applyPreset('bw')">Classic B&amp;W</button>
+                </div>
+            </div>
+
+            <!-- TAB 5: ALL CONTROLS IN 1 HORIZONTAL ROW -->
+            <div id="pane-allTools" class="shelf-pane">
+                <button type="button" class="btn-oneclick-glow" onclick="applyOneClickEnhance()">
+                    <i class="fa-solid fa-wand-sparkles"></i> 1-Click Fix
+                </button>
+
+                <div class="tool-group">
+                    <div class="ribbon-slider-box">
+                        <div class="ribbon-slider-header"><span>Skin Smooth</span><span class="val" id="skinSmoothVal2">0</span></div>
+                        <input type="range" id="skinSmooth2" min="0" max="100" value="0" oninput="syncRange('skinSmooth', this.value)">
+                    </div>
+                </div>
+
+                <div class="tool-group">
+                    <div class="ribbon-slider-box">
+                        <div class="ribbon-slider-header"><span>Face Light</span><span class="val" id="faceLightVal2">0</span></div>
+                        <input type="range" id="faceLight2" min="-50" max="50" value="0" oninput="syncRange('faceLight', this.value)">
+                    </div>
+                </div>
+
+                <div class="tool-group">
+                    <div class="ribbon-slider-box">
+                        <div class="ribbon-slider-header"><span>Sharpness</span><span class="val" id="sharpnessVal2">0</span></div>
+                        <input type="range" id="sharpness2" min="0" max="100" value="0" oninput="syncRange('sharpness', this.value)">
+                    </div>
+                </div>
+
+                <div class="tool-group">
+                    <div class="ribbon-slider-box">
+                        <div class="ribbon-slider-header"><span>Brightness</span><span class="val" id="brightVal2">100%</span></div>
+                        <input type="range" id="brightness2" min="50" max="150" value="100" oninput="syncRange('brightness', this.value)">
+                    </div>
+                </div>
+
+                <div class="tool-group">
+                    <div class="ribbon-slider-box">
+                        <div class="ribbon-slider-header"><span>Contrast</span><span class="val" id="contrastVal2">100%</span></div>
+                        <input type="range" id="contrast2" min="50" max="150" value="100" oninput="syncRange('contrast', this.value)">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 3. MAIN CENTER WORKSPACE (LARGE PREVIEW CANVAS) -->
+    <main class="workspace-stage">
+        <div class="canvas-card" id="canvasContainer">
+            <canvas id="canvas" width="350" height="450"></canvas>
+            
+            <!-- Floating Hold to Compare Button -->
+            <button type="button" class="compare-floating-pill" id="compareBtn"
+                    onmousedown="showOriginal(true)" onmouseup="showOriginal(false)" onmouseleave="showOriginal(false)"
+                    ontouchstart="showOriginal(true)" ontouchend="showOriginal(false)"
+                    title="Hold to see original unedited photo">
+                <i class="fa-solid fa-code-compare"></i> Hold to Compare (Before / After)
+            </button>
+
+            <!-- Loading overlay -->
+            <div id="loadingOverlay" class="loading-overlay" style="display: none;">
+                <div class="spinner"></div>
+                <div id="loadingText">Processing AI Background Removal...</div>
+            </div>
+        </div>
+
+        <!-- Crop Toolbar Overlay -->
+        <div id="cropToolbar" class="crop-toolbar">
+            <button type="button" onclick="cancelManualCrop()">
+                <i class="fa-solid fa-xmark"></i> Cancel
+            </button>
+            <button type="button" class="primary" onclick="applyManualCrop()">
+                <i class="fa-solid fa-check"></i> Apply Crop &amp; AI Cutout
+            </button>
+        </div>
+
+        <div id="cropStatus" class="crop-status">
+            Box ko drag karke face center karein. Corner handles se resize karein.
+        </div>
+
+        <!-- 4. BUTTONS DIRECTLY BELOW PHOTO (VISIBLE AT ALL TIMES) -->
+        <div class="bottom-action-bar">
+            <button type="button" class="btn-action-bottom reset" onclick="resetFilters()" title="Reset All Edits">
+                <i class="fa-solid fa-rotate-left"></i> Reset
+            </button>
+            <button type="button" class="btn-action-bottom print-4x6" onclick="download4x6Sheet()" title="Download (4*6 Size) with 8 Photos + Cut Lines">
+                <i class="fa-solid fa-print"></i> Download (4*6 Size)
+            </button>
+            <button type="button" class="btn-action-bottom print-a4" onclick="downloadA4Sheet(30)" title="Download A4 Sheet with 30 Photos + Cut Lines">
+                <i class="fa-solid fa-file-image"></i> A4 Sheet (30 Photos)
+            </button>
+        </div>
+    </main>
+
+    <div id="pmToast"></div>
+
+    <script>
+        const upload = document.getElementById('upload');
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        const loadingOverlay = document.getElementById('loadingOverlay');
+        const loadingText = document.getElementById('loadingText');
+        
+        let loadedImg = new Image();
+        let rawOriginalImg = null;
+        let cropSnapshot = null;
+        let segmentedMaskCanvas = null;
+        let isComparingOriginal = false;
+        let bgColor = '#ffffff';
+        let isProcessing = false;
+
+        // Manual crop workflow state
+        let cropMode = false;
+        let cropRect = null;
+        let cropDrag = null;
+        let cropApplied = false;
+
+        // MediaPipe Segmenter instance
+        let selfieSegmentation = null;
+        let mediaPipeReady = false;
+
+        /* Switch Header Ribbon Tabs */
+        function switchRibbonTab(tabId) {
+            document.querySelectorAll('.ribbon-tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.shelf-pane').forEach(p => p.classList.remove('active'));
+
+            const activeBtn = document.querySelector(`.ribbon-tab[data-tab="${tabId}"]`);
+            const activePane = document.getElementById(`pane-${tabId}`);
+            if (activeBtn) activeBtn.classList.add('active');
+            if (activePane) activePane.classList.add('active');
+        }
+
+        /* Sync secondary sliders if in All Controls tab */
+        function syncRange(masterId, val) {
+            const master = document.getElementById(masterId);
+            if (master) {
+                master.value = val;
+                renderPhoto();
+            }
+        }
+
+        /* Initialize MediaPipe AI Segmentation */
+        function initMediaPipe() {
+            try {
+                if (typeof SelfieSegmentation !== 'undefined') {
+                    selfieSegmentation = new SelfieSegmentation({
+                        locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/selfie_segmentation/${file}`
+                    });
+                    selfieSegmentation.setOptions({ modelSelection: 1 });
+                    selfieSegmentation.onResults(onSelfieSegmentationResults);
+                    mediaPipeReady = true;
+                    document.getElementById('aiModelBadge').textContent = 'MediaPipe Ready';
+                } else {
+                    document.getElementById('aiModelBadge').textContent = 'Smart AI Ready';
+                }
+            } catch (err) {
+                console.warn('MediaPipe initialization fallback:', err);
+                document.getElementById('aiModelBadge').textContent = 'Smart AI Ready';
+            }
+        }
+        window.addEventListener('DOMContentLoaded', initMediaPipe);
+
+        function showToast(msg, isWarning) {
+            let t = document.getElementById('pmToast');
+            if (!t) return;
+            t.innerHTML = (isWarning ? '⚠️ ' : '✅ ') + msg;
+            t.style.display = 'block';
+            t.style.opacity = '1';
+            clearTimeout(t._timer);
+            t._timer = setTimeout(() => {
+                t.style.opacity = '0';
+                setTimeout(() => { t.style.display = 'none'; }, 300);
+            }, 3200);
+        }
+
+        // File loader
+        upload.addEventListener('change', function(e) {
+            const file = this.files && this.files[0];
+            if (file) {
+                handleImageFile(file);
+                this.value = '';
+            }
+        });
+
+        function handleImageFile(file) {
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                const img = new Image();
+                img.onload = () => {
+                    loadedImg = img;
+                    rawOriginalImg = img;
+                    cropSnapshot = img;
+                    segmentedMaskCanvas = null;
+                    cropApplied = false;
+                    renderPhoto();
+                    startManualCrop();
+                };
+                img.onerror = () => showToast('Photo file load nahi ho saka.', true);
+                img.src = event.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        // Drag & Drop
+        window.addEventListener('dragover', (e) => { e.preventDefault(); });
+        window.addEventListener('drop', (e) => {
+            e.preventDefault();
+            if (e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0]) {
+                handleImageFile(e.dataTransfer.files[0]);
+            }
+        });
+
+        // Global Paste (Ctrl+V)
+        window.addEventListener('paste', (e) => {
+            const items = e.clipboardData && e.clipboardData.items;
+            if (items) {
+                for (let i = 0; i < items.length; i++) {
+                    if (items[i].type.indexOf('image') !== -1) {
+                        const blob = items[i].getAsFile();
+                        if (blob) handleImageFile(blob);
+                        break;
+                    }
+                }
+            }
+        });
+
+        async function pasteFromClipboard() {
+            try {
+                if (navigator.clipboard && navigator.clipboard.read) {
+                    const items = await navigator.clipboard.read();
+                    for (const item of items) {
+                        const imageType = item.types.find(t => t.startsWith('image/'));
+                        if (imageType) {
+                            const blob = await item.getType(imageType);
+                            handleImageFile(blob);
+                            return;
+                        }
+                    }
+                }
+                showToast('Clipboard se paste karne ke liye Ctrl + V dabayein.', true);
+            } catch (err) {
+                showToast('Keyboard par Ctrl + V dabakar paste karein.', true);
+            }
+        }
+
+        function dataUrlToBlob(dataUrl) {
+            const parts = dataUrl.split(',');
+            const mime = (parts[0].match(/data:([^;]+)/) || [,'image/png'])[1];
+            const binary = atob(parts[1]);
+            const bytes = new Uint8Array(binary.length);
+            for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+            return new Blob([bytes], {type: mime});
+        }
+
+        /* ==========================================================
+           AI BACKGROUND REMOVAL ENGINE
+           ========================================================== */
+        let segmentationResolve = null;
+
+        function onSelfieSegmentationResults(results) {
+            if (!results || !results.segmentationMask) return;
+            const maskCanvas = document.createElement('canvas');
+            maskCanvas.width = canvas.width;
+            maskCanvas.height = canvas.height;
+            const mctx = maskCanvas.getContext('2d');
+            mctx.drawImage(results.segmentationMask, 0, 0, maskCanvas.width, maskCanvas.height);
+            segmentedMaskCanvas = maskCanvas;
+
+            if (segmentationResolve) {
+                segmentationResolve(maskCanvas);
+                segmentationResolve = null;
+            }
+        }
+
+        function generateSmartFallbackMask(imgElement, targetW, targetH) {
+            const off = document.createElement('canvas');
+            off.width = targetW;
+            off.height = targetH;
+            const octx = off.getContext('2d');
+            octx.drawImage(imgElement, 0, 0, targetW, targetH);
+            const imgData = octx.getImageData(0, 0, targetW, targetH);
+            const d = imgData.data;
+
+            const samplePoints = [0, Math.floor(targetW/2), targetW - 1, (targetH - 1) * targetW, (targetH - 1) * targetW + targetW - 1];
+            let avgR = 0, avgG = 0, avgB = 0;
+            samplePoints.forEach(p => { avgR += d[p*4]; avgG += d[p*4+1]; avgB += d[p*4+2]; });
+            avgR /= samplePoints.length; avgG /= samplePoints.length; avgB /= samplePoints.length;
+
+            const maskCanvas = document.createElement('canvas');
+            maskCanvas.width = targetW; maskCanvas.height = targetH;
+            const mctx = maskCanvas.getContext('2d');
+            const maskData = mctx.createImageData(targetW, targetH);
+            const md = maskData.data;
+
+            const cx = targetW / 2, cy = targetH * 0.45;
+            const maxDist = Math.sqrt(cx*cx + cy*cy);
+
+            for (let y = 0; y < targetH; y++) {
+                for (let x = 0; x < targetW; x++) {
+                    const idx = (y * targetW + x) * 4;
+                    const r = d[idx], g = d[idx+1], b = d[idx+2];
+                    const distToCenter = Math.sqrt((x-cx)*(x-cx) + (y-cy)*(y-cy)) / maxDist;
+                    
+                    const dr = r - avgR, dg = g - avgG, db = b - avgB;
+                    const diff = Math.sqrt(dr*dr + dg*dg + db*db);
+
+                    let personScore = (diff / 60) + (1 - distToCenter) * 0.45;
+                    personScore = Math.max(0, Math.min(1, personScore));
+
+                    const alphaVal = Math.round(personScore * 255);
+                    md[idx] = 255; md[idx+1] = 255; md[idx+2] = 255; md[idx+3] = alphaVal;
+                }
+            }
+            mctx.putImageData(maskData, 0, 0);
+            return maskCanvas;
+        }
+
+        async function processAiBackground() {
+            if (!loadedImg || !loadedImg.src || isProcessing) return;
+
+            loadingOverlay.style.display = 'flex';
+            loadingText.textContent = 'Processing AI Background Removal...';
+            isProcessing = true;
+
+            try {
+                if (mediaPipeReady && selfieSegmentation) {
+                    const mask = await new Promise((resolve) => {
+                        segmentationResolve = resolve;
+                        const tempCanvas = document.createElement('canvas');
+                        tempCanvas.width = canvas.width;
+                        tempCanvas.height = canvas.height;
+                        const tctx = tempCanvas.getContext('2d');
+                        tctx.drawImage(loadedImg, 0, 0, tempCanvas.width, tempCanvas.height);
+                        selfieSegmentation.send({ image: tempCanvas });
+                        setTimeout(() => { if (segmentationResolve) { resolve(null); segmentationResolve = null; } }, 2500);
+                    });
+
+                    if (mask) {
+                        segmentedMaskCanvas = mask;
+                        renderPhoto();
+                        showToast('AI Background removed cleanly!');
+                        return;
+                    }
+                }
+
+                // Server API fallback if key active
+                try {
+                    let sourceBlob = loadedImg.src.startsWith('data:') ? dataUrlToBlob(loadedImg.src) : await (await fetch(loadedImg.src)).blob();
+                    const form = new FormData();
+                    form.append('image_file', sourceBlob, 'photo.png');
+                    form.append('size', 'auto');
+                    
+                    const response = await fetch(window.location.origin + '/api/remove-bg', { method: 'POST', body: form });
+                    if (response.ok) {
+                        const resultBlob = await response.blob();
+                        const resultUrl = URL.createObjectURL(resultBlob);
+                        await new Promise((resolve, reject) => {
+                            const resultImg = new Image();
+                            resultImg.onload = () => { loadedImg = resultImg; cropSnapshot = resultImg; URL.revokeObjectURL(resultUrl); resolve(); };
+                            resultImg.onerror = reject;
+                            resultImg.src = resultUrl;
+                        });
+                        renderPhoto();
+                        showToast('Remove.bg HD Cutout applied!');
+                        return;
+                    }
+                } catch (_) {}
+
+                segmentedMaskCanvas = generateSmartFallbackMask(loadedImg, canvas.width, canvas.height);
+                renderPhoto();
+                showToast('Smart Background applied.');
+            } catch (err) {
+                console.error('AI BG Error:', err);
+                segmentedMaskCanvas = generateSmartFallbackMask(loadedImg, canvas.width, canvas.height);
+                renderPhoto();
+            } finally {
+                isProcessing = false;
+                loadingOverlay.style.display = 'none';
+            }
+        }
+
+        function handleBgToggle() {
+            if (document.getElementById('removeBgToggle').checked) {
+                if (loadedImg.src) processAiBackground();
+            } else {
+                segmentedMaskCanvas = null;
+                renderPhoto();
+            }
+        }
+
+        function setBg(color, el) {
+            bgColor = color;
+            document.querySelectorAll('.swatch').forEach(s => s.classList.remove('active'));
+            if (el) el.classList.add('active');
+            renderPhoto();
+        }
+
+        /* ==========================================================
+           FACE ENHANCEMENT & BEAUTIFICATION ENGINE
+           ========================================================== */
+        function applyOneClickEnhance() {
+            if (!loadedImg.src) {
+                showToast('Pehle photo upload karein.', true);
+                return;
+            }
+            document.getElementById('brightness').value = 104;
+            document.getElementById('contrast').value = 108;
+            document.getElementById('faceLight').value = 18;
+            document.getElementById('skinSmooth').value = 35;
+            document.getElementById('skinWarmth').value = 8;
+            document.getElementById('sharpness').value = 45;
+            document.getElementById('contrastDepth').value = 20;
+            document.getElementById('depthTool').value = 15;
+            document.getElementById('saturation').value = 108;
+            document.getElementById('vignette').value = 10;
+
+            renderPhoto();
+            showToast('✨ 1-Click Studio Face Enhance Applied!');
+        }
+
+        function applyPreset(name) {
+            document.querySelectorAll('.preset-chip').forEach(b => b.classList.remove('active'));
+            if (event && event.target) event.target.classList.add('active');
+
+            if (name === 'original') {
+                document.getElementById('brightness').value = 100;
+                document.getElementById('contrast').value = 100;
+                document.getElementById('faceLight').value = 0;
+                document.getElementById('skinSmooth').value = 0;
+                document.getElementById('skinWarmth').value = 0;
+                document.getElementById('sharpness').value = 0;
+                document.getElementById('contrastDepth').value = 0;
+                document.getElementById('depthTool').value = 0;
+                document.getElementById('saturation').value = 100;
+                document.getElementById('vignette').value = 0;
+            } else if (name === 'studio') {
+                document.getElementById('brightness').value = 105;
+                document.getElementById('contrast').value = 110;
+                document.getElementById('faceLight').value = 22;
+                document.getElementById('skinSmooth').value = 40;
+                document.getElementById('skinWarmth').value = 10;
+                document.getElementById('sharpness').value = 50;
+                document.getElementById('contrastDepth').value = 25;
+                document.getElementById('depthTool').value = 20;
+                document.getElementById('saturation').value = 110;
+                document.getElementById('vignette').value = 12;
+            } else if (name === 'crisp') {
+                document.getElementById('brightness').value = 102;
+                document.getElementById('contrast').value = 115;
+                document.getElementById('faceLight').value = 10;
+                document.getElementById('skinSmooth').value = 15;
+                document.getElementById('skinWarmth').value = 0;
+                document.getElementById('sharpness').value = 75;
+                document.getElementById('contrastDepth').value = 40;
+                document.getElementById('depthTool').value = 25;
+                document.getElementById('saturation').value = 105;
+                document.getElementById('vignette').value = 0;
+            } else if (name === 'warm') {
+                document.getElementById('brightness').value = 103;
+                document.getElementById('contrast').value = 106;
+                document.getElementById('faceLight').value = 12;
+                document.getElementById('skinSmooth').value = 30;
+                document.getElementById('skinWarmth').value = 35;
+                document.getElementById('sharpness').value = 30;
+                document.getElementById('contrastDepth').value = 15;
+                document.getElementById('depthTool').value = 10;
+                document.getElementById('saturation').value = 115;
+                document.getElementById('vignette').value = 8;
+            } else if (name === 'soft') {
+                document.getElementById('brightness').value = 108;
+                document.getElementById('contrast').value = 102;
+                document.getElementById('faceLight').value = 25;
+                document.getElementById('skinSmooth').value = 60;
+                document.getElementById('skinWarmth').value = 12;
+                document.getElementById('sharpness').value = 20;
+                document.getElementById('contrastDepth').value = 5;
+                document.getElementById('depthTool').value = 5;
+                document.getElementById('saturation').value = 104;
+                document.getElementById('vignette').value = 15;
+            } else if (name === 'bw') {
+                document.getElementById('brightness').value = 102;
+                document.getElementById('contrast').value = 125;
+                document.getElementById('faceLight').value = 15;
+                document.getElementById('skinSmooth').value = 25;
+                document.getElementById('skinWarmth').value = 0;
+                document.getElementById('sharpness').value = 65;
+                document.getElementById('contrastDepth').value = 45;
+                document.getElementById('depthTool').value = 30;
+                document.getElementById('saturation').value = 50;
+                document.getElementById('vignette').value = 15;
+            }
+            renderPhoto();
+        }
+
+        function showOriginal(show) {
+            isComparingOriginal = show;
+            renderPhoto();
+        }
+
+        function nudgeFeather(delta) {
+            const el = document.getElementById('edgeFeather');
+            if (!el) return;
+            let v = parseFloat(el.value || 0) + delta;
+            v = Math.max(-5, Math.min(10, v));
+            el.value = v.toFixed(1);
+            renderPhoto();
+        }
+
+        function resetFilters() {
+            cropMode = false;
+            cropApplied = false;
+            cropDrag = null;
+            segmentedMaskCanvas = null;
+            canvas.width = 350;
+            canvas.height = 450;
+            document.getElementById('cropToolbar').classList.remove('active');
+            document.getElementById('cropStatus').classList.remove('active');
+            document.getElementById('canvasContainer').classList.remove('crop-active');
+
+            document.getElementById('brightness').value = 100;
+            document.getElementById('contrast').value = 100;
+            document.getElementById('faceLight').value = 0;
+            document.getElementById('skinSmooth').value = 0;
+            document.getElementById('skinWarmth').value = 0;
+            document.getElementById('sharpness').value = 0;
+            document.getElementById('contrastDepth').value = 0;
+            document.getElementById('depthTool').value = 0;
+            document.getElementById('saturation').value = 100;
+            document.getElementById('vignette').value = 0;
+            document.getElementById('edgeFeather').value = '0.0';
+            document.getElementById('removeBgToggle').checked = true;
+            renderPhoto();
+            showToast('All settings reset to default.');
+        }
+
+        /* ==========================================================
+           MAIN CANVAS COMPOSITOR & PIXEL FILTERS
+           ========================================================== */
+        function renderPhoto() {
+            if (cropMode) {
+                renderCropPreview();
+                return;
+            }
+            if (!loadedImg.src) {
+                ctx.fillStyle = '#111827';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                ctx.fillStyle = '#64748b';
+                ctx.font = '600 15px Segoe UI';
+                ctx.textAlign = 'center';
+                ctx.fillText('📷 Please Upload or Paste a Photo', canvas.width / 2, canvas.height / 2 - 10);
+                ctx.font = '12px Segoe UI';
+                ctx.fillStyle = '#475569';
+                ctx.fillText('Header ke tools live apply honge', canvas.width / 2, canvas.height / 2 + 15);
+                return;
+            }
+
+            if (isComparingOriginal && rawOriginalImg) {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                ctx.drawImage(rawOriginalImg, 0, 0, canvas.width, canvas.height);
+                ctx.fillStyle = 'rgba(0,0,0,0.6)';
+                ctx.fillRect(0, 0, canvas.width, 26);
+                ctx.fillStyle = '#fff';
+                ctx.font = '700 11px Segoe UI';
+                ctx.textAlign = 'center';
+                ctx.fillText('ORIGINAL (UNEDITED)', canvas.width / 2, 17);
+                return;
+            }
+
+            const brightness = parseInt(document.getElementById('brightness').value, 10);
+            const contrast = parseInt(document.getElementById('contrast').value, 10);
+            const faceLight = parseInt(document.getElementById('faceLight').value, 10);
+            const skinSmooth = parseInt(document.getElementById('skinSmooth').value, 10);
+            const skinWarmth = parseInt(document.getElementById('skinWarmth').value, 10);
+            const sharpness = parseInt(document.getElementById('sharpness').value, 10);
+            const contrastDepth = parseInt(document.getElementById('contrastDepth').value, 10);
+            const depthTool = parseInt(document.getElementById('depthTool').value, 10);
+            const saturation = parseInt(document.getElementById('saturation').value, 10);
+            const vignette = parseInt(document.getElementById('vignette').value, 10);
+            const edgeFeather = parseFloat(document.getElementById('edgeFeather').value) || 0;
+            const removeBg = document.getElementById('removeBgToggle').checked;
+
+            // Sync Header UI badges
+            document.getElementById('brightVal').innerText = brightness + '%';
+            document.getElementById('contrastVal').innerText = contrast + '%';
+            document.getElementById('faceLightVal').innerText = (faceLight > 0 ? '+' : '') + faceLight;
+            document.getElementById('skinSmoothVal').innerText = skinSmooth;
+            document.getElementById('skinWarmthVal').innerText = (skinWarmth > 0 ? '+' : '') + skinWarmth;
+            document.getElementById('sharpnessVal').innerText = sharpness;
+            document.getElementById('depthToolVal').innerText = depthTool;
+            document.getElementById('contrastDepthVal').innerText = contrastDepth;
+            document.getElementById('satVal').innerText = saturation + '%';
+            document.getElementById('vignetteVal').innerText = vignette + '%';
+            document.getElementById('featherVal').innerText = (edgeFeather > 0 ? '+' : '') + edgeFeather.toFixed(1) + ' px';
+
+            // Sync secondary tab values
+            const s2 = document.getElementById('skinSmoothVal2'); if (s2) s2.innerText = skinSmooth;
+            const f2 = document.getElementById('faceLightVal2'); if (f2) f2.innerText = faceLight;
+            const sh2 = document.getElementById('sharpnessVal2'); if (sh2) sh2.innerText = sharpness;
+            const b2 = document.getElementById('brightVal2'); if (b2) b2.innerText = brightness + '%';
+            const c2 = document.getElementById('contrastVal2'); if (c2) c2.innerText = contrast + '%';
+
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // 1. Draw Background
+            ctx.fillStyle = bgColor;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // 2. Offscreen canvas for subject
+            const offscreenCanvas = document.createElement('canvas');
+            offscreenCanvas.width = canvas.width;
+            offscreenCanvas.height = canvas.height;
+            const offCtx = offscreenCanvas.getContext('2d');
+
+            offCtx.filter = `brightness(${brightness}%) contrast(${contrast}%) saturate(${saturation}%)`;
+            offCtx.drawImage(loadedImg, 0, 0, canvas.width, canvas.height);
+
+            // 3. Cutout composition
+            if (removeBg && segmentedMaskCanvas) {
+                const maskedCanvas = document.createElement('canvas');
+                maskedCanvas.width = canvas.width;
+                maskedCanvas.height = canvas.height;
+                const mctx = maskedCanvas.getContext('2d');
+
+                mctx.drawImage(offscreenCanvas, 0, 0);
+                mctx.globalCompositeOperation = 'destination-in';
+
+                if (edgeFeather > 0) {
+                    // Positive feather: Smooth blur
+                    mctx.filter = `blur(${edgeFeather}px)`;
+                    mctx.drawImage(segmentedMaskCanvas, 0, 0, canvas.width, canvas.height);
+                    mctx.filter = 'none';
+                } else if (edgeFeather < 0) {
+                    // Negative feather: Inward Mask Choke / Erosion (removes background halos & fringe)
+                    const choke = Math.abs(edgeFeather);
+                    const tempMaskCanvas = document.createElement('canvas');
+                    tempMaskCanvas.width = canvas.width;
+                    tempMaskCanvas.height = canvas.height;
+                    const tmCtx = tempMaskCanvas.getContext('2d');
+
+                    // Slight blur before alpha thresholding
+                    tmCtx.filter = `blur(${Math.max(0.5, choke * 0.75)}px)`;
+                    tmCtx.drawImage(segmentedMaskCanvas, 0, 0, canvas.width, canvas.height);
+
+                    // Erode mask edges inward
+                    const mData = tmCtx.getImageData(0, 0, canvas.width, canvas.height);
+                    const mPix = mData.data;
+                    const threshold = Math.min(245, 128 + choke * 22);
+                    const slope = 255 / (255 - threshold + 1);
+
+                    for (let i = 0; i < mPix.length; i += 4) {
+                        const a = mPix[i + 3];
+                        if (a < threshold) {
+                            mPix[i + 3] = 0;
+                        } else {
+                            mPix[i + 3] = Math.min(255, Math.round((a - threshold) * slope));
+                        }
+                    }
+                    tmCtx.putImageData(mData, 0, 0);
+                    mctx.drawImage(tempMaskCanvas, 0, 0, canvas.width, canvas.height);
+                } else {
+                    // Zero: Crisp exact boundary
+                    mctx.drawImage(segmentedMaskCanvas, 0, 0, canvas.width, canvas.height);
+                }
+
+                mctx.globalCompositeOperation = 'source-over';
+                ctx.drawImage(maskedCanvas, 0, 0);
+            } else {
+                ctx.drawImage(offscreenCanvas, 0, 0);
+            }
+
+            // 4. Pixel Enhancements (Skin Smoothing, Face Light, Warmth, Sharpness)
+            if (skinSmooth > 0 || faceLight !== 0 || skinWarmth !== 0 || sharpness > 0 || contrastDepth > 0 || depthTool !== 0) {
+                applyPixelEnhancements(skinSmooth, faceLight, skinWarmth, sharpness, contrastDepth, depthTool);
+            }
+
+            // 5. Vignette (Edge Shadow)
+            if (vignette > 0) {
+                ctx.save();
+                const outerRadius = Math.sqrt(Math.pow(canvas.width / 2, 2) + Math.pow(canvas.height / 2, 2));
+                const innerRadius = outerRadius * (1 - vignette / 140);
+                const gradient = ctx.createRadialGradient(
+                    canvas.width / 2, canvas.height / 2, innerRadius,
+                    canvas.width / 2, canvas.height / 2, outerRadius
+                );
+                gradient.addColorStop(0, 'rgba(0,0,0,0)');
+                gradient.addColorStop(1, `rgba(0,0,0,${(vignette / 100) * 0.82})`);
+                ctx.fillStyle = gradient;
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                ctx.restore();
+            }
+        }
+
+        function applyPixelEnhancements(smoothVal, lightVal, warmthVal, sharpVal, depthVal, depth3DVal) {
+            const w = canvas.width, h = canvas.height;
+            const imgData = ctx.getImageData(0, 0, w, h);
+            const src = imgData.data;
+            const original = new Uint8ClampedArray(src);
+
+            const smoothRatio = smoothVal / 100;
+            const lightBoost = lightVal * 1.4;
+            const warmthR = warmthVal * 0.7;
+            const warmthB = -warmthVal * 0.7;
+            const sharpRatio = sharpVal / 100 * 1.2;
+            const depthRatio = depthVal / 100;
+            const depth3DRatio = depth3DVal / 100;
+
+            const lum = new Float32Array(w * h);
+            for (let i = 0, p = 0; i < original.length; i += 4, p++) {
+                lum[p] = 0.2126 * original[i] + 0.7152 * original[i+1] + 0.0722 * original[i+2];
+            }
+
+            for (let y = 1; y < h - 1; y++) {
+                for (let x = 1; x < w - 1; x++) {
+                    const p = y * w + x;
+                    const i = p * 4;
+                    if (original[i + 3] === 0) continue;
+
+                    let r = original[i];
+                    let g = original[i + 1];
+                    let b = original[i + 2];
+                    const centerLum = lum[p];
+
+                    // Face Lighting
+                    if (lightBoost !== 0) {
+                        const shadowWeight = Math.max(0, (210 - centerLum) / 210);
+                        const delta = lightBoost * shadowWeight;
+                        r = Math.max(0, Math.min(255, r + delta));
+                        g = Math.max(0, Math.min(255, g + delta));
+                        b = Math.max(0, Math.min(255, b + delta));
+                    }
+
+                    // Skin Warmth
+                    if (warmthVal !== 0) {
+                        r = Math.max(0, Math.min(255, r + warmthR));
+                        b = Math.max(0, Math.min(255, b + warmthB));
+                    }
+
+                    const lTop = lum[p - w], lBot = lum[p + w], lLeft = lum[p - 1], lRight = lum[p + 1];
+                    const localAvg = (lTop + lBot + lLeft + lRight + lum[p - w - 1] + lum[p - w + 1] + lum[p + w - 1] + lum[p + w + 1]) / 8;
+                    const edgeDelta = centerLum - localAvg;
+
+                    // Skin Smooth
+                    if (smoothRatio > 0 && Math.abs(edgeDelta) < 18) {
+                        const rAvg = (original[i-4] + original[i+4] + original[i-w*4] + original[i+w*4]) / 4;
+                        const gAvg = (original[i-3] + original[i+5] + original[i-w*4+1] + original[i+w*4+1]) / 4;
+                        const bAvg = (original[i-2] + original[i+6] + original[i-w*4+2] + original[i+w*4+2]) / 4;
+                        r = r * (1 - smoothRatio * 0.7) + rAvg * (smoothRatio * 0.7);
+                        g = g * (1 - smoothRatio * 0.7) + gAvg * (smoothRatio * 0.7);
+                        b = b * (1 - smoothRatio * 0.7) + bAvg * (smoothRatio * 0.7);
+                    }
+
+                    // Sharpness
+                    if (sharpRatio > 0) {
+                        const sharpBoost = Math.max(-25, Math.min(25, edgeDelta * sharpRatio));
+                        r = Math.max(0, Math.min(255, r + sharpBoost));
+                        g = Math.max(0, Math.min(255, g + sharpBoost));
+                        b = Math.max(0, Math.min(255, b + sharpBoost));
+                    }
+
+                    // 3D Depth
+                    if (depthRatio > 0 || depth3DRatio !== 0) {
+                        const totalDepth = (depthRatio * 1.2) + (depth3DRatio * 0.8);
+                        const depthBoost = Math.max(-28, Math.min(28, edgeDelta * totalDepth));
+                        const scale = centerLum > 1 ? (centerLum + depthBoost) / centerLum : 1;
+                        r = Math.max(0, Math.min(255, r * scale));
+                        g = Math.max(0, Math.min(255, g * scale));
+                        b = Math.max(0, Math.min(255, b * scale));
+                    }
+
+                    src[i] = r; src[i + 1] = g; src[i + 2] = b;
+                }
+            }
+            ctx.putImageData(imgData, 0, 0);
+        }
+
+        /* ==========================================================
+           MANUAL CROP WORKFLOW
+           ========================================================== */
+        function startManualCrop() {
+            if (!loadedImg.src) {
+                showToast('Please upload a photo first.', true);
+                return;
+            }
+
+            cropMode = true;
+            cropApplied = false;
+            segmentedMaskCanvas = null;
+
+            const iw = loadedImg.naturalWidth || loadedImg.width;
+            const ih = loadedImg.naturalHeight || loadedImg.height;
+            const scale = Math.min(1, 600 / Math.max(iw, ih));
+            canvas.width = Math.max(1, Math.round(iw * scale));
+            canvas.height = Math.max(1, Math.round(ih * scale));
+
+            const ratio = 35 / 45;
+            let cropW = Math.round(canvas.width * 0.75);
+            let cropH = Math.round(cropW / ratio);
+            if (cropH > canvas.height * 0.9) {
+                cropH = Math.round(canvas.height * 0.85);
+                cropW = Math.round(cropH * ratio);
+            }
+
+            cropRect = {
+                x: Math.round((canvas.width - cropW) / 2),
+                y: Math.round((canvas.height - cropH) / 2),
+                w: cropW, h: cropH
+            };
+
+            document.getElementById('cropToolbar').classList.add('active');
+            document.getElementById('cropStatus').classList.add('active');
+            document.getElementById('canvasContainer').classList.add('crop-active');
+
+            renderCropPreview();
+        }
+
+        function renderCropPreview() {
+            if (!loadedImg.src) return;
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.drawImage(loadedImg, 0, 0, canvas.width, canvas.height);
+            drawCropOverlay();
+        }
+
+        function drawCropOverlay() {
+            if (!cropMode || !cropRect) return;
+            const c = canvas, r = cropRect;
+            ctx.save();
+
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.55)';
+            ctx.fillRect(0, 0, c.width, r.y);
+            ctx.fillRect(0, r.y, r.x, r.h);
+            ctx.fillRect(r.x + r.w, r.y, c.width - (r.x + r.w), r.h);
+            ctx.fillRect(0, r.y + r.h, c.width, c.height - (r.y + r.h));
+
+            ctx.strokeStyle = '#6366f1';
+            ctx.lineWidth = 2.5;
+            ctx.strokeRect(r.x, r.y, r.w, r.h);
+
+            ctx.setLineDash([4, 5]);
+            ctx.lineWidth = 1;
+            ctx.strokeStyle = 'rgba(255,255,255,0.7)';
+            ctx.beginPath();
+            ctx.moveTo(r.x + r.w / 3, r.y); ctx.lineTo(r.x + r.w / 3, r.y + r.h);
+            ctx.moveTo(r.x + 2 * r.w / 3, r.y); ctx.lineTo(r.x + 2 * r.w / 3, r.y + r.h);
+            ctx.moveTo(r.x, r.y + r.h / 3); ctx.lineTo(r.x + r.w, r.y + r.h / 3);
+            ctx.moveTo(r.x, r.y + 2 * r.h / 3); ctx.lineTo(r.x + r.w, r.y + 2 * r.h / 3);
+            ctx.stroke();
+
+            ctx.setLineDash([]);
+            ctx.fillStyle = '#ffffff';
+            const hs = 8;
+            [[r.x, r.y], [r.x + r.w, r.y], [r.x, r.y + r.h], [r.x + r.w, r.y + r.h]].forEach(p => {
+                ctx.fillRect(p[0] - hs/2, p[1] - hs/2, hs, hs);
+                ctx.strokeRect(p[0] - hs/2, p[1] - hs/2, hs, hs);
+            });
+            ctx.restore();
+        }
+
+        function getCanvasPoint(e) {
+            const rect = canvas.getBoundingClientRect();
+            const sx = canvas.width / rect.width, sy = canvas.height / rect.height;
+            return { x: (e.clientX - rect.left) * sx, y: (e.clientY - rect.top) * sy };
+        }
+
+        function hitCropHandle(p) {
+            if (!cropRect) return null;
+            const r = cropRect, hs = 20;
+            const handles = { nw: [r.x, r.y], ne: [r.x + r.w, r.y], sw: [r.x, r.y + r.h], se: [r.x + r.w, r.y + r.h] };
+            for (const [name, pos] of Object.entries(handles)) {
+                if (Math.abs(p.x - pos[0]) <= hs && Math.abs(p.y - pos[1]) <= hs) return name;
+            }
+            return null;
+        }
+
+        function pointInsideCrop(p) {
+            return cropRect && p.x >= cropRect.x && p.x <= cropRect.x + cropRect.w && p.y >= cropRect.y && p.y <= cropRect.y + cropRect.h;
+        }
+
+        function updateCropFromPointer(p) {
+            if (!cropRect || !cropDrag) return;
+            const minSize = 50, maxW = canvas.width, maxH = canvas.height;
+            const ratio = 35 / 45;
+
+            if (cropDrag.type === 'move') {
+                cropRect.x = Math.max(0, Math.min(maxW - cropRect.w, p.x - cropDrag.offsetX));
+                cropRect.y = Math.max(0, Math.min(maxH - cropRect.h, p.y - cropDrag.offsetY));
+            } else {
+                let x = cropRect.x, y = cropRect.y, w = cropRect.w, h = cropRect.h;
+                if (cropDrag.type.includes('w')) {
+                    const right = cropRect.x + cropRect.w;
+                    x = Math.max(0, Math.min(right - minSize, p.x));
+                    w = right - x; h = Math.round(w / ratio);
+                } else if (cropDrag.type.includes('e')) {
+                    w = Math.max(minSize, Math.min(maxW - cropRect.x, p.x - cropRect.x));
+                    h = Math.round(w / ratio);
+                }
+                cropRect = { x, y, w: Math.min(maxW - x, w), h: Math.min(maxH - y, h) };
+            }
+            renderCropPreview();
+        }
+
+        canvas.addEventListener('mousedown', (e) => {
+            if (!cropMode || !cropRect) return;
+            const p = getCanvasPoint(e);
+            const handle = hitCropHandle(p);
+            if (handle) cropDrag = { type: handle };
+            else if (pointInsideCrop(p)) cropDrag = { type: 'move', offsetX: p.x - cropRect.x, offsetY: p.y - cropRect.y };
+            else cropDrag = null;
+        });
+
+        window.addEventListener('mousemove', (e) => {
+            if (!cropMode || !cropDrag) return;
+            updateCropFromPointer(getCanvasPoint(e));
+        });
+
+        window.addEventListener('mouseup', () => { cropDrag = null; });
+
+        function cancelManualCrop() {
+            cropMode = false;
+            cropDrag = null;
+            canvas.width = 350;
+            canvas.height = 450;
+            document.getElementById('cropToolbar').classList.remove('active');
+            document.getElementById('cropStatus').classList.remove('active');
+            document.getElementById('canvasContainer').classList.remove('crop-active');
+            if (cropSnapshot) loadedImg = cropSnapshot;
+            renderPhoto();
+        }
+
+        async function applyManualCrop() {
+            if (!loadedImg.src || !cropRect) return;
+            const iw = loadedImg.naturalWidth || loadedImg.width;
+            const ih = loadedImg.naturalHeight || loadedImg.height;
+            const sx = iw / canvas.width, sy = ih / canvas.height;
+
+            const sourceX = Math.max(0, Math.round(cropRect.x * sx));
+            const sourceY = Math.max(0, Math.round(cropRect.y * sy));
+            const sourceW = Math.min(iw - sourceX, Math.round(cropRect.w * sx));
+            const sourceH = Math.min(ih - sourceY, Math.round(cropRect.h * sy));
+
+            if (sourceW < 10 || sourceH < 10) {
+                showToast('Please select a valid crop area.', true);
+                return;
+            }
+
+            const cropCanvas = document.createElement('canvas');
+            cropCanvas.width = sourceW; cropCanvas.height = sourceH;
+            const cropCtx = cropCanvas.getContext('2d');
+            cropCtx.imageSmoothingEnabled = true; cropCtx.imageSmoothingQuality = 'high';
+            cropCtx.drawImage(loadedImg, sourceX, sourceY, sourceW, sourceH, 0, 0, sourceW, sourceH);
+
+            const croppedUrl = cropCanvas.toDataURL('image/png');
+            const croppedImg = new Image();
+
+            croppedImg.onload = async () => {
+                cropSnapshot = croppedImg;
+                loadedImg = croppedImg;
+                cropMode = false;
+                cropApplied = true;
+                cropDrag = null;
+                segmentedMaskCanvas = null;
+
+                canvas.width = 350;
+                canvas.height = 450;
+
+                document.getElementById('cropToolbar').classList.remove('active');
+                document.getElementById('cropStatus').classList.remove('active');
+                document.getElementById('canvasContainer').classList.remove('crop-active');
+
+                renderPhoto();
+
+                if (document.getElementById('removeBgToggle').checked) {
+                    await processAiBackground();
+                } else {
+                    showToast('Passport crop applied successfully!');
+                }
+            };
+            croppedImg.src = croppedUrl;
+        }
+
+        /* ==========================================================
+           PRINTING & DOWNLOADS
+           ========================================================== */
+        async function downloadPhoto() {
+            if (!loadedImg.src) {
+                showToast('Pehle photo upload karein.', true);
+                return;
+            }
+            const link = document.createElement('a');
+            link.download = 'Passport_Photo_35x45mm.png';
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+            showToast('Passport Photo (35×45mm) Downloaded!');
+        }
+
+        async function download4x6Sheet() {
+            if (!loadedImg || !loadedImg.src) {
+                showToast('Pehle photo upload karein.', true);
+                return;
+            }
+
+            function execute4x6Download() {
+                const SHEET_W = 1800, SHEET_H = 1200;
+                // Standard 35mm x 45mm Passport Ratio (Scaled for generous sheet margins)
+                const PHOTO_W = 395, PHOTO_H = 508;
+
+                const sheet = document.createElement('canvas');
+                sheet.width = SHEET_W; sheet.height = SHEET_H;
+                const sctx = sheet.getContext('2d');
+                sctx.imageSmoothingEnabled = true; sctx.imageSmoothingQuality = 'high';
+
+                // Clean white print sheet background
+                sctx.fillStyle = '#ffffff';
+                sctx.fillRect(0, 0, SHEET_W, SHEET_H);
+
+                const cols = 4, rows = 2, gapX = 32, gapY = 48;
+                const totalW = cols * PHOTO_W + (cols - 1) * gapX;
+                const totalH = rows * PHOTO_H + (rows - 1) * gapY;
+                const startX = Math.round((SHEET_W - totalW) / 2); // 62px border margin
+                const startY = Math.round((SHEET_H - totalH) / 2); // 68px border margin
+
+                // Draw each photo + solid light-dark border (3px) for exact passport outline
+                for (let row = 0; row < rows; row++) {
+                    for (let col = 0; col < cols; col++) {
+                        const x = startX + col * (PHOTO_W + gapX);
+                        const y = startY + row * (PHOTO_H + gapY);
+                        sctx.drawImage(canvas, 0, 0, canvas.width, canvas.height, x, y, PHOTO_W, PHOTO_H);
+
+                        // Visible Light-Dark Border (Slate Charcoal #334155)
+                        sctx.save();
+                        sctx.strokeStyle = '#334155';
+                        sctx.lineWidth = 3;
+                        sctx.strokeRect(x, y, PHOTO_W, PHOTO_H);
+                        sctx.restore();
+                    }
+                }
+
+                // Dashed cutting guide lines in center of gaps
+                sctx.save();
+                sctx.strokeStyle = '#64748b';
+                sctx.lineWidth = 2;
+                sctx.setLineDash([8, 6]);
+
+                for (let col = 1; col < cols; col++) {
+                    const cx = startX + col * PHOTO_W + (col - 0.5) * gapX;
+                    sctx.beginPath();
+                    sctx.moveTo(cx, startY - 20);
+                    sctx.lineTo(cx, startY + totalH + 20);
+                    sctx.stroke();
+                }
+                const middleY = startY + PHOTO_H + gapY / 2;
+                sctx.beginPath();
+                sctx.moveTo(startX - 20, middleY);
+                sctx.lineTo(startX + totalW + 20, middleY);
+                sctx.stroke();
+                sctx.restore();
+
+                // Scissor marks on cutting lines
+                sctx.save();
+                sctx.fillStyle = '#0f172a';
+                sctx.font = 'bold 24px Arial';
+                sctx.textAlign = 'center';
+                sctx.textBaseline = 'middle';
+                for (let col = 1; col < cols; col++) {
+                    const cx = startX + col * PHOTO_W + (col - 0.5) * gapX;
+                    sctx.fillText('✂', cx, startY - 32);
+                    sctx.fillText('✂', cx, startY + totalH + 32);
+                }
+                sctx.fillText('✂', startX - 32, middleY);
+                sctx.fillText('✂', startX + totalW + 32, middleY);
+                sctx.restore();
+
+                sheet.toBlob((blob) => {
+                    if (!blob) return;
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = 'Passport_Photo_4x6_8_Photos.png';
+                    document.body.appendChild(a);
+                    a.click();
+                    a.remove();
+                    setTimeout(() => URL.revokeObjectURL(url), 1000);
+                    showToast('Download (4*6 Size) Complete!');
+                }, 'image/png');
+            }
+
+            if (window.JustcardWallet) {
+                window.JustcardWallet.chargeService('photoMaker', 'Photo Studio (4×6 Sheet)', () => {
+                    execute4x6Download();
+                });
+            } else {
+                execute4x6Download();
+            }
+        }
+
+        async function downloadA4Sheet(photoCount = 30) {
+            if (!loadedImg || !loadedImg.src) {
+                showToast('Pehle photo upload karein.', true);
+                return;
+            }
+
+            function executeA4Download() {
+                const SHEET_W = 2480, SHEET_H = 3508;
+                const PHOTO_W = 395, PHOTO_H = 508; // 35x45mm ratio
+
+                const sheet = document.createElement('canvas');
+                sheet.width = SHEET_W; sheet.height = SHEET_H;
+                const sctx = sheet.getContext('2d');
+                sctx.fillStyle = '#ffffff';
+                sctx.fillRect(0, 0, SHEET_W, SHEET_H);
+
+                const cols = 5, rows = 6, gapX = 40, gapY = 40;
+                const totalW = cols * PHOTO_W + (cols - 1) * gapX;
+                const totalH = rows * PHOTO_H + (rows - 1) * gapY;
+                const startX = Math.round((SHEET_W - totalW) / 2);
+                const startY = Math.round((SHEET_H - totalH) / 2);
+
+                // Draw photos + 3.5px Light-Dark border
+                for (let row = 0; row < rows; row++) {
+                    for (let col = 0; col < cols; col++) {
+                        const x = startX + col * (PHOTO_W + gapX);
+                        const y = startY + row * (PHOTO_H + gapY);
+                        sctx.drawImage(canvas, 0, 0, canvas.width, canvas.height, x, y, PHOTO_W, PHOTO_H);
+
+                        // Light-Dark Photo Border (Slate Charcoal #334155)
+                        sctx.save();
+                        sctx.strokeStyle = '#334155';
+                        sctx.lineWidth = 3.5;
+                        sctx.strokeRect(x, y, PHOTO_W, PHOTO_H);
+                        sctx.restore();
+                    }
+                }
+
+                // Cutting guide lines
+                sctx.save();
+                sctx.strokeStyle = '#64748b';
+                sctx.lineWidth = 2;
+                sctx.setLineDash([8, 6]);
+
+                for (let col = 1; col < cols; col++) {
+                    const cx = startX + col * PHOTO_W + (col - 0.5) * gapX;
+                    sctx.beginPath();
+                    sctx.moveTo(cx, startY - 20);
+                    sctx.lineTo(cx, startY + totalH + 20);
+                    sctx.stroke();
+                }
+                for (let row = 1; row < rows; row++) {
+                    const cy = startY + row * PHOTO_H + (row - 0.5) * gapY;
+                    sctx.beginPath();
+                    sctx.moveTo(startX - 20, cy);
+                    sctx.lineTo(startX + totalW + 20, cy);
+                    sctx.stroke();
+                }
+                sctx.restore();
+
+                sheet.toBlob((blob) => {
+                    if (!blob) return;
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = 'Passport_Photo_A4_30_Photos.png';
+                    document.body.appendChild(a);
+                    a.click();
+                    a.remove();
+                    setTimeout(() => URL.revokeObjectURL(url), 1000);
+                    showToast('A4 Sheet (30 Photos) Downloaded!');
+                }, 'image/png');
+            }
+
+            if (window.JustcardWallet) {
+                window.JustcardWallet.chargeService('photoMaker', 'Photo Studio (A4 30-Photos Sheet)', () => {
+                    executeA4Download();
+                });
+            } else {
+                executeA4Download();
+            }
+        }
+
+        renderPhoto();
+    </script>
+</body>
+</html>

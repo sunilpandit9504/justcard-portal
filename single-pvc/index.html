@@ -1,0 +1,2023 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Justcard — Single Print PVC Studio</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- PDF.js library for PDF rendering & Password handling -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <!-- jsPDF for direct PDF export -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="../wallet-client.js"></script>
+
+    <style>
+        :root {
+            --primary: #5c3cff;
+            --primary-hover: #4829e0;
+            --primary-light: #ece8ff;
+            --p-gradient: linear-gradient(135deg, #7045ff 0%, #5c3cff 50%, #4829e0 100%);
+            --p-glow: rgba(92, 60, 255, 0.35);
+            --bg-page: #f8fafc;
+            --card-bg: #ffffff;
+            --border: #e2e8f0;
+            --text-dark: #0f172a;
+            --text-muted: #64748b;
+            --green: #10b981;
+            --green-hover: #059669;
+            --stage-bg: #2d3142;
+        }
+
+        /* NATIVE CANVAS CROP MODAL STYLING */
+        .crop-modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.88);
+            backdrop-filter: blur(8px);
+            z-index: 99999;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+        }
+        .crop-modal-overlay.open { display: flex; }
+        .crop-modal-box {
+            width: min(1180px, 98vw);
+            height: min(760px, 95vh);
+            background: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 16px;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            box-shadow: 0 25px 60px rgba(0,0,0,0.5);
+        }
+        .crop-modal-header {
+            height: 50px;
+            padding: 0 18px;
+            background: #0f172a;
+            border-bottom: 1px solid #334155;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .crop-modal-header b { font-size: 14px; font-weight: 800; color: #fff; display: flex; align-items: center; gap: 8px; }
+        .crop-modal-body {
+            display: grid;
+            grid-template-columns: 260px 1fr 240px;
+            flex: 1;
+            overflow: hidden;
+        }
+        .crop-canvas-area {
+            background: #090d16;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+        #pvcCropCanvas {
+            display: block;
+            max-width: 100%;
+            max-height: 100%;
+            cursor: crosshair;
+            touch-action: none;
+        }
+        .crop-side-controls {
+            background: #1e293b;
+            border-right: 1px solid #334155;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            overflow-y: auto;
+        }
+        .crop-right-preview {
+            background: #1e293b;
+            border-left: 1px solid #334155;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            overflow-y: auto;
+        }
+        .side-tab-btn {
+            background: #0f172a;
+            border: 1.5px solid #334155;
+            border-radius: 8px;
+            padding: 10px;
+            color: #cbd5e1;
+            font-weight: 700;
+            font-size: 12px;
+            cursor: pointer;
+            text-align: left;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .side-tab-btn.active {
+            border-color: #6366f1;
+            background: rgba(99, 102, 241, 0.15);
+            color: #fff;
+        }
+        .crop-preview-box {
+            background: #0f172a;
+            border: 1px solid #334155;
+            border-radius: 8px;
+            padding: 8px;
+            min-height: 90px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+        .crop-preview-box img {
+            width: 100%;
+            height: auto;
+            border-radius: 4px;
+            display: block;
+        }
+        .crop-candidate-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 6px;
+        }
+        .crop-candidate-thumb {
+            border: 1.5px solid #334155;
+            border-radius: 4px;
+            overflow: hidden;
+            cursor: pointer;
+            background: #0f172a;
+            transition: all 0.15s;
+        }
+        .crop-candidate-thumb:hover {
+            border-color: #6366f1;
+            transform: scale(1.03);
+        }
+        .crop-candidate-thumb img {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+        .crop-inst {
+            font-size: 11px;
+            color: #94a3b8;
+            line-height: 1.4;
+            background: #0f172a;
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid #334155;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif; }
+        body {
+            background-color: var(--bg-page);
+            color: var(--text-dark);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* 1. TOP NAVBAR */
+        .top-navbar {
+            background: #ffffff;
+            border-bottom: 1px solid var(--border);
+            height: 54px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 16px;
+            position: sticky;
+            top: 0;
+            z-index: 50;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.03);
+        }
+        .back-btn {
+            background: #ffffff;
+            color: #475569;
+            border: 1.5px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 6px 14px;
+            font-size: 12.5px;
+            font-weight: 750;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+        }
+        .back-btn:hover {
+            background: #faf5ff;
+            color: var(--primary);
+            border-color: #d8b4fe;
+            transform: translateY(-1px);
+        }
+
+        .brand-section {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            text-decoration: none;
+            color: inherit;
+        }
+
+        .brand-logo {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            background: var(--p-gradient);
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Outfit', sans-serif;
+            font-size: 19px;
+            font-weight: 900;
+        }
+
+        .brand-title {
+            font-family: 'Outfit', sans-serif;
+            font-weight: 800;
+            font-size: 17px;
+            color: #0f172a;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .brand-sub {
+            font-size: 11px;
+            color: #64748b;
+            font-weight: 500;
+        }
+
+        .version-tag {
+            font-size: 10px;
+            font-weight: 800;
+            background: #f1f5f9;
+            color: #475569;
+            padding: 1px 6px;
+            border-radius: 6px;
+        }
+
+        /* 2. SUB-HEADER MODULE TABS */
+        .module-tabs-bar {
+            background: #ffffff;
+            border-bottom: 1px solid var(--border);
+            padding: 6px 16px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            overflow-x: auto;
+            white-space: nowrap;
+        }
+
+        .mod-tab {
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: 750;
+            color: #475569;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            border: 1px solid transparent;
+            cursor: pointer;
+            transition: all 0.15s;
+            background: transparent;
+        }
+
+        .mod-tab:hover {
+            background: #f8fafc;
+            color: var(--primary);
+        }
+
+        .mod-tab.active {
+            background: var(--primary);
+            color: #ffffff;
+            box-shadow: 0 2px 8px var(--p-glow);
+        }
+
+        .mod-tab-badge {
+            background: #ef4444;
+            color: #fff;
+            font-size: 9px;
+            font-weight: 900;
+            padding: 1px 5px;
+            border-radius: 10px;
+        }
+
+        /* 3. THREE-COLUMN WORKSPACE */
+        .studio-layout {
+            display: grid;
+            grid-template-columns: 290px 1fr 310px;
+            gap: 14px;
+            max-width: 1560px;
+            width: 100%;
+            margin: 12px auto;
+            padding: 0 14px 30px;
+            flex: 1;
+        }
+
+        @media (max-width: 1180px) {
+            .studio-layout {
+                grid-template-columns: 280px 1fr;
+            }
+            .right-settings-col {
+                grid-column: 1 / -1;
+            }
+        }
+
+        @media (max-width: 820px) {
+            .studio-layout {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* COLUMN PANELS */
+        .panel-card {
+            background: #ffffff;
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 16px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.02);
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+
+        .panel-sec-header {
+            font-family: 'Outfit', sans-serif;
+            font-size: 12px;
+            font-weight: 850;
+            color: #334155;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        /* FORM CONTROLS */
+        .form-label {
+            display: block;
+            font-size: 11.5px;
+            font-weight: 750;
+            color: #475569;
+            margin-bottom: 5px;
+        }
+
+        .select-input, .text-input {
+            width: 100%;
+            background: #ffffff;
+            border: 1.5px solid #cbd5e1;
+            border-radius: 8px;
+            padding: 8px 10px;
+            font-size: 12.5px;
+            font-weight: 700;
+            color: #0f172a;
+            outline: none;
+            transition: all 0.15s;
+        }
+
+        .select-input:focus, .text-input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(92,60,255,0.12);
+        }
+
+        /* SIDE TOGGLE BUTTONS (Front / Back) */
+        .side-toggle-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 6px;
+        }
+
+        .side-btn {
+            padding: 7px 10px;
+            border-radius: 7px;
+            border: 1.5px solid #cbd5e1;
+            background: #ffffff;
+            font-size: 12px;
+            font-weight: 800;
+            color: #475569;
+            cursor: pointer;
+            transition: all 0.15s;
+            text-align: center;
+        }
+
+        .side-btn:hover {
+            border-color: #a78bfa;
+            color: var(--primary);
+        }
+
+        .side-btn.active {
+            background: #ede9fe;
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+
+        /* QUICK TOGGLE BUTTONS (Cutting Border, Mirror, Auto-Bleed) */
+        .quick-toggles-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .toggle-btn {
+            padding: 8px 12px;
+            border-radius: 8px;
+            border: 1.5px solid #cbd5e1;
+            background: #ffffff;
+            font-size: 12px;
+            font-weight: 750;
+            color: #334155;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            transition: all 0.15s;
+        }
+
+        .toggle-btn:hover {
+            border-color: #a78bfa;
+            background: #faf5ff;
+        }
+
+        .toggle-btn.active {
+            border-color: var(--primary);
+            background: #f5f3ff;
+            color: var(--primary);
+            font-weight: 800;
+        }
+
+        .toggle-btn.active i {
+            color: var(--primary);
+        }
+
+        /* PAGE SPEC BADGE */
+        .page-spec-box {
+            background: #f1f5f9;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 8px 10px;
+            font-size: 11.5px;
+            font-weight: 750;
+            color: #334155;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .deduct-notice {
+            background: #eff6ff;
+            border: 1px solid #bfdbfe;
+            border-radius: 8px;
+            padding: 8px 10px;
+            font-size: 11px;
+            font-weight: 700;
+            color: #1e40af;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        /* BIG ACTION BUTTONS */
+        .btn-download-pdf {
+            width: 100%;
+            padding: 11px;
+            border-radius: 9px;
+            background: var(--green);
+            color: #ffffff;
+            border: none;
+            font-size: 13.5px;
+            font-weight: 800;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: all 0.15s;
+            box-shadow: 0 4px 12px rgba(16,185,129,0.3);
+        }
+
+        .btn-download-pdf:hover {
+            background: var(--green-hover);
+            transform: translateY(-1px);
+        }
+
+        .btn-print-now {
+            width: 100%;
+            padding: 11px;
+            border-radius: 9px;
+            background: var(--primary);
+            color: #ffffff;
+            border: none;
+            font-size: 13.5px;
+            font-weight: 800;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: all 0.15s;
+            box-shadow: 0 4px 12px var(--p-glow);
+        }
+
+        .btn-print-now:hover {
+            background: var(--primary-hover);
+            transform: translateY(-1px);
+        }
+
+        /* CENTER PREVIEW STAGE */
+        .center-stage-col {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .preview-canvas-card {
+            background: var(--stage-bg);
+            border-radius: 14px;
+            padding: 24px;
+            min-height: 520px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: auto;
+            box-shadow: inset 0 2px 8px rgba(0,0,0,0.3);
+        }
+
+        /* PHYSICAL PAPER SHEET RENDERING ON STAGE */
+        .stage-paper-sheet {
+            background: #ffffff;
+            box-shadow: 0 12px 36px rgba(0,0,0,0.45);
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+
+        /* 4x6 Inch Ratio: 100mm x 150mm (Ratio 1 : 1.5) */
+        .stage-paper-sheet.size-4x6 {
+            width: 320px;
+            height: 480px;
+            padding: 10px;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        /* 55 x 87.71mm Card Paper */
+        .stage-paper-sheet.size-card55 {
+            width: 220px;
+            height: 350px;
+            padding: 8px;
+        }
+
+        /* A4 Sheet */
+        .stage-paper-sheet.size-a4 {
+            width: 380px;
+            height: 537px;
+            padding: 14px;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        /* CARD SLOT ON SHEET (CR80: 85.6mm x 53.98mm) */
+        .card-render-frame {
+            width: 270px;
+            height: 170px;
+            border-radius: 8px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 4px 14px rgba(0,0,0,0.15);
+            background: #f1f5f9;
+        }
+
+        .card-render-frame canvas {
+            width: 100%;
+            height: 100%;
+            display: block;
+            object-fit: fill;
+        }
+
+        .stage-caption {
+            text-align: center;
+            font-size: 11.5px;
+            color: #64748b;
+            font-weight: 600;
+        }
+
+        /* RIGHT ALIGNMENT & PRINTER CONFIG GUIDE */
+        .alignment-btn-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 6px;
+            max-width: 140px;
+            margin: 0 auto;
+        }
+
+        .nudge-btn {
+            background: #f8fafc;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            padding: 8px;
+            font-size: 12px;
+            font-weight: 800;
+            color: #334155;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.15s;
+        }
+
+        .nudge-btn:hover {
+            background: #ede9fe;
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+
+        .control-pill-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: 750;
+        }
+
+        .control-pill-actions {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .mini-circle-btn {
+            width: 26px;
+            height: 26px;
+            border-radius: 50%;
+            border: 1px solid #cbd5e1;
+            background: #fff;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            font-size: 12px;
+        }
+
+        .mini-circle-btn:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+
+        .coords-status-box {
+            background: #f1f5f9;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 8px 10px;
+            font-size: 11px;
+            font-weight: 750;
+            color: #475569;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        /* PRINTER SETTINGS GUIDE TABLE */
+        .guide-box {
+            background: #ffffff;
+            border: 1.5px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 12px;
+        }
+
+        .guide-row {
+            display: flex;
+            justify-content: space-between;
+            border-bottom: 1px solid #f1f5f9;
+            padding: 6px 0;
+            font-size: 11px;
+        }
+
+        .guide-row:last-child {
+            border-bottom: none;
+        }
+
+        .guide-label {
+            color: #64748b;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .guide-val {
+            color: #0f172a;
+            font-weight: 800;
+        }
+
+        .guide-alert {
+            background: #eff6ff;
+            border: 1px solid #bfdbfe;
+            border-radius: 8px;
+            padding: 8px;
+            margin-top: 10px;
+            font-size: 10.5px;
+            color: #1e40af;
+            line-height: 1.4;
+        }
+
+        /* HIDDEN PRINT CONTAINER (EXACT 1-PAGE ZERO MARGIN PRINT) */
+        @media print {
+            html, body {
+                width: 100% !important;
+                height: 100% !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                background: #ffffff !important;
+                overflow: hidden !important;
+            }
+            body * { visibility: hidden; }
+            .top-navbar, .module-tabs-bar, .studio-layout, .crop-modal-overlay, #pdfPasswordModal { display: none !important; }
+            #exactPrintArea, #exactPrintArea * { visibility: visible; }
+            #exactPrintArea {
+                position: fixed !important;
+                left: 0 !important;
+                top: 0 !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                background: #ffffff !important;
+                overflow: hidden !important;
+                page-break-inside: avoid !important;
+                page-break-after: avoid !important;
+                break-inside: avoid !important;
+                break-after: avoid !important;
+            }
+            @page {
+                size: auto;
+                margin: 0mm !important;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 1. TOP NAVBAR -->
+    <header class="top-navbar">
+        <div style="display:flex;align-items:center;gap:12px;">
+            <a href="../home.html" class="back-btn">
+                <i class="fa-solid fa-arrow-left"></i> Dashboard
+            </a>
+            <a href="../home.html" class="brand-section">
+                <div class="brand-logo">J</div>
+                <div>
+                    <div class="brand-title">
+                        <span>Justcard</span>
+                        <span style="font-weight:600;font-size:13.5px;color:#64748b;">— Single PVC Studio</span>
+                        <span class="version-tag">Pro</span>
+                    </div>
+                    <div class="brand-sub">PDF Extraction · Editing · Printing</div>
+                </div>
+            </a>
+        </div>
+
+        <div style="display:flex;align-items:center;gap:10px;">
+            <a href="https://wa.me/919925942573" target="_blank" style="text-decoration:none;display:inline-flex;align-items:center;gap:6px;background:#f0fdf4;border:1px solid #bbf7d0;color:#15803d;padding:4px 10px;border-radius:20px;font-size:11.5px;font-weight:750;">
+                <i class="fa-brands fa-whatsapp"></i> Support
+            </a>
+            <div class="jc-wallet-container"></div>
+            <button type="button" class="btn-print-now" onclick="JustcardWallet.openRecharge()" style="padding:6px 14px;font-size:12px;width:auto;">
+                <i class="fa-solid fa-bolt"></i> + Add Money
+            </button>
+        </div>
+    </header>
+
+    <!-- 2. SUB-HEADER MODULE TABS (ONLY SINGLE PVC TOOLS) -->
+    <nav class="module-tabs-bar">
+        <button type="button" class="mod-tab active">
+            <i class="fa-solid fa-id-card"></i> Single PVC Studio
+        </button>
+        <button type="button" class="mod-tab" onclick="document.getElementById('pvcFileInput').click()">
+            <i class="fa-solid fa-cloud-arrow-up"></i> Extract Cards <span class="mod-tab-badge" id="cardsCountBadge">0</span>
+        </button>
+        <button type="button" class="mod-tab" id="tabManualCrop">
+            <i class="fa-solid fa-crop-simple"></i> Manual Crop
+        </button>
+        <button type="button" class="mod-tab" onclick="JustcardWallet.openWalletDashboard()">
+            <i class="fa-solid fa-clock-rotate-left"></i> History
+        </button>
+        <button type="button" class="mod-tab" onclick="JustcardWallet.openWalletDashboard()">
+            <i class="fa-solid fa-crown"></i> Recharge Plans
+        </button>
+    </nav>
+
+    <!-- 3. STUDIO THREE-COLUMN LAYOUT -->
+    <main class="studio-layout">
+
+        <!-- LEFT COLUMN: PRINT SETTINGS -->
+        <div class="panel-card">
+            <div class="panel-sec-header">
+                <span>Print Settings</span>
+                <i class="fa-solid fa-sliders" style="color:var(--primary);"></i>
+            </div>
+
+            <!-- Active Card Dropdown -->
+            <div>
+                <label class="form-label">Active Card</label>
+                <select id="activeCardSelect" class="select-input">
+                    <option value="none">-- No Card Loaded (Upload PDF/Image) --</option>
+                </select>
+                <input type="file" id="pvcFileInput" accept=".pdf,image/*" style="display:none;">
+            </div>
+
+            <!-- Card Side (Front / Back) -->
+            <div>
+                <label class="form-label">Card Side</label>
+                <div class="side-toggle-group">
+                    <button type="button" class="side-btn active" id="btnSideFront">Front</button>
+                    <button type="button" class="side-btn" id="btnSideBack">Back</button>
+                </div>
+            </div>
+
+            <!-- Quick Toggles -->
+            <div class="quick-toggles-grid">
+                <button type="button" class="toggle-btn active" id="btnToggleBorder">
+                    <span><i class="fa-solid fa-border-all"></i> Cutting Border</span>
+                    <i class="fa-solid fa-check"></i>
+                </button>
+                <button type="button" class="toggle-btn" id="btnToggleMirror">
+                    <span><i class="fa-solid fa-arrows-left-right"></i> Mirror Print</span>
+                    <i class="fa-regular fa-square"></i>
+                </button>
+                <button type="button" class="toggle-btn active" id="btnToggleBleed">
+                    <span><i class="fa-solid fa-expand"></i> Auto-Bleed (+1.5mm)</span>
+                    <i class="fa-solid fa-check"></i>
+                </button>
+            </div>
+
+            <!-- Printer Selection -->
+            <div>
+                <label class="form-label">Printer Configuration</label>
+                <select id="printerSelect" class="select-input">
+                    <option value="canon" selected>Canon (G2010, G3010, G3000, TS707)</option>
+                    <option value="epson">Epson (L805, L850, L8050, L3110, L3210)</option>
+                    <option value="hp">HP / Brother Inkjet</option>
+                    <option value="thermal">Direct PVC Thermal Card Printer</option>
+                </select>
+            </div>
+
+            <!-- Print Layout (4x6, Card Paper, Tray) -->
+            <div>
+                <label class="form-label">Print Layout / Paper Size</label>
+                <select id="layoutSelect" class="select-input">
+                    <option value="4x6_single" selected>4×6 Inch (100×150 mm) Portrait Single Side Centered</option>
+                    <option value="4x6_dual">4×6 Inch Dual (Front + Back Stacked)</option>
+                    <option value="card55">Card Paper 55 × 87.71 mm (Single Side)</option>
+                    <option value="card91">Card Paper 55 × 91 mm (Single Side)</option>
+                    <option value="a4_sheet">A4 Glossy Sheet (Single / Dual)</option>
+                </select>
+            </div>
+
+            <!-- Card Orientation in 4x6 -->
+            <div>
+                <label class="form-label">Card Direction in 4×6 Paper</label>
+                <div class="side-toggle-group">
+                    <button type="button" class="side-btn active" id="btnOrientVertical">
+                        <i class="fa-solid fa-arrows-up-down"></i> Vertical (54×86mm)
+                    </button>
+                    <button type="button" class="side-btn" id="btnOrientHorizontal">
+                        <i class="fa-solid fa-arrows-left-right"></i> Horizontal (86×54mm)
+                    </button>
+                </div>
+            </div>
+
+            <!-- Page Dimensions Badge -->
+            <div class="page-spec-box">
+                <span id="pageDimLabel">Page: 4×6 in (100×150 mm)</span>
+                <span style="color:#059669;font-weight:800;" id="pageSideModeLabel">1 Side at a Time</span>
+            </div>
+
+            <!-- Token / Wallet Notice -->
+            <div class="deduct-notice">
+                <i class="fa-solid fa-circle-info"></i>
+                <span>First print/download: <b id="costLabel">₹5.00 / Free</b></span>
+            </div>
+
+            <!-- Action Buttons -->
+            <div style="display:flex;flex-direction:column;gap:8px;">
+                <button type="button" class="btn-download-pdf" id="btnDownloadPdf">
+                    <i class="fa-solid fa-file-pdf"></i> Download PDF
+                </button>
+                <button type="button" class="btn-print-now" id="btnPrintNow">
+                    <i class="fa-solid fa-print"></i> Print Now
+                </button>
+            </div>
+        </div>
+
+        <!-- CENTER COLUMN: LIVE PREVIEW CANVAS STAGE -->
+        <div class="center-stage-col">
+            <div class="preview-canvas-card">
+                
+                <!-- STAGE PAPER SHEET -->
+                <div class="stage-paper-sheet size-4x6" id="stageSheet">
+                    
+                    <!-- Front Card Render Frame -->
+                    <div class="card-render-frame" id="frontCardFrame">
+                        <canvas id="frontCanvas" width="1011" height="638"></canvas>
+                    </div>
+
+                    <!-- Back Card Render Frame (Visible on dual layouts) -->
+                    <div class="card-render-frame" id="backCardFrame">
+                        <canvas id="backCanvas" width="1011" height="638"></canvas>
+                    </div>
+
+                </div>
+
+            </div>
+            <div class="stage-caption" id="stageCaptionText">
+                Preview shows exact card placement on 4×6 inch (100×150mm) glossy paper
+            </div>
+        </div>
+
+        <!-- RIGHT COLUMN: ALIGNMENT & PRINTER CONFIG GUIDE -->
+        <div class="panel-card right-settings-col">
+            
+            <div class="panel-sec-header">
+                <span>Alignment Settings</span>
+                <button type="button" id="btnResetAlignment" style="background:none;border:none;color:var(--primary);font-size:11.5px;font-weight:800;cursor:pointer;">
+                    Reset All
+                </button>
+            </div>
+
+            <!-- Nudge Directional Pad -->
+            <div>
+                <label class="form-label" style="text-align:center;">Nudge Position (0.5mm step)</label>
+                <div class="alignment-btn-grid">
+                    <div></div>
+                    <button type="button" class="nudge-btn" id="nudgeUp"><i class="fa-solid fa-chevron-up"></i></button>
+                    <div></div>
+                    <button type="button" class="nudge-btn" id="nudgeLeft"><i class="fa-solid fa-chevron-left"></i></button>
+                    <button type="button" class="nudge-btn" id="nudgeCenter"><i class="fa-solid fa-bullseye"></i></button>
+                    <button type="button" class="nudge-btn" id="nudgeRight"><i class="fa-solid fa-chevron-right"></i></button>
+                    <div></div>
+                    <button type="button" class="nudge-btn" id="nudgeDown"><i class="fa-solid fa-chevron-down"></i></button>
+                    <div></div>
+                </div>
+            </div>
+
+            <!-- Zoom & Rotate Row -->
+            <div class="control-pill-row">
+                <span>Zoom</span>
+                <div class="control-pill-actions">
+                    <button type="button" class="mini-circle-btn" id="zoomOut">-</button>
+                    <span id="zoomLabel" style="min-width:40px;text-align:center;">100%</span>
+                    <button type="button" class="mini-circle-btn" id="zoomIn">+</button>
+                </div>
+            </div>
+
+            <div class="control-pill-row">
+                <span>Rotation</span>
+                <div class="control-pill-actions">
+                    <button type="button" class="mini-circle-btn" id="rotateLeft"><i class="fa-solid fa-rotate-left"></i></button>
+                    <span id="rotateLabel" style="min-width:35px;text-align:center;">0°</span>
+                    <button type="button" class="mini-circle-btn" id="rotateRight"><i class="fa-solid fa-rotate-right"></i></button>
+                </div>
+            </div>
+
+            <!-- Position Status Coordinates -->
+            <div class="coords-status-box">
+                <span>Side: <b id="coordSide">Front</b></span>
+                <span>X: <b id="coordX">0.0mm</b></span>
+                <span>Y: <b id="coordY">0.0mm</b></span>
+            </div>
+
+            <!-- PRINTER SETTINGS GUIDE -->
+            <div>
+                <div class="panel-sec-header" style="margin-bottom:8px;">
+                    <span><i class="fa-solid fa-print"></i> Printer Settings Guide</span>
+                </div>
+                
+                <div class="guide-box">
+                    <div class="guide-row">
+                        <span class="guide-label">Paper Size</span>
+                        <span class="guide-val" id="gPaperSize">4×6 in (10×15cm)</span>
+                    </div>
+                    <div class="guide-row">
+                        <span class="guide-label">Borderless</span>
+                        <span class="guide-val" style="color:#059669;" id="gBorderless">ON</span>
+                    </div>
+                    <div class="guide-row">
+                        <span class="guide-label">Media Type</span>
+                        <span class="guide-val" id="gMediaType">Photo Paper Plus Glossy II</span>
+                    </div>
+                    <div class="guide-row">
+                        <span class="guide-label">Quality</span>
+                        <span class="guide-val" id="gQuality">High / Best</span>
+                    </div>
+                    <div class="guide-row">
+                        <span class="guide-label">Scaling</span>
+                        <span class="guide-val" id="gScaling">Actual Size (No Scaling)</span>
+                    </div>
+                    <div class="guide-row">
+                        <span class="guide-label">Extension</span>
+                        <span class="guide-val" id="gExtension">Minimum</span>
+                    </div>
+
+                    <div class="guide-alert">
+                        <i class="fa-solid fa-circle-exclamation"></i>
+                        <b>Important Note:</b> Ensure <i>"Fit to Printable Area / Fit to Page"</i> is <b>DISABLED</b> in browser print dialog.
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+    </main>
+
+    <!-- HIDDEN EXACT PRINT AREA (FOR PHYSICAL 4x6 / CARD PRINTING) -->
+    <div id="exactPrintArea" style="display:none;"></div>
+
+    <!-- PDF PASSWORD MODAL -->
+    <div class="pvc-modal-overlay" id="pdfPasswordModal" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(15,23,42,0.7);z-index:99999;align-items:center;justify-content:center;padding:16px;">
+        <div style="background:#fff;border-radius:16px;max-width:400px;width:100%;padding:22px;text-align:center;">
+            <div style="width:50px;height:50px;border-radius:50%;background:#f3e8ff;color:#7c3aed;display:inline-flex;align-items:center;justify-content:center;font-size:22px;margin-bottom:12px;">
+                <i class="fa-solid fa-lock"></i>
+            </div>
+            <h3 style="font-family:'Outfit',sans-serif;font-size:18px;font-weight:800;color:#0f172a;margin-bottom:4px;">
+                Password Protected PDF
+            </h3>
+            <p style="font-size:12px;color:#64748b;margin-bottom:14px;">
+                e-Aadhaar PDF ka password enter karein (e.g. <b>RAVI1995</b>):
+            </p>
+            <input type="password" id="pdfPasswordInput" class="select-input" placeholder="PDF Password" style="text-align:center;font-weight:800;letter-spacing:1px;font-size:14px;margin-bottom:12px;">
+            <div style="display:flex;gap:8px;">
+                <button type="button" id="btnSubmitPdfPassword" class="btn-print-now" style="flex:1;">Unlock PDF</button>
+                <button type="button" id="btnCancelPdfPassword" class="side-btn" style="flex:1;">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 3-COLUMN NATIVE CANVAS PVC CROP MODAL -->
+    <div class="crop-modal-overlay" id="normalPvcCropModal">
+        <div class="crop-modal-box">
+            <div class="crop-modal-header">
+                <b><i class="fa-solid fa-crop-simple" style="color:#10b981;"></i> ✂️ Card Box Crop (HD 85.6 × 54 mm Output)</b>
+                <button type="button" class="side-btn" id="closeNormalCropModal" style="padding:4px 10px;font-size:12px;background:#0f172a;color:#fff;border-color:#334155;">✕ Close</button>
+            </div>
+            <div class="crop-modal-body">
+                <!-- Left Controls -->
+                <div class="crop-side-controls">
+                    <div style="font-size:11px;font-weight:800;color:#94a3b8;text-transform:uppercase;">SELECT CARD SIDE</div>
+                    <button type="button" class="side-tab-btn active" id="pvcSideFrontBtn">
+                        <span><b>▣ FRONT</b></span>
+                        <small id="pvcFrontStatusText" style="color:#10b981;">Ready</small>
+                    </button>
+                    <button type="button" class="side-tab-btn" id="pvcSideBackBtn">
+                        <span><b>▣ BACK</b></span>
+                        <small id="pvcBackStatusText" style="color:#94a3b8;">Optional</small>
+                    </button>
+
+                    <div style="font-size:11px;font-weight:800;color:#94a3b8;text-transform:uppercase;margin-top:6px;">CROP TOOLS</div>
+                    <button type="button" class="btn-print-now" id="pvcAutoDetectBtn" style="font-size:12px;width:100%;box-shadow:none;">
+                        <i class="fa-solid fa-wand-magic-sparkles"></i> ✨ Auto Detect Card Box
+                    </button>
+
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;">
+                        <button type="button" class="side-btn" id="pvcZoomPlus" style="background:#0f172a;color:#fff;border-color:#334155;font-size:12px;">🔍 + Zoom</button>
+                        <button type="button" class="side-btn" id="pvcZoomMinus" style="background:#0f172a;color:#fff;border-color:#334155;font-size:12px;">🔍 − Zoom</button>
+                    </div>
+
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;">
+                        <button type="button" class="side-btn" id="pvcRotLeft" style="background:#0f172a;color:#fff;border-color:#334155;font-size:12px;">↶ −1°</button>
+                        <button type="button" class="side-btn" id="pvcRotRight" style="background:#0f172a;color:#fff;border-color:#334155;font-size:12px;">↷ +1°</button>
+                    </div>
+
+                    <button type="button" class="side-btn" id="pvcResetBoxBtn" style="background:#0f172a;color:#fff;border-color:#334155;font-size:12px;">↺ Reset Box</button>
+
+                    <div style="margin-top:6px;">
+                        <label style="display:block;font-size:11px;font-weight:700;color:#94a3b8;margin-bottom:4px;">Crop Box Ratio</label>
+                        <select id="pvcBoxRatioSelect" class="select-input" style="padding:6px 8px;font-size:12px;background:#0f172a;color:#fff;border-color:#334155;">
+                            <option value="pvc" selected>🪪 Standard PVC Card (85.6 × 54 mm)</option>
+                            <option value="free">🔓 Free / Actual Size</option>
+                            <option value="a4_p">📄 A4 Portrait (1 : 1.414)</option>
+                            <option value="a4_l">📄 A4 Landscape (1.414 : 1)</option>
+                        </select>
+                    </div>
+
+                    <div class="crop-inst" style="margin-top:auto;">
+                        <b>Tips:</b><br>
+                        Canvas par mouse se <b>drag</b> karke card select karein. Corner dots se size adjust karein.
+                    </div>
+                </div>
+
+                <!-- Center Canvas Stage -->
+                <div class="crop-canvas-area" id="pvcCanvasArea">
+                    <canvas id="pvcCropCanvas"></canvas>
+                </div>
+
+                <!-- Right Live Preview & Detected Cards -->
+                <div class="crop-right-preview">
+                    <div style="font-size:11px;font-weight:800;color:#94a3b8;text-transform:uppercase;">LIVE HD PREVIEW</div>
+                    
+                    <div>
+                        <div style="font-size:11px;font-weight:700;color:#a5b4fc;margin-bottom:4px;">FRONT PREVIEW</div>
+                        <div class="crop-preview-box" id="pvcFrontPreviewBox"><small style="color:#64748b;">Crop box draw karein</small></div>
+                    </div>
+
+                    <div>
+                        <div style="font-size:11px;font-weight:700;color:#10b981;margin-bottom:4px;">BACK PREVIEW</div>
+                        <div class="crop-preview-box" id="pvcBackPreviewBox"><small style="color:#64748b;">Optional Back crop</small></div>
+                    </div>
+
+                    <div style="font-size:11px;font-weight:800;color:#94a3b8;text-transform:uppercase;margin-top:6px;">DETECTED BOXES</div>
+                    <div id="pvcCandidateList" class="crop-candidate-grid"></div>
+
+                    <button type="button" class="btn-print-now" id="applyNormalCropBtn" style="margin-top:auto;padding:11px;font-size:13px;background:linear-gradient(135deg, #059669 0%, #10b981 100%);box-shadow:none;border-radius:8px;">
+                        <i class="fa-solid fa-check"></i> ✓ Apply Clean Crop
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        if (window.pdfjsLib) {
+            window.pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+        }
+
+        // State variables
+        let loadedCards = []; // { id, name, frontImg, backImg }
+        let currentCardIndex = -1;
+        let activeSide = 'front'; // 'front' or 'back'
+        let hasCuttingBorder = true;
+        let isMirrorPrint = false;
+        let isAutoBleed = true;
+        let activePrinter = 'canon';
+        let activeLayout = '4x6_dual';
+        let rawSourceImg = null;
+        let currentCropper = null;
+
+        // Alignment & Zoom coordinates
+        let alignment = {
+            front: { x: 0, y: 0, zoom: 100, rot: 0 },
+            back: { x: 0, y: 0, zoom: 100, rot: 0 }
+        };
+
+        const CARD_W = 1011; // 300 DPI CR80
+        const CARD_H = 638;
+
+        const frontCanvas = document.getElementById('frontCanvas');
+        const backCanvas = document.getElementById('backCanvas');
+        const fCtx = frontCanvas.getContext('2d');
+        const bCtx = backCanvas.getContext('2d');
+
+        // File Input & Drag-Drop
+        const fileInput = document.getElementById('pvcFileInput');
+        fileInput.onchange = (e) => {
+            if (e.target.files && e.target.files[0]) {
+                handleUploadedFile(e.target.files[0]);
+            }
+        };
+
+        // Clipboard Paste Support (Ctrl+V)
+        window.addEventListener('paste', (e) => {
+            const items = (e.clipboardData || e.originalEvent.clipboardData).items;
+            for (let item of items) {
+                if (item.kind === 'file' && item.type.startsWith('image/')) {
+                    const blob = item.getAsFile();
+                    handleUploadedFile(blob, 'Clipboard_Image_' + Date.now());
+                    break;
+                }
+            }
+        });
+
+        async function handleUploadedFile(file, customName = '') {
+            const fileName = customName || file.name || 'Document_' + Date.now();
+            if (file.type === 'application/pdf' || (file.name && file.name.endsWith('.pdf'))) {
+                loadPdf(file, fileName);
+            } else {
+                const reader = new FileReader();
+                reader.onload = (ev) => {
+                    const img = new Image();
+                    img.onload = () => {
+                        rawSourceImg = img;
+                        autoExtractCardFromImage(img, fileName);
+                    };
+                    img.src = ev.target.result;
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        // Load PDF with High Resolution (Scale 3.2 for Ultra-Sharp Zoom)
+        async function loadPdf(file, fileName, password = '') {
+            const arrayBuffer = await file.arrayBuffer();
+            try {
+                const loadingTask = window.pdfjsLib.getDocument({ data: arrayBuffer, password: password });
+                const pdf = await loadingTask.promise;
+                const page = await pdf.getPage(1);
+                const viewport = page.getViewport({ scale: 3.2 }); // Ultra HD
+                const canvas = document.createElement('canvas');
+                canvas.width = viewport.width;
+                canvas.height = viewport.height;
+                const ctx = canvas.getContext('2d');
+                await page.render({ canvasContext: ctx, viewport: viewport }).promise;
+
+                const img = new Image();
+                img.onload = () => {
+                    rawSourceImg = img;
+                    autoExtractCardFromImage(img, fileName);
+                };
+                img.src = canvas.toDataURL('image/png');
+            } catch (err) {
+                if (err.name === 'PasswordException') {
+                    showPasswordModal(file, fileName);
+                } else {
+                    alert('PDF Load error: ' + err.message);
+                }
+            }
+        }
+
+        function showPasswordModal(file, fileName) {
+            const modal = document.getElementById('pdfPasswordModal');
+            const passInput = document.getElementById('pdfPasswordInput');
+            const submitBtn = document.getElementById('btnSubmitPdfPassword');
+            const cancelBtn = document.getElementById('btnCancelPdfPassword');
+            modal.style.display = 'flex';
+            passInput.value = '';
+            passInput.focus();
+
+            submitBtn.onclick = () => {
+                modal.style.display = 'none';
+                loadPdf(file, fileName, passInput.value.trim());
+            };
+            cancelBtn.onclick = () => modal.style.display = 'none';
+            passInput.onkeydown = (e) => { if (e.key === 'Enter') submitBtn.click(); };
+        }
+
+        // Smart Card Detection & Cropping (Aadhaar, EPIC, PAN, Voter)
+        function autoExtractCardFromImage(img, fileName) {
+            const w = img.width;
+            const h = img.height;
+            const fnLower = fileName.toLowerCase();
+
+            // Auto-detect if document is Voter ID / e-EPIC (vertical card)
+            if (fnLower.includes('epic') || fnLower.includes('voter') || fnLower.includes('election')) {
+                isCardVertical = true;
+                btnOrientVertical.classList.add('active');
+                btnOrientHorizontal.classList.remove('active');
+            }
+
+            // Aadhaar / EPIC bottom dual layout
+            const cardW = w * 0.44;
+            const cardH = cardW / (85.6 / 53.98);
+            const frontX = w * 0.055;
+            const frontY = h * 0.69;
+            const backX = w * 0.505;
+            const backY = h * 0.69;
+
+            const fCan = cropCanvas(img, frontX, frontY, cardW, cardH);
+            const bCan = cropCanvas(img, backX, backY, cardW, cardH);
+
+            const newCard = {
+                id: 'CARD-' + (loadedCards.length + 1),
+                name: fileName.replace(/\.[^/.]+$/, ""),
+                front: fCan,
+                back: bCan
+            };
+
+            loadedCards.push(newCard);
+            currentCardIndex = loadedCards.length - 1;
+            updateCardsDropdown();
+            updateLayoutView();
+        }
+
+        function cropCanvas(img, x, y, width, height) {
+            const can = document.createElement('canvas');
+            can.width = Math.round(width);
+            can.height = Math.round(height);
+            const ctx = can.getContext('2d');
+            ctx.imageSmoothingEnabled = true;
+            ctx.imageSmoothingQuality = 'high';
+            ctx.drawImage(img, x, y, width, height, 0, 0, can.width, can.height);
+            return can;
+        }
+
+        function updateCardsDropdown() {
+            const select = document.getElementById('activeCardSelect');
+            select.innerHTML = loadedCards.map((c, i) => `
+                <option value="${i}" ${i === currentCardIndex ? 'selected' : ''}>Card ${i + 1} — ${c.name}</option>
+            `).join('');
+            document.getElementById('cardsCountBadge').textContent = loadedCards.length;
+        }
+
+        document.getElementById('activeCardSelect').onchange = (e) => {
+            currentCardIndex = Number(e.target.value);
+            renderCardCanvases();
+        };
+
+        // Render Canvases with Nudge, Zoom, Border, Mirror & Bleed (100% Full-Size Fit)
+        function renderCardCanvases() {
+            if (currentCardIndex < 0 || !loadedCards[currentCardIndex]) return;
+            const card = loadedCards[currentCardIndex];
+
+            // Render Front
+            renderSingleCanvas(fCtx, card.front, alignment.front, 'front');
+
+            // Render Back
+            renderSingleCanvas(bCtx, card.back, alignment.back, 'back');
+
+            updateCoordsUI();
+        }
+
+        function renderSingleCanvas(ctx, srcCanvas, align, side) {
+            const targetW = isCardVertical ? 638 : 1011;
+            const targetH = isCardVertical ? 1011 : 638;
+
+            ctx.clearRect(0, 0, targetW, targetH);
+            if (!srcCanvas) return;
+
+            ctx.save();
+            ctx.translate(targetW / 2 + (align.x * 11.8), targetH / 2 + (align.y * 11.8));
+            ctx.scale((align.zoom / 100) * (isMirrorPrint ? -1 : 1), (align.zoom / 100));
+            ctx.rotate((align.rot * Math.PI) / 180);
+
+            const bleedOffset = isAutoBleed ? 18 : 0;
+            const drawW = targetW + (bleedOffset * 2);
+            const drawH = targetH + (bleedOffset * 2);
+
+            // If vertical card and source is horizontal, orient upright to fill 100% full size
+            if (isCardVertical && srcCanvas.width > srcCanvas.height) {
+                ctx.rotate(90 * Math.PI / 180);
+                ctx.drawImage(srcCanvas, -drawH / 2, -drawW / 2, drawH, drawW);
+            } else if (!isCardVertical && srcCanvas.height > srcCanvas.width) {
+                ctx.rotate(-90 * Math.PI / 180);
+                ctx.drawImage(srcCanvas, -drawH / 2, -drawW / 2, drawH, drawW);
+            } else {
+                ctx.drawImage(srcCanvas, -drawW / 2, -drawH / 2, drawW, drawH);
+            }
+
+            ctx.restore();
+
+            // Cutting Border Guideline
+            if (hasCuttingBorder) {
+                ctx.strokeStyle = '#000000';
+                ctx.lineWidth = 2.5;
+                ctx.strokeRect(0, 0, targetW, targetH);
+            }
+        }
+
+        let isCardVertical = true; // Vertical (54x86mm) vs Horizontal (86x54mm) in 4x6
+
+        const btnOrientVertical = document.getElementById('btnOrientVertical');
+        const btnOrientHorizontal = document.getElementById('btnOrientHorizontal');
+
+        btnOrientVertical.onclick = () => {
+            isCardVertical = true;
+            btnOrientVertical.classList.add('active');
+            btnOrientHorizontal.classList.remove('active');
+            updateLayoutView();
+        };
+
+        btnOrientHorizontal.onclick = () => {
+            isCardVertical = false;
+            btnOrientHorizontal.classList.add('active');
+            btnOrientVertical.classList.remove('active');
+            updateLayoutView();
+        };
+
+        // Side Buttons (Front / Back)
+        const btnSideFront = document.getElementById('btnSideFront');
+        const btnSideBack = document.getElementById('btnSideBack');
+
+        btnSideFront.onclick = () => {
+            activeSide = 'front';
+            btnSideFront.classList.add('active');
+            btnSideBack.classList.remove('active');
+            updateCoordsUI();
+            updateLayoutView();
+        };
+
+        btnSideBack.onclick = () => {
+            activeSide = 'back';
+            btnSideBack.classList.add('active');
+            btnSideFront.classList.remove('active');
+            updateCoordsUI();
+            updateLayoutView();
+        };
+
+        // Quick Toggles
+        const btnToggleBorder = document.getElementById('btnToggleBorder');
+        btnToggleBorder.onclick = () => {
+            hasCuttingBorder = !hasCuttingBorder;
+            btnToggleBorder.classList.toggle('active', hasCuttingBorder);
+            btnToggleBorder.querySelector('i:last-child').className = hasCuttingBorder ? 'fa-solid fa-check' : 'fa-regular fa-square';
+            renderCardCanvases();
+        };
+
+        const btnToggleMirror = document.getElementById('btnToggleMirror');
+        btnToggleMirror.onclick = () => {
+            isMirrorPrint = !isMirrorPrint;
+            btnToggleMirror.classList.toggle('active', isMirrorPrint);
+            btnToggleMirror.querySelector('i:last-child').className = isMirrorPrint ? 'fa-solid fa-check' : 'fa-regular fa-square';
+            renderCardCanvases();
+        };
+
+        const btnToggleBleed = document.getElementById('btnToggleBleed');
+        btnToggleBleed.onclick = () => {
+            isAutoBleed = !isAutoBleed;
+            btnToggleBleed.classList.toggle('active', isAutoBleed);
+            btnToggleBleed.querySelector('i:last-child').className = isAutoBleed ? 'fa-solid fa-check' : 'fa-regular fa-square';
+            renderCardCanvases();
+        };
+
+        // Alignment Directional Nudges
+        document.getElementById('nudgeUp').onclick = () => { alignment[activeSide].y -= 0.5; renderCardCanvases(); };
+        document.getElementById('nudgeDown').onclick = () => { alignment[activeSide].y += 0.5; renderCardCanvases(); };
+        document.getElementById('nudgeLeft').onclick = () => { alignment[activeSide].x -= 0.5; renderCardCanvases(); };
+        document.getElementById('nudgeRight').onclick = () => { alignment[activeSide].x += 0.5; renderCardCanvases(); };
+        document.getElementById('nudgeCenter').onclick = () => { alignment[activeSide].x = 0; alignment[activeSide].y = 0; renderCardCanvases(); };
+
+        // Zoom & Rotate Controls
+        document.getElementById('zoomIn').onclick = () => { alignment[activeSide].zoom = Math.min(130, alignment[activeSide].zoom + 2); renderCardCanvases(); };
+        document.getElementById('zoomOut').onclick = () => { alignment[activeSide].zoom = Math.max(70, alignment[activeSide].zoom - 2); renderCardCanvases(); };
+        document.getElementById('rotateRight').onclick = () => { alignment[activeSide].rot = (alignment[activeSide].rot + 90) % 360; renderCardCanvases(); };
+        document.getElementById('rotateLeft').onclick = () => { alignment[activeSide].rot = (alignment[activeSide].rot - 90 + 360) % 360; renderCardCanvases(); };
+
+        document.getElementById('btnResetAlignment').onclick = () => {
+            alignment = {
+                front: { x: 0, y: 0, zoom: 100, rot: 0 },
+                back: { x: 0, y: 0, zoom: 100, rot: 0 }
+            };
+            renderCardCanvases();
+        };
+
+        function updateCoordsUI() {
+            document.getElementById('coordSide').textContent = activeSide === 'front' ? 'Front' : 'Back';
+            document.getElementById('coordX').textContent = alignment[activeSide].x.toFixed(1) + 'mm';
+            document.getElementById('coordY').textContent = alignment[activeSide].y.toFixed(1) + 'mm';
+            document.getElementById('zoomLabel').textContent = alignment[activeSide].zoom + '%';
+            document.getElementById('rotateLabel').textContent = alignment[activeSide].rot + '°';
+        }
+
+        // Printer & Layout Change Handlers
+        const printerSelect = document.getElementById('printerSelect');
+        const layoutSelect = document.getElementById('layoutSelect');
+        const stageSheet = document.getElementById('stageSheet');
+        const frontCardFrame = document.getElementById('frontCardFrame');
+        const backCardFrame = document.getElementById('backCardFrame');
+
+        printerSelect.onchange = updatePrinterGuide;
+        layoutSelect.onchange = updateLayoutView;
+
+        function updatePrinterGuide() {
+            activePrinter = printerSelect.value;
+            if (activePrinter === 'canon') {
+                document.getElementById('gMediaType').textContent = 'Photo Paper Plus Glossy II';
+                document.getElementById('gQuality').textContent = 'High / Best';
+                document.getElementById('gExtension').textContent = 'Minimum';
+            } else if (activePrinter === 'epson') {
+                document.getElementById('gMediaType').textContent = 'Epson Premium Glossy';
+                document.getElementById('gQuality').textContent = 'High / Best';
+                document.getElementById('gExtension').textContent = 'Standard / Min';
+            } else {
+                document.getElementById('gMediaType').textContent = 'Glossy Photo Paper';
+                document.getElementById('gQuality').textContent = 'Best';
+                document.getElementById('gExtension').textContent = 'None';
+            }
+        }
+
+        function updateLayoutView() {
+            activeLayout = layoutSelect.value;
+            stageSheet.className = 'stage-paper-sheet';
+
+            // Set native canvas pixel dimensions matching orientation
+            const cardPixelW = isCardVertical ? 638 : 1011;
+            const cardPixelH = isCardVertical ? 1011 : 638;
+            frontCanvas.width = cardPixelW;
+            frontCanvas.height = cardPixelH;
+            backCanvas.width = cardPixelW;
+            backCanvas.height = cardPixelH;
+
+            const frameDisplayW = isCardVertical ? '170px' : '270px';
+            const frameDisplayH = isCardVertical ? '270px' : '170px';
+            frontCardFrame.style.width = frameDisplayW;
+            frontCardFrame.style.height = frameDisplayH;
+            backCardFrame.style.width = frameDisplayW;
+            backCardFrame.style.height = frameDisplayH;
+            frontCanvas.style.transform = 'none';
+            backCanvas.style.transform = 'none';
+
+            if (activeLayout === '4x6_single') {
+                stageSheet.classList.add('size-4x6');
+                stageSheet.style.width = '300px';
+                stageSheet.style.height = '450px';
+                stageSheet.style.display = 'flex';
+                stageSheet.style.alignItems = 'center';
+                stageSheet.style.justifyContent = 'center';
+
+                frontCardFrame.style.display = activeSide === 'front' ? 'block' : 'none';
+                backCardFrame.style.display = activeSide === 'back' ? 'block' : 'none';
+
+                document.getElementById('pageDimLabel').textContent = 'Page: 4×6 in (100×150 mm)';
+                document.getElementById('gPaperSize').textContent = '4×6 in (10×15cm)';
+                document.getElementById('pageSideModeLabel').textContent = `${activeSide.toUpperCase()} Side Only`;
+                document.getElementById('stageCaptionText').textContent = `Preview shows ${activeSide.toUpperCase()} side centered in 4×6 Portrait (Print 1 side, flip paper, print other side)`;
+            } else if (activeLayout === '4x6_dual') {
+                stageSheet.classList.add('size-4x6');
+                stageSheet.style.width = '300px';
+                stageSheet.style.height = '450px';
+                stageSheet.style.display = 'flex';
+                stageSheet.style.flexDirection = isCardVertical ? 'row' : 'column';
+                stageSheet.style.gap = '10px';
+                stageSheet.style.alignItems = 'center';
+                stageSheet.style.justifyContent = 'center';
+
+                frontCardFrame.style.display = 'block';
+                backCardFrame.style.display = 'block';
+
+                document.getElementById('pageDimLabel').textContent = 'Page: 4×6 in (Dual Front+Back)';
+                document.getElementById('gPaperSize').textContent = '4×6 in (10×15cm)';
+                document.getElementById('pageSideModeLabel').textContent = 'Front + Back';
+                document.getElementById('stageCaptionText').textContent = 'Preview shows Front + Back on 4×6 paper';
+            } else if (activeLayout === 'card55' || activeLayout === 'card91') {
+                stageSheet.classList.add('size-card55');
+                stageSheet.style.width = '200px';
+                stageSheet.style.height = '320px';
+                stageSheet.style.display = 'flex';
+                stageSheet.style.alignItems = 'center';
+                stageSheet.style.justifyContent = 'center';
+
+                frontCardFrame.style.display = activeSide === 'front' ? 'block' : 'none';
+                backCardFrame.style.display = activeSide === 'back' ? 'block' : 'none';
+                const sz = activeLayout === 'card55' ? '55 × 87.71 mm' : '55 × 91 mm';
+                document.getElementById('pageDimLabel').textContent = 'Page: ' + sz;
+                document.getElementById('gPaperSize').textContent = 'Card ' + sz;
+                document.getElementById('pageSideModeLabel').textContent = `${activeSide.toUpperCase()} Side Only`;
+                document.getElementById('stageCaptionText').textContent = `Preview shows ${activeSide.toUpperCase()} side on ${sz} card paper`;
+            } else {
+                stageSheet.classList.add('size-a4');
+                stageSheet.style.width = '380px';
+                stageSheet.style.height = '537px';
+                stageSheet.style.display = 'flex';
+                stageSheet.style.flexDirection = isCardVertical ? 'row' : 'column';
+                stageSheet.style.gap = '14px';
+                stageSheet.style.alignItems = 'center';
+                stageSheet.style.justifyContent = 'center';
+
+                frontCardFrame.style.display = 'block';
+                backCardFrame.style.display = 'block';
+                document.getElementById('pageDimLabel').textContent = 'Page: A4 (210×297 mm)';
+                document.getElementById('gPaperSize').textContent = 'A4 Sheet';
+                document.getElementById('pageSideModeLabel').textContent = 'Dual Card';
+                document.getElementById('stageCaptionText').textContent = 'Preview shows placement on A4 Sheet';
+            }
+
+            renderCardCanvases();
+        }
+
+        // ----------------------------------------------------
+        // NATIVE 3-COLUMN CANVAS PVC CROP MODAL (Front + Back HD)
+        // ----------------------------------------------------
+        const PVC_RATIO = 85.60 / 53.98; // 1.5858
+        let normCropSide = 'front';
+        let normCropImgs = { front: null, back: null };
+        let normCropResults = { front: null, back: null };
+        let normZoom = 1;
+        let normAngle = 0;
+        let normRect = null;
+        let normDragging = false;
+        let normStart = null;
+
+        const pvcCropCanvas = document.getElementById('pvcCropCanvas');
+        const pvcCropCtx = pvcCropCanvas.getContext('2d');
+
+        // Manual Crop Modal Trigger
+        document.getElementById('tabManualCrop').onclick = () => {
+            if (!rawSourceImg) {
+                fileInput.click();
+                return;
+            }
+            openNormalPvcCropper(activeSide);
+        };
+
+        function openNormalPvcCropper(side = 'front') {
+            normCropSide = side;
+            if (!rawSourceImg) {
+                alert('Pehle Document photo ya PDF upload karein.');
+                return;
+            }
+            normCropImgs.front = rawSourceImg;
+            normCropImgs.back = rawSourceImg;
+
+            document.getElementById('normalPvcCropModal').classList.add('open');
+            setNormalCropSide(side);
+        }
+
+        document.getElementById('closeNormalCropModal').onclick = () => {
+            document.getElementById('normalPvcCropModal').classList.remove('open');
+        };
+
+        function setNormalCropSide(side) {
+            normCropSide = side;
+            normZoom = 1;
+            normAngle = 0;
+            normRect = null;
+            document.getElementById('pvcSideFrontBtn').classList.toggle('active', side === 'front');
+            document.getElementById('pvcSideBackBtn').classList.toggle('active', side === 'back');
+
+            const im = normCropImgs[side] || rawSourceImg;
+            if (im) {
+                autoDetectNormalCrop(false);
+            } else {
+                drawNormalCropEditor();
+            }
+        }
+
+        document.getElementById('pvcSideFrontBtn').onclick = () => setNormalCropSide('front');
+        document.getElementById('pvcSideBackBtn').onclick = () => setNormalCropSide('back');
+
+        function drawNormalCropEditor() {
+            const im = normCropImgs[normCropSide] || rawSourceImg;
+            if (!im || !im.width) return;
+            const area = document.getElementById('pvcCanvasArea');
+            const maxW = area.clientWidth - 30;
+            const maxH = area.clientHeight - 30;
+            const scale = Math.min(maxW / im.width, maxH / im.height) * normZoom;
+
+            pvcCropCanvas.width = Math.max(1, Math.round(im.width * scale));
+            pvcCropCanvas.height = Math.max(1, Math.round(im.height * scale));
+
+            const ctx = pvcCropCtx;
+            ctx.clearRect(0, 0, pvcCropCanvas.width, pvcCropCanvas.height);
+            ctx.save();
+            ctx.translate(pvcCropCanvas.width / 2, pvcCropCanvas.height / 2);
+            ctx.rotate((normAngle * Math.PI) / 180);
+            ctx.drawImage(im, -im.width * scale / 2, -im.height * scale / 2, im.width * scale, im.height * scale);
+            ctx.restore();
+
+            if (normRect) {
+                // Dark mask outside
+                ctx.save();
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.55)';
+                ctx.fillRect(0, 0, pvcCropCanvas.width, pvcCropCanvas.height);
+
+                ctx.globalCompositeOperation = 'destination-out';
+                ctx.fillRect(normRect.x, normRect.y, normRect.w, normRect.h);
+                ctx.restore();
+
+                // Box outline & corner marks
+                ctx.save();
+                ctx.strokeStyle = '#10b981';
+                ctx.lineWidth = 2.5;
+                ctx.setLineDash([6, 4]);
+                ctx.strokeRect(normRect.x, normRect.y, normRect.w, normRect.h);
+
+                // Corner handle circles
+                ctx.fillStyle = '#10b981';
+                const corners = [
+                    [normRect.x, normRect.y],
+                    [normRect.x + normRect.w, normRect.y],
+                    [normRect.x + normRect.w, normRect.y + normRect.h],
+                    [normRect.x, normRect.y + normRect.h]
+                ];
+                corners.forEach(([cx, cy]) => {
+                    ctx.beginPath();
+                    ctx.arc(cx, cy, 6, 0, Math.PI * 2);
+                    ctx.fill();
+                });
+                ctx.restore();
+
+                updateNormalCropPreview();
+            }
+        }
+
+        function autoDetectNormalCrop(showMsg = true) {
+            const im = normCropImgs[normCropSide] || rawSourceImg;
+            if (!im || !im.width) {
+                if (showMsg) alert('Is side ke liye image nahi hai.');
+                return;
+            }
+            normZoom = 1;
+            drawNormalCropEditor();
+
+            const W = pvcCropCanvas.width, H = pvcCropCanvas.height;
+            const boxes = [];
+            function addBox(x, y, w, h) {
+                if (w < 20 || h < 15) return;
+                boxes.push({ x, y, w, h });
+            }
+
+            let w = W * 0.72, h = w / PVC_RATIO;
+            if (h < H * 0.85) addBox((W - w) / 2, (H - h) / 2, w, h);
+
+            let w2 = W * 0.46, h2 = w2 / PVC_RATIO;
+            if (h2 < H * 0.9) {
+                addBox(W * 0.04, H * 0.68, w2, h2); // Aadhaar Bottom Left
+                addBox(W * 0.50, H * 0.68, w2, h2); // Aadhaar Bottom Right
+            }
+
+            let h3 = H * 0.40, w3 = h3 * PVC_RATIO;
+            if (w3 < W * 0.9) {
+                addBox((W - w3) / 2, H * 0.08, w3, h3); // Top card
+            }
+
+            if (normCropSide === 'back' && boxes[2]) {
+                normRect = boxes[2];
+            } else if (boxes[1]) {
+                normRect = boxes[1];
+            } else if (boxes[0]) {
+                normRect = boxes[0];
+            }
+            drawNormalCropEditor();
+
+            const listEl = document.getElementById('pvcCandidateList');
+            if (listEl) {
+                listEl.innerHTML = boxes.map((b, i) => `
+                    <div class="crop-candidate-thumb" data-cand="${i}">
+                        <img src="${candidateThumbData(b)}">
+                    </div>
+                `).join('');
+
+                document.querySelectorAll('#pvcCandidateList .crop-candidate-thumb').forEach(el => {
+                    el.onclick = () => {
+                        normRect = boxes[Number(el.dataset.cand)];
+                        drawNormalCropEditor();
+                    };
+                });
+            }
+        }
+
+        function candidateThumbData(b) {
+            const im = normCropImgs[normCropSide] || rawSourceImg;
+            const sx = im.width / pvcCropCanvas.width, sy = im.height / pvcCropCanvas.height;
+            const c = document.createElement('canvas');
+            c.width = 200;
+            c.height = Math.max(20, Math.round(200 * (b.h / (b.w || 1))));
+            c.getContext('2d').drawImage(im, b.x * sx, b.y * sy, b.w * sx, b.h * sy, 0, 0, c.width, c.height);
+            return c.toDataURL('image/png');
+        }
+
+        function getPvcCanvasMousePos(e) {
+            const r = pvcCropCanvas.getBoundingClientRect();
+            return {
+                x: (e.clientX - r.left) * (pvcCropCanvas.width / r.width),
+                y: (e.clientY - r.top) * (pvcCropCanvas.height / r.height)
+            };
+        }
+
+        pvcCropCanvas.addEventListener('pointerdown', e => {
+            if (!rawSourceImg) return;
+            normDragging = true;
+            normStart = getPvcCanvasMousePos(e);
+            normRect = { x: normStart.x, y: normStart.y, w: 2, h: 2 };
+            pvcCropCanvas.setPointerCapture(e.pointerId);
+        });
+
+        pvcCropCanvas.addEventListener('pointermove', e => {
+            if (!normDragging || !normStart) return;
+            const p = getPvcCanvasMousePos(e);
+            const minX = Math.min(normStart.x, p.x);
+            const minY = Math.min(normStart.y, p.y);
+            let w = Math.abs(p.x - normStart.x);
+            let h = Math.abs(p.y - normStart.y);
+
+            const ratioMode = document.getElementById('pvcBoxRatioSelect')?.value || 'pvc';
+            if (ratioMode === 'pvc') {
+                const r = 85.60 / 53.98;
+                if (w / h > r) h = w / r;
+                else if (h) w = h * r;
+            } else if (ratioMode === 'a4_p') {
+                const r = 210 / 297;
+                if (w / h > r) h = w / r;
+                else if (h) w = h * r;
+            } else if (ratioMode === 'a4_l') {
+                const r = 297 / 210;
+                if (w / h > r) h = w / r;
+                else if (h) w = h * r;
+            }
+
+            normRect = { x: minX, y: minY, w, h };
+            drawNormalCropEditor();
+        });
+
+        pvcCropCanvas.addEventListener('pointerup', () => { normDragging = false; });
+        pvcCropCanvas.addEventListener('pointercancel', () => { normDragging = false; });
+
+        const pvcRatioSel = document.getElementById('pvcBoxRatioSelect');
+        if (pvcRatioSel) {
+            pvcRatioSel.onchange = () => {
+                if (!normRect) return;
+                const mode = pvcRatioSel.value;
+                let targetRatio = null;
+                if (mode === 'pvc') targetRatio = 85.60 / 53.98;
+                else if (mode === 'a4_p') targetRatio = 210 / 297;
+                else if (mode === 'a4_l') targetRatio = 297 / 210;
+
+                if (targetRatio) {
+                    normRect.h = normRect.w / targetRatio;
+                    if (normRect.y + normRect.h > pvcCropCanvas.height) {
+                        normRect.h = pvcCropCanvas.height - normRect.y;
+                        normRect.w = normRect.h * targetRatio;
+                    }
+                }
+                drawNormalCropEditor();
+            };
+        }
+
+        document.getElementById('pvcAutoDetectBtn').onclick = () => autoDetectNormalCrop(true);
+        document.getElementById('pvcResetBoxBtn').onclick = () => autoDetectNormalCrop(false);
+        document.getElementById('pvcZoomPlus').onclick = () => { normZoom = Math.min(3, normZoom + 0.15); drawNormalCropEditor(); };
+        document.getElementById('pvcZoomMinus').onclick = () => { normZoom = Math.max(0.5, normZoom - 0.15); drawNormalCropEditor(); };
+        document.getElementById('pvcRotLeft').onclick = () => { normAngle -= 1; drawNormalCropEditor(); };
+        document.getElementById('pvcRotRight').onclick = () => { normAngle += 1; drawNormalCropEditor(); };
+
+        function exportNormalCroppedCard() {
+            const im = normCropImgs[normCropSide] || rawSourceImg;
+            if (!im || !normRect || normRect.w < 10 || normRect.h < 10) return null;
+            const sx = im.width / pvcCropCanvas.width, sy = im.height / pvcCropCanvas.height;
+            const x = Math.max(0, normRect.x * sx), y = Math.max(0, normRect.y * sy);
+            const w = Math.min(im.width - x, normRect.w * sx), h = Math.min(im.height - y, normRect.h * sy);
+
+            const c = document.createElement('canvas');
+            c.width = CARD_W;
+            c.height = CARD_H;
+            const ctx = c.getContext('2d');
+            ctx.imageSmoothingEnabled = true;
+            ctx.imageSmoothingQuality = 'high';
+            ctx.drawImage(im, x, y, w, h, 0, 0, CARD_W, CARD_H);
+            return c;
+        }
+
+        function updateNormalCropPreview() {
+            const canvas = exportNormalCroppedCard();
+            if (!canvas) return;
+            const box = document.getElementById(normCropSide === 'front' ? 'pvcFrontPreviewBox' : 'pvcBackPreviewBox');
+            if (box) box.innerHTML = `<img src="${canvas.toDataURL('image/png')}" alt="Cropped ${normCropSide}">`;
+        }
+
+        document.getElementById('applyNormalCropBtn').onclick = () => {
+            const c = exportNormalCroppedCard();
+            if (!c) {
+                alert('Card box select karein.');
+                return;
+            }
+
+            if (currentCardIndex < 0 || !loadedCards[currentCardIndex]) {
+                loadedCards.push({ id: 'CARD-1', name: 'Custom_Card', front: null, back: null });
+                currentCardIndex = 0;
+                updateCardsDropdown();
+            }
+
+            if (normCropSide === 'front') {
+                loadedCards[currentCardIndex].front = c;
+                document.getElementById('pvcFrontStatusText').textContent = 'Saved ✓';
+            } else {
+                loadedCards[currentCardIndex].back = c;
+                document.getElementById('pvcBackStatusText').textContent = 'Saved ✓';
+            }
+
+            document.getElementById('normalPvcCropModal').classList.remove('open');
+            renderCardCanvases();
+        };
+
+        // 4. PRINT & PDF GENERATION (Wallet Integrated)
+        document.getElementById('btnPrintNow').onclick = async () => {
+            if (currentCardIndex < 0 || !loadedCards[currentCardIndex]) {
+                alert('Pehle card PDF ya image upload karein.');
+                return;
+            }
+
+            if (window.JustcardWallet && typeof window.JustcardWallet.chargeService === 'function') {
+                const ok = await window.JustcardWallet.chargeService('singlePrint', `Single PVC (${activeSide.toUpperCase()})`, () => {
+                    executePrint();
+                });
+                if (!ok) return;
+            } else {
+                executePrint();
+            }
+        };
+
+        function executePrint() {
+            const printArea = document.getElementById('exactPrintArea');
+            const frontData = frontCanvas.toDataURL('image/png');
+            const backData = backCanvas.toDataURL('image/png');
+            const activeData = activeSide === 'front' ? frontData : backData;
+
+            const cardMmW = isCardVertical ? '53.98mm' : '85.60mm';
+            const cardMmH = isCardVertical ? '85.60mm' : '53.98mm';
+
+            if (activeLayout === '4x6_single') {
+                // Exact Physical Center on 4x6 (100mm x 150mm) Portrait
+                printArea.innerHTML = `
+                    <div style="width:100mm;height:150mm;display:flex;align-items:center;justify-content:center;margin:0;padding:0;box-sizing:border-box;">
+                        <img src="${activeData}" style="width:${cardMmW};height:${cardMmH};display:block;">
+                    </div>
+                `;
+            } else if (activeLayout === '4x6_dual') {
+                if (isCardVertical) {
+                    printArea.innerHTML = `
+                        <div style="width:100mm;height:150mm;padding:6mm;display:flex;gap:6mm;align-items:center;justify-content:center;box-sizing:border-box;">
+                            <img src="${frontData}" style="width:53.98mm;height:85.60mm;display:block;">
+                            <img src="${backData}" style="width:53.98mm;height:85.60mm;display:block;">
+                        </div>
+                    `;
+                } else {
+                    printArea.innerHTML = `
+                        <div style="width:100mm;height:150mm;padding:6mm;display:flex;flex-direction:column;gap:6mm;align-items:center;justify-content:center;box-sizing:border-box;">
+                            <img src="${frontData}" style="width:85.60mm;height:53.98mm;display:block;">
+                            <img src="${backData}" style="width:85.60mm;height:53.98mm;display:block;">
+                        </div>
+                    `;
+                }
+            } else if (activeLayout === 'card55' || activeLayout === 'card91') {
+                const paperH = activeLayout === 'card55' ? '87.71mm' : '91mm';
+                printArea.innerHTML = `
+                    <div style="width:55mm;height:${paperH};display:flex;align-items:center;justify-content:center;box-sizing:border-box;">
+                        <img src="${activeData}" style="width:${cardMmW};height:${cardMmH};display:block;">
+                    </div>
+                `;
+            } else {
+                printArea.innerHTML = `
+                    <div style="width:210mm;height:297mm;padding:15mm;display:flex;gap:8mm;justify-content:center;box-sizing:border-box;">
+                        <img src="${frontData}" style="width:${cardMmW};height:${cardMmH};display:block;">
+                        <img src="${backData}" style="width:${cardMmW};height:${cardMmH};display:block;">
+                    </div>
+                `;
+            }
+
+            printArea.style.display = 'block';
+            window.print();
+            setTimeout(() => { printArea.style.display = 'none'; }, 1000);
+        }
+
+        // High-Res PDF Export
+        document.getElementById('btnDownloadPdf').onclick = async () => {
+            if (currentCardIndex < 0 || !loadedCards[currentCardIndex]) {
+                alert('Pehle card PDF ya image upload karein.');
+                return;
+            }
+
+            if (!window.jspdf || !window.jspdf.jsPDF) {
+                alert('PDF engine loading...');
+                return;
+            }
+
+            const { jsPDF } = window.jspdf;
+            const frontData = frontCanvas.toDataURL('image/png');
+            const backData = backCanvas.toDataURL('image/png');
+            const activeData = activeSide === 'front' ? frontData : backData;
+
+            const cardW = isCardVertical ? 53.98 : 85.60;
+            const cardH = isCardVertical ? 85.60 : 53.98;
+
+            if (activeLayout === '4x6_single') {
+                const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: [101.6, 152.4] });
+                const posX = (101.6 - cardW) / 2;
+                const posY = (152.4 - cardH) / 2;
+                doc.addImage(activeData, 'PNG', posX, posY, cardW, cardH);
+                doc.save(`PVC_Card_4x6_${activeSide.toUpperCase()}_${loadedCards[currentCardIndex].name}.pdf`);
+            } else if (activeLayout === '4x6_dual') {
+                const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: [101.6, 152.4] });
+                if (isCardVertical) {
+                    doc.addImage(frontData, 'PNG', 8, (152.4 - 85.6) / 2, 53.98, 85.60);
+                    doc.addImage(backData, 'PNG', 65, (152.4 - 85.6) / 2, 53.98, 85.60);
+                } else {
+                    doc.addImage(frontData, 'PNG', (101.6 - 85.6) / 2, 14, 85.60, 53.98);
+                    doc.addImage(backData, 'PNG', (101.6 - 85.6) / 2, 78, 85.60, 53.98);
+                }
+                doc.save(`PVC_Card_4x6_Dual_${loadedCards[currentCardIndex].name}.pdf`);
+            } else {
+                const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+                doc.addImage(frontData, 'PNG', 15, 20, cardW, cardH);
+                doc.addImage(backData, 'PNG', 15 + cardW + 10, 20, cardW, cardH);
+                doc.save(`PVC_Card_A4_${loadedCards[currentCardIndex].name}.pdf`);
+            }
+        };
+
+        // Initialize rates badge on load
+        window.addEventListener('DOMContentLoaded', () => {
+            if (window.JustcardWallet) {
+                const user = window.JustcardWallet.getCurrentUser();
+                if (user && user.packageStatus && user.packageStatus.isActive) {
+                    document.getElementById('costLabel').textContent = 'Free Unlimited (' + user.packageStatus.name + ')';
+                }
+            }
+            updateLayoutView();
+            updatePrinterGuide();
+        });
+    </script>
+</body>
+</html>

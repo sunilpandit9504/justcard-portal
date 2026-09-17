@@ -1,0 +1,1 @@
+Fix: Photo Maker full-page download no longer blocks on file:// localStorage session lookup. V15 passes authenticated session via jc_session query parameter; download guard accepts it and never shows false login error.

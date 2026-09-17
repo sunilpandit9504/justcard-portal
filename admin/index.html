@@ -1,0 +1,1334 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard — Justcard Multi-Service Portal</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    :root {
+      --primary: #7c3aed;
+      --p-gradient: linear-gradient(135deg, #a855f7 0%, #7c3aed 50%, #6366f1 100%);
+      --p-glow: rgba(168, 85, 247, 0.35);
+      --bg: #fbf9fe;
+      --card-bg: #ffffff;
+      --border: #ede9fe;
+      --text: #0f172a;
+      --text-muted: #64748b;
+      --green: #059669;
+      --danger: #dc2626;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+      background-color: var(--bg);
+      background-image: radial-gradient(at 0% 0%, rgba(168, 85, 247, 0.08) 0px, transparent 50%), radial-gradient(at 100% 0%, rgba(124, 58, 237, 0.08) 0px, transparent 50%), radial-gradient(at 50% 100%, rgba(99, 102, 241, 0.06) 0px, transparent 50%);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Navbar */
+    header {
+      background: rgba(255, 255, 255, 0.94);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--border);
+      height: 58px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 20px;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      box-shadow: 0 2px 10px rgba(124, 58, 237, 0.05);
+    }
+    .header-left { display: flex; align-items: center; gap: 12px; }
+    .back-btn {
+      background: #ffffff;
+      color: #475569;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 6px 14px;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s;
+    }
+    .back-btn:hover { background: #faf5ff; color: var(--primary); border-color: #d8b4fe; }
+    .logo-icon {
+      width: 34px; height: 34px; border-radius: 9px;
+      background: var(--p-gradient); color: #fff;
+      display: flex; align-items: center; justify-content: center;
+      font-family: 'Outfit', sans-serif; font-size: 20px; font-weight: 900;
+      box-shadow: 0 4px 14px var(--p-glow);
+    }
+    .app-title { font-family: 'Outfit', sans-serif; font-size: 18px; font-weight: 800; color: #0f172a; display: flex; align-items: center; gap: 8px; }
+    .admin-badge { background: #fee2e2; color: #dc2626; border: 1px solid #fecaca; font-size: 11px; font-weight: 800; padding: 2px 8px; border-radius: 20px; }
+
+    /* Layout */
+    .container {
+      max-width: 1240px;
+      margin: 0 auto;
+      padding: 24px 20px 40px;
+      width: 100%;
+    }
+
+    /* Stats Grid */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+    .stat-card {
+      background: #ffffff;
+      border: 1.5px solid var(--border);
+      border-radius: 14px;
+      padding: 18px;
+      box-shadow: 0 4px 16px -2px rgba(124, 58, 237, 0.06);
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      transition: transform 0.2s;
+    }
+    .stat-card:hover { transform: translateY(-2px); }
+    .stat-icon {
+      width: 48px; height: 48px; border-radius: 12px;
+      background: #faf5ff; color: var(--primary);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 20px; border: 1px solid #ede9fe;
+    }
+    .stat-icon.green { background: #ecfdf5; color: #059669; border-color: #a7f3d0; }
+    .stat-icon.blue { background: #eff6ff; color: #2563eb; border-color: #bfdbfe; }
+    .stat-icon.purple { background: #f3e8ff; color: #7e22ce; border-color: #d8b4fe; }
+    .stat-icon.amber { background: #fffbeb; color: #d97706; border-color: #fde68a; }
+    .stat-info .label { font-size: 11.5px; font-weight: 750; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
+    .stat-info .val { font-family: 'Outfit', sans-serif; font-size: 24px; font-weight: 900; color: var(--text); margin-top: 2px; }
+
+    /* Cards */
+    .admin-card {
+      background: #ffffff;
+      border: 1.5px solid var(--border);
+      border-radius: 14px;
+      box-shadow: 0 4px 16px -2px rgba(124, 58, 237, 0.06);
+      margin-bottom: 24px;
+      overflow: hidden;
+    }
+    .admin-card-header {
+      padding: 16px 20px;
+      background: #fbf9fe;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    .admin-card-title {
+      font-family: 'Outfit', sans-serif;
+      font-size: 16px;
+      font-weight: 800;
+      color: #0f172a;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .admin-card-body { padding: 20px; }
+
+    /* Pricing Form Grid */
+    .pricing-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 16px;
+    }
+    .price-box {
+      background: #fbf9fe;
+      border: 1.5px solid var(--border);
+      border-radius: 12px;
+      padding: 14px;
+    }
+    .price-box label {
+      display: block;
+      font-size: 12.5px;
+      font-weight: 800;
+      color: #334155;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .price-input-wrap {
+      display: flex;
+      align-items: center;
+      background: #ffffff;
+      border: 1.5px solid #e2e8f0;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    .price-input-wrap .currency {
+      padding: 8px 12px;
+      background: #f1f5f9;
+      font-weight: 800;
+      color: #475569;
+      font-size: 14px;
+      border-right: 1px solid #e2e8f0;
+    }
+    .price-input-wrap input {
+      border: 0;
+      padding: 8px 12px;
+      font-family: inherit;
+      font-size: 15px;
+      font-weight: 800;
+      color: #0f172a;
+      width: 100%;
+      outline: none;
+    }
+
+    /* Buttons */
+    .btn {
+      padding: 8px 15px;
+      border-radius: 8px;
+      font-family: inherit;
+      font-size: 12.5px;
+      font-weight: 750;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      transition: all 0.2s;
+      border: none;
+      text-decoration: none;
+    }
+    .btn-primary {
+      background: var(--p-gradient);
+      color: #fff;
+      box-shadow: 0 4px 14px var(--p-glow);
+    }
+    .btn-primary:hover { opacity: 0.94; transform: translateY(-1px); }
+    .btn-green {
+      background: linear-gradient(135deg, #059669 0%, #10b981 100%);
+      color: #fff;
+      box-shadow: 0 4px 14px rgba(16, 185, 129, 0.25);
+    }
+    .btn-green:hover { opacity: 0.94; transform: translateY(-1px); }
+    .btn-outline {
+      background: #ffffff;
+      color: #475569;
+      border: 1.5px solid #e2e8f0;
+    }
+    .btn-outline:hover { background: #faf5ff; color: var(--primary); border-color: #d8b4fe; }
+    .btn-sm { padding: 4px 8px; font-size: 11.5px; border-radius: 6px; }
+
+    /* Data Tables */
+    .table-responsive { width: 100%; overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; font-size: 12.5px; text-align: left; }
+    th {
+      background: #f8fafc;
+      padding: 10px 12px;
+      font-weight: 800;
+      color: #475569;
+      border-bottom: 1.5px solid var(--border);
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    td {
+      padding: 11px 12px;
+      border-bottom: 1px solid #f1f5f9;
+      color: #1e293b;
+    }
+    tr:hover td { background: #faf5ff; }
+
+    /* Modals */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.6);
+      backdrop-filter: blur(6px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 999;
+      padding: 16px;
+    }
+    .modal-overlay.open { display: flex; }
+    .modal-card {
+      background: #ffffff;
+      border-radius: 16px;
+      width: 100%;
+      max-width: 460px;
+      box-shadow: 0 20px 45px rgba(15, 23, 42, 0.2);
+      border: 1.5px solid #ede9fe;
+      overflow: hidden;
+      animation: modalPop 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    @keyframes modalPop {
+      from { transform: scale(0.95); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+    .modal-header {
+      padding: 14px 18px;
+      background: #fbf9fe;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .modal-body { padding: 18px; }
+    .form-group { margin-bottom: 14px; }
+    .form-group label { display: block; font-size: 12px; font-weight: 750; color: #334155; margin-bottom: 6px; }
+    .form-input {
+      width: 100%;
+      padding: 9px 12px;
+      border: 1.5px solid #e2e8f0;
+      border-radius: 8px;
+      font-size: 13.5px;
+      outline: none;
+      box-sizing: border-box;
+      font-family: inherit;
+    }
+    .form-input:focus { border-color: var(--primary); }
+
+    /* Lock Screen */
+    #adminLockScreen {
+      position: fixed;
+      inset: 0;
+      background: #0f172a;
+      z-index: 9999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .lock-box {
+      background: #ffffff;
+      border-radius: 20px;
+      padding: 32px 28px;
+      width: 100%;
+      max-width: 380px;
+      text-align: center;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ADMIN PIN LOCK SCREEN -->
+  <div id="adminLockScreen">
+    <div class="lock-box">
+      <div style="width:54px;height:54px;border-radius:14px;background:var(--p-gradient);color:#fff;display:inline-flex;align-items:center;justify-content:center;font-size:24px;margin-bottom:14px;box-shadow:0 6px 20px var(--p-glow);">
+        <i class="fa-solid fa-shield-halved"></i>
+      </div>
+      <h3 style="font-family:'Outfit',sans-serif;font-size:22px;font-weight:800;color:#0f172a;margin-bottom:6px;">Admin Master Panel</h3>
+      <p style="font-size:12.5px;color:#64748b;margin-bottom:20px;">Enter your Master PIN to access pricing, packages, and retailer balances.</p>
+
+      <form id="adminLoginForm">
+        <input type="password" id="adminPinInput" class="form-input" placeholder="Enter Admin Master PIN" maxlength="8" required style="text-align:center;font-size:18px;letter-spacing:4px;margin-bottom:16px;">
+        <button type="submit" class="btn btn-primary" style="width:100%;padding:11px;font-size:14px;">
+          <i class="fa-solid fa-unlock-keyhole"></i> Unlock Admin Panel
+        </button>
+      </form>
+      <div style="margin-top:14px;font-size:11.5px;color:#94a3b8;">
+        Default Master PIN is <b>1234</b>
+      </div>
+    </div>
+  </div>
+
+  <!-- MAIN ADMIN DASHBOARD -->
+  <div id="adminDashboardContent" style="display:none;">
+    
+    <!-- Top Header -->
+    <header>
+      <div class="header-left">
+        <a href="../index.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i> Home Portal</a>
+        <div class="logo-icon">J</div>
+        <div class="app-title">Justcard <span class="admin-badge"><i class="fa-solid fa-crown"></i> Master Admin</span></div>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;">
+        <button type="button" class="btn btn-outline" onclick="openChangePinModal()"><i class="fa-solid fa-key"></i> Change Admin PIN</button>
+        <button type="button" class="btn btn-outline" onclick="logoutAdmin()" style="color:#dc2626;"><i class="fa-solid fa-right-from-bracket"></i> Lock</button>
+      </div>
+    </header>
+
+    <main class="container">
+      
+      <!-- Stats Row -->
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-icon"><i class="fa-solid fa-users"></i></div>
+          <div class="stat-info">
+            <div class="label">Total Retailers</div>
+            <div class="val" id="statUserCount">0</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon green"><i class="fa-solid fa-wallet"></i></div>
+          <div class="stat-info">
+            <div class="label">Total Retailer Balances</div>
+            <div class="val" id="statTotalBalance">₹0.00</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon purple"><i class="fa-solid fa-crown"></i></div>
+          <div class="stat-info">
+            <div class="label">Active Subscriptions</div>
+            <div class="val" id="statActiveSubs">0</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon blue"><i class="fa-solid fa-chart-line"></i></div>
+          <div class="stat-info">
+            <div class="label">Total Deductions</div>
+            <div class="val" id="statDeducted">₹0.00</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 0. PHONEPE RECHARGE REQUESTS (1-CLICK APPROVAL) -->
+      <div class="admin-card" style="border: 2px solid #c084fc; background: #ffffff;">
+        <div class="admin-card-header" style="background: linear-gradient(135deg, #faf5ff 0%, #f3e8ff 100%);">
+          <div class="admin-card-title">
+            <span style="background:#5f259f;color:#fff;width:26px;height:26px;border-radius:6px;display:inline-flex;align-items:center;justify-content:center;font-size:14px;font-weight:900;">पे</span>
+            <span style="color:#5f259f;font-weight:800;">PhonePe UPI Recharge Requests (1-Click Balance Credit)</span>
+            <span id="pendingRequestsBadge" style="background:#dc2626;color:#fff;font-size:11px;font-weight:800;padding:2px 8px;border-radius:12px;display:none;">0 PENDING</span>
+          </div>
+          <div style="display:flex;gap:8px;align-items:center;">
+            <button type="button" class="btn btn-outline btn-sm" onclick="openUpiConfigModal()" style="color:#5f259f;border-color:#d8b4fe;">
+              <i class="fa-solid fa-gear"></i> UPI Settings (${dbUpiId || 'Q021541804@ybl'})
+            </button>
+            <button type="button" class="btn btn-outline btn-sm" onclick="loadDashboardData()"><i class="fa-solid fa-rotate"></i> Refresh</button>
+          </div>
+        </div>
+        <div class="admin-card-body" style="padding:0;">
+          <div class="table-responsive">
+            <table>
+              <thead>
+                <tr>
+                  <th>Req ID</th>
+                  <th>Date &amp; Time</th>
+                  <th>Retailer (Shop / Mobile)</th>
+                  <th>Amount (₹)</th>
+                  <th>12-Digit PhonePe UTR / Ref No</th>
+                  <th>Status</th>
+                  <th style="text-align:right;">1-Click Action</th>
+                </tr>
+              </thead>
+              <tbody id="rechargeRequestsTableBody">
+                <tr><td colspan="7" style="text-align:center;padding:20px;color:#94a3b8;">Loading recharge requests...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- 1. SERVICE PRICING CONFIGURATION -->
+      <div class="admin-card">
+        <div class="admin-card-header">
+          <div class="admin-card-title">
+            <i class="fa-solid fa-tags" style="color:var(--primary);"></i>
+            <span>1. Per-Print Service Rates (Pay-Per-Print Deductions)</span>
+          </div>
+          <button type="button" class="btn btn-green" id="savePricingBtn">
+            <i class="fa-solid fa-floppy-disk"></i> Save Service Rates
+          </button>
+        </div>
+        <div class="admin-card-body">
+          <form id="pricingForm">
+            <div class="pricing-grid">
+              <div class="price-box">
+                <label><i class="fa-solid fa-id-card" style="color:#7c3aed;"></i> Single Print PVC</label>
+                <div class="price-input-wrap">
+                  <span class="currency">₹</span>
+                  <input type="number" id="priceSinglePrint" step="0.5" min="0" required>
+                </div>
+                <small style="color:#64748b;font-size:11px;margin-top:4px;display:block;">Per card print / download</small>
+              </div>
+
+              <div class="price-box">
+                <label><i class="fa-solid fa-file-lines" style="color:#059669;"></i> A4 Document Studio</label>
+                <div class="price-input-wrap">
+                  <span class="currency">₹</span>
+                  <input type="number" id="priceA4Document" step="0.5" min="0" required>
+                </div>
+                <small style="color:#64748b;font-size:11px;margin-top:4px;display:block;">Per A4 sheet print / PDF</small>
+              </div>
+
+              <div class="price-box">
+                <label><i class="fa-solid fa-camera-retro" style="color:#ec4899;"></i> Photo Maker Studio</label>
+                <div class="price-input-wrap">
+                  <span class="currency">₹</span>
+                  <input type="number" id="pricePhotoMaker" step="0.5" min="0" required>
+                </div>
+                <small style="color:#64748b;font-size:11px;margin-top:4px;display:block;">Per 4×6 / A4 Photo sheet</small>
+              </div>
+
+              <div class="price-box">
+                <label><i class="fa-solid fa-user-graduate" style="color:#3b82f6;"></i> Resume Maker</label>
+                <div class="price-input-wrap">
+                  <span class="currency">₹</span>
+                  <input type="number" id="priceResumeMaker" step="0.5" min="0" required>
+                </div>
+                <small style="color:#64748b;font-size:11px;margin-top:4px;display:block;">Per Resume PDF download</small>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <!-- 2. SUBSCRIPTION PACKAGES PRICING CONFIGURATION -->
+      <div class="admin-card">
+        <div class="admin-card-header">
+          <div class="admin-card-title">
+            <i class="fa-solid fa-crown" style="color:#f59e0b;"></i>
+            <span>2. Unlimited Subscription Packages Pricing (All Services Free Plan)</span>
+          </div>
+          <button type="button" class="btn btn-green" id="savePackagesBtn">
+            <i class="fa-solid fa-floppy-disk"></i> Save Package Prices
+          </button>
+        </div>
+        <div class="admin-card-body">
+          <form id="packagesForm">
+            <div class="pricing-grid">
+              <!-- Silver Plan -->
+              <div class="price-box">
+                <label><i class="fa-solid fa-medal" style="color:#94a3b8;"></i> Silver (1 Month)</label>
+                <div class="price-input-wrap">
+                  <span class="currency">₹</span>
+                  <input type="number" id="pkgPriceSilver" step="1" min="0" required>
+                </div>
+                <small style="color:#64748b;font-size:11px;margin-top:4px;display:block;">1 Month unlimited free print</small>
+              </div>
+
+              <!-- Gold Plan -->
+              <div class="price-box">
+                <label><i class="fa-solid fa-medal" style="color:#f59e0b;"></i> Gold (3 Months)</label>
+                <div class="price-input-wrap">
+                  <span class="currency">₹</span>
+                  <input type="number" id="pkgPriceGold" step="1" min="0" required>
+                </div>
+                <small style="color:#64748b;font-size:11px;margin-top:4px;display:block;">3 Months unlimited free print</small>
+              </div>
+
+              <!-- Platinum Plan -->
+              <div class="price-box">
+                <label><i class="fa-solid fa-gem" style="color:#06b6d4;"></i> Platinum (6 Months)</label>
+                <div class="price-input-wrap">
+                  <span class="currency">₹</span>
+                  <input type="number" id="pkgPricePlatinum" step="1" min="0" required>
+                </div>
+                <small style="color:#64748b;font-size:11px;margin-top:4px;display:block;">6 Months unlimited free print</small>
+              </div>
+
+              <!-- Diamond Plan -->
+              <div class="price-box">
+                <label><i class="fa-solid fa-crown" style="color:#a855f7;"></i> Diamond (1 Year / 12 Mo)</label>
+                <div class="price-input-wrap">
+                  <span class="currency">₹</span>
+                  <input type="number" id="pkgPriceDiamond" step="1" min="0" required>
+                </div>
+                <small style="color:#64748b;font-size:11px;margin-top:4px;display:block;">12 Months unlimited free print</small>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <!-- 3. RETAILER WALLET & SUBSCRIPTION MANAGEMENT -->
+      <div class="admin-card">
+        <div class="admin-card-header">
+          <div class="admin-card-title">
+            <i class="fa-solid fa-users-gear" style="color:var(--primary);"></i>
+            <span>3. Registered Retailers, Plans &amp; Wallet Balances</span>
+          </div>
+          <div style="display:flex;gap:8px;">
+            <input type="text" id="searchUserInput" placeholder="Search shop name or mobile..." style="padding:6px 12px;border:1.5px solid #e2e8f0;border-radius:8px;font-size:12.5px;outline:none;width:240px;">
+            <button type="button" class="btn btn-outline btn-sm" onclick="loadDashboardData()"><i class="fa-solid fa-rotate"></i></button>
+          </div>
+        </div>
+        <div class="admin-card-body" style="padding:0;">
+          <div class="table-responsive">
+            <table>
+              <thead>
+                <tr>
+                  <th>User ID</th>
+                  <th>Shop / Cafe Name</th>
+                  <th>Mobile Number</th>
+                  <th>Wallet Balance</th>
+                  <th>Active Plan / Expiry</th>
+                  <th>Status</th>
+                  <th style="text-align:right;">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="usersTableBody">
+                <tr><td colspan="7" style="text-align:center;padding:20px;color:#94a3b8;">Loading retailers...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- 4. LIVE TRANSACTION PASSBOOK -->
+      <div class="admin-card">
+        <div class="admin-card-header">
+          <div class="admin-card-title">
+            <i class="fa-solid fa-receipt" style="color:var(--primary);"></i>
+            <span>4. Live Transactions &amp; Audit Passbook</span>
+          </div>
+          <button type="button" class="btn btn-outline btn-sm" onclick="loadDashboardData()"><i class="fa-solid fa-rotate"></i> Refresh</button>
+        </div>
+        <div class="admin-card-body" style="padding:0;">
+          <div class="table-responsive">
+            <table>
+              <thead>
+                <tr>
+                  <th>Txn ID</th>
+                  <th>Date &amp; Time</th>
+                  <th>Retailer / Mobile</th>
+                  <th>Service / Reason</th>
+                  <th>Type</th>
+                  <th>Amount</th>
+                  <th>Balance After</th>
+                </tr>
+              </thead>
+              <tbody id="txnsTableBody">
+                <tr><td colspan="7" style="text-align:center;padding:20px;color:#94a3b8;">Loading transactions...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+    </main>
+  </div>
+
+  <!-- RECHARGE / ADJUST BALANCE MODAL -->
+  <div class="modal-overlay" id="rechargeModal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <b><i class="fa-solid fa-wallet" style="color:var(--primary);"></i> Recharge / Adjust Retailer Balance</b>
+        <button type="button" class="back-btn" style="padding:4px 8px;" onclick="closeModal('rechargeModal')">✕</button>
+      </div>
+      <div class="modal-body">
+        <form id="rechargeForm">
+          <input type="hidden" id="recUserId">
+          <div class="form-group">
+            <label>Retailer:</label>
+            <div id="recUserDisplay" style="font-weight:800;color:var(--primary);font-size:14px;"></div>
+          </div>
+
+          <div class="form-group">
+            <label>Action Type</label>
+            <select id="recType" class="form-input">
+              <option value="credit">➕ Add Balance (Credit / Top-Up)</option>
+              <option value="debit">➖ Deduct Balance (Debit / Correction)</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label>Amount (₹)</label>
+            <input type="number" id="recAmount" class="form-input" placeholder="e.g. 500" step="1" min="1" required>
+            <div style="display:flex;gap:6px;margin-top:6px;">
+              <button type="button" class="btn btn-outline btn-sm" onclick="setRecAmt(100)">+₹100</button>
+              <button type="button" class="btn btn-outline btn-sm" onclick="setRecAmt(200)">+₹200</button>
+              <button type="button" class="btn btn-outline btn-sm" onclick="setRecAmt(500)">+₹500</button>
+              <button type="button" class="btn btn-outline btn-sm" onclick="setRecAmt(1000)">+₹1000</button>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Note / Remark (Optional)</label>
+            <input type="text" id="recNote" class="form-input" placeholder="e.g. Received via PhonePe">
+          </div>
+
+          <button type="submit" class="btn btn-primary" style="width:100%;margin-top:10px;padding:11px;">
+            <i class="fa-solid fa-check"></i> Submit Balance Update
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- ASSIGN / EXTEND SUBSCRIPTION PACKAGE MODAL -->
+  <div class="modal-overlay" id="assignPackageModal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <b><i class="fa-solid fa-crown" style="color:#7c3aed;"></i> Assign / Extend Subscription Plan</b>
+        <button type="button" class="back-btn" style="padding:4px 8px;" onclick="closeModal('assignPackageModal')">✕</button>
+      </div>
+      <div class="modal-body">
+        <form id="assignPackageForm">
+          <input type="hidden" id="pkgUserId">
+          <div class="form-group">
+            <label>Retailer:</label>
+            <div id="pkgUserDisplay" style="font-weight:800;color:var(--primary);font-size:14px;"></div>
+          </div>
+
+          <div class="form-group">
+            <label>Current Status:</label>
+            <div id="pkgCurrentStatusDisplay" style="font-size:12.5px;font-weight:750;color:#64748b;"></div>
+          </div>
+
+          <div class="form-group">
+            <label>Select Unlimited Plan to Assign:</label>
+            <select id="pkgSelect" class="form-input">
+              <option value="silver">🥈 Silver Plan (1 Month Unlimited)</option>
+              <option value="gold">🥇 Gold Plan (3 Months Unlimited)</option>
+              <option value="platinum">💎 Platinum Plan (6 Months Unlimited)</option>
+              <option value="diamond">👑 Diamond Plan (1 Year / 12 Months Unlimited)</option>
+              <option value="custom">⚙️ Custom Number of Days</option>
+              <option value="remove" style="color:#dc2626;">❌ Remove Package (Set to Pay-Per-Print)</option>
+            </select>
+          </div>
+
+          <div class="form-group" id="pkgCustomDaysGroup" style="display:none;">
+            <label>Enter Custom Validity (Days):</label>
+            <input type="number" id="pkgCustomDays" class="form-input" placeholder="e.g. 45" min="1" max="3650">
+          </div>
+
+          <div class="form-group">
+            <label>Admin Remark / Note (Optional):</label>
+            <input type="text" id="pkgNote" class="form-input" placeholder="e.g. Offline Payment Received">
+          </div>
+
+          <div style="background:#ecfdf5;border:1px dashed #10b981;padding:10px;border-radius:8px;font-size:11.5px;color:#065f46;margin-bottom:14px;">
+            ⚡ <b>Admin Activation:</b> Retailer ko selected plan assign hote hi uska selected period tak sabhi 4 services <b>100% Free</b> ho jayega.
+          </div>
+
+          <button type="submit" class="btn btn-primary" style="width:100%;padding:11px;">
+            <i class="fa-solid fa-check"></i> Activate Plan for Retailer
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- RESET RETAILER PIN MODAL -->
+  <div class="modal-overlay" id="resetUserPinModal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <b><i class="fa-solid fa-key" style="color:var(--primary);"></i> Reset Retailer Security PIN</b>
+        <button type="button" class="back-btn" style="padding:4px 8px;" onclick="closeModal('resetUserPinModal')">✕</button>
+      </div>
+      <div class="modal-body">
+        <form id="resetUserPinForm">
+          <input type="hidden" id="resetUserId">
+          <div class="form-group">
+            <label>Retailer:</label>
+            <div id="resetUserDisplay" style="font-weight:800;color:var(--primary);font-size:14px;"></div>
+          </div>
+          <div class="form-group">
+            <label>Current Saved PIN:</label>
+            <div id="resetCurrentPinDisplay" style="font-size:13px;font-weight:750;color:#64748b;"></div>
+          </div>
+          <div class="form-group">
+            <label>New 4-Digit Security PIN</label>
+            <input type="text" id="resetNewPinInput" class="form-input" placeholder="Enter new 4-digit PIN (e.g. 1234)" maxlength="8" minlength="4" required style="font-size:16px;letter-spacing:2px;text-align:center;">
+            <div style="display:flex;gap:6px;margin-top:8px;">
+              <button type="button" class="btn btn-outline btn-sm" onclick="document.getElementById('resetNewPinInput').value='1234'">Default: 1234</button>
+              <button type="button" class="btn btn-outline btn-sm" onclick="document.getElementById('resetNewPinInput').value=Math.floor(1000 + Math.random()*9000)">🎲 Generate Random</button>
+            </div>
+          </div>
+          <button type="submit" class="btn btn-primary" style="width:100%;padding:11px;margin-top:10px;">
+            <i class="fa-solid fa-check"></i> Set New PIN &amp; Save
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- UPI CONFIG MODAL -->
+  <div class="modal-overlay" id="upiConfigModal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <b><i class="fa-solid fa-qrcode" style="color:#5f259f;"></i> PhonePe UPI Payment Settings</b>
+        <button type="button" class="back-btn" style="padding:4px 8px;" onclick="closeModal('upiConfigModal')">✕</button>
+      </div>
+      <div class="modal-body">
+        <form id="upiConfigForm">
+          <div class="form-group">
+            <label>PhonePe UPI ID (VPA)</label>
+            <input type="text" id="cfgUpiId" class="form-input" placeholder="e.g. Q021541804@ybl" required>
+            <small style="color:#64748b;font-size:11px;">Current: <b>Q021541804@ybl</b></small>
+          </div>
+          <div class="form-group">
+            <label>Merchant / Shop Name</label>
+            <input type="text" id="cfgUpiName" class="form-input" placeholder="e.g. Justcomes" required>
+            <small style="color:#64748b;font-size:11px;">Current: <b>Justcomes</b></small>
+          </div>
+          <div style="background:#f3e8ff;border:1px solid #d8b4fe;border-radius:8px;padding:10px;font-size:11.5px;color:#5f259f;margin-bottom:14px;">
+            <i class="fa-solid fa-circle-info"></i> Retailer ko yahi UPI ID aur QR code dikhega jisse wo direct PhonePe se scan karke balance add kar payenge.
+          </div>
+          <button type="submit" class="btn btn-primary" style="width:100%;padding:11px;">
+            <i class="fa-solid fa-floppy-disk"></i> Save PhonePe UPI Details
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- CHANGE ADMIN PIN MODAL -->
+  <div class="modal-overlay" id="changePinModal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <b><i class="fa-solid fa-key" style="color:var(--primary);"></i> Change Admin Master PIN</b>
+        <button type="button" class="back-btn" style="padding:4px 8px;" onclick="closeModal('changePinModal')">✕</button>
+      </div>
+      <div class="modal-body">
+        <form id="changePinForm">
+          <div class="form-group">
+            <label>Enter New Master PIN (4+ Digits)</label>
+            <input type="password" id="newPinInput" class="form-input" placeholder="e.g. 5678" minlength="4" maxlength="8" required>
+          </div>
+          <button type="submit" class="btn btn-primary" style="width:100%;padding:11px;">
+            <i class="fa-solid fa-check"></i> Save New PIN
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const API_BASE = (window.location.protocol === 'file:' || !window.location.origin || window.location.origin === 'null') ? 'http://localhost:3000' : '';
+    let globalAdminData = null;
+
+    // Login Handle
+    document.getElementById('adminLoginForm').onsubmit = async (e) => {
+      e.preventDefault();
+      const pin = document.getElementById('adminPinInput').value.trim();
+
+      try {
+        const res = await fetch(`${API_BASE}/api/admin/login`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ pin })
+        });
+        const data = await res.json();
+        if (!res.ok) {
+          alert(data.error || 'Incorrect Admin PIN');
+          return;
+        }
+
+        sessionStorage.setItem('justcard_admin_token', data.adminToken);
+        document.getElementById('adminLockScreen').style.display = 'none';
+        document.getElementById('adminDashboardContent').style.display = 'block';
+        loadDashboardData();
+      } catch (err) {
+        alert('Server error: ' + err.message);
+      }
+    };
+
+    function logoutAdmin() {
+      sessionStorage.removeItem('justcard_admin_token');
+      location.reload();
+    }
+
+    // Load Dashboard Data
+    async function loadDashboardData() {
+      try {
+        const [resAdmin, resReqs] = await Promise.all([
+          fetch(`${API_BASE}/api/admin/data`),
+          fetch(`${API_BASE}/api/admin/recharge-requests`)
+        ]);
+
+        const data = await resAdmin.json();
+        if (!resAdmin.ok) throw new Error(data.error);
+
+        globalAdminData = data;
+
+        // Stats
+        document.getElementById('statUserCount').innerText = data.stats.totalUsers;
+        document.getElementById('statTotalBalance').innerText = '₹' + data.stats.totalWalletBalance.toFixed(2);
+        document.getElementById('statDeducted').innerText = '₹' + data.stats.totalDeductions.toFixed(2);
+        document.getElementById('statActiveSubs').innerText = data.stats.activeSubscriptions || 0;
+
+        // Service Pricing
+        if (data.pricing) {
+          document.getElementById('priceSinglePrint').value = data.pricing.singlePrint;
+          document.getElementById('priceA4Document').value = data.pricing.a4Document;
+          document.getElementById('pricePhotoMaker').value = data.pricing.photoMaker;
+          document.getElementById('priceResumeMaker').value = data.pricing.resumeMaker;
+        }
+
+        // Package Pricing
+        if (data.packages) {
+          document.getElementById('pkgPriceSilver').value = data.packages.silver ? data.packages.silver.price : 299;
+          document.getElementById('pkgPriceGold').value = data.packages.gold ? data.packages.gold.price : 699;
+          document.getElementById('pkgPricePlatinum').value = data.packages.platinum ? data.packages.platinum.price : 1199;
+          document.getElementById('pkgPriceDiamond').value = data.packages.diamond ? data.packages.diamond.price : 1999;
+        }
+
+        // UPI Config
+        if (data.adminConfig) {
+          document.getElementById('cfgUpiId').value = data.adminConfig.upiId || 'Q021541804@ybl';
+          document.getElementById('cfgUpiName').value = data.adminConfig.upiName || 'Justcomes';
+        }
+
+        // Recharge Requests
+        let reqList = [];
+        if (resReqs.ok) {
+          const reqData = await resReqs.json();
+          reqList = reqData.rechargeRequests || [];
+        }
+        renderRechargeRequests(reqList);
+
+        // Render Users
+        renderUsers(data.users);
+
+        // Render Transactions
+        renderTransactions(data.transactions);
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    function renderRechargeRequests(requests) {
+      const tbody = document.getElementById('rechargeRequestsTableBody');
+      const badge = document.getElementById('pendingRequestsBadge');
+
+      const pendingList = requests.filter(r => r.status === 'pending');
+      if (pendingList.length > 0) {
+        badge.style.display = 'inline-block';
+        badge.innerText = `${pendingList.length} PENDING APPROVAL`;
+      } else {
+        badge.style.display = 'none';
+      }
+
+      if (!requests || requests.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:24px;color:#94a3b8;"><i class="fa-solid fa-check-circle" style="color:#059669;margin-right:6px;"></i> No pending PhonePe recharge requests right now.</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = requests.map(r => {
+        const isPending = r.status === 'pending';
+        const isApproved = r.status === 'approved';
+        const isRejected = r.status === 'rejected';
+        const d = new Date(r.timestamp).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' });
+
+        let statusBadge = `<span style="background:#fef3c7;color:#d97706;border:1px solid #fde68a;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:800;">PENDING</span>`;
+        if (isApproved) {
+          statusBadge = `<span style="background:#d1fae5;color:#059669;border:1px solid #a7f3d0;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:800;">✅ APPROVED</span>`;
+        } else if (isRejected) {
+          statusBadge = `<span style="background:#fee2e2;color:#dc2626;border:1px solid #fecaca;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:800;">❌ REJECTED</span>`;
+        }
+
+        return `
+          <tr style="${isPending ? 'background:#faf5ff;' : ''}">
+            <td><b style="color:#5f259f;font-size:11.5px;">${r.id}</b></td>
+            <td style="font-size:11px;color:#64748b;">${d}</td>
+            <td>
+              <b>${r.shopName || 'Retailer'}</b>
+              <div style="font-size:11px;color:#64748b;"><i class="fa-solid fa-phone" style="font-size:10px;"></i> ${r.mobile}</div>
+            </td>
+            <td><b style="color:#059669;font-size:15px;font-family:'Outfit',sans-serif;">₹${Number(r.amount || 0).toFixed(2)}</b></td>
+            <td>
+              <span style="font-family:monospace;font-weight:800;font-size:12.5px;background:#fff;border:1px solid #d8b4fe;padding:3px 8px;border-radius:6px;color:#0f172a;letter-spacing:0.5px;">
+                ${r.utr}
+              </span>
+            </td>
+            <td>${statusBadge}</td>
+            <td style="text-align:right;">
+              ${isPending ? `
+                <button type="button" class="btn btn-green btn-sm" onclick="handleApproveRecharge('${r.id}', 'approve', '${r.shopName}', ${r.amount})" style="font-weight:800;">
+                  <i class="fa-solid fa-check"></i> Approve &amp; Credit
+                </button>
+                <button type="button" class="btn btn-outline btn-sm" onclick="handleApproveRecharge('${r.id}', 'reject', '${r.shopName}', ${r.amount})" style="color:#dc2626;margin-left:4px;">
+                  <i class="fa-solid fa-xmark"></i> Reject
+                </button>
+              ` : `
+                <span style="font-size:11px;color:#94a3b8;">${isApproved ? 'Credited to Wallet' : 'Marked Rejected'}</span>
+              `}
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    async function handleApproveRecharge(requestId, action, shopName, amount) {
+      const confirmMsg = action === 'approve'
+        ? `Approve PhonePe recharge of ₹${amount} for "${shopName}"? Amount will be immediately credited to their wallet.`
+        : `Are you sure you want to REJECT this recharge request?`;
+
+      if (!confirm(confirmMsg)) return;
+
+      try {
+        const res = await fetch(`${API_BASE}/api/admin/approve-recharge`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ requestId, action })
+        });
+
+        const data = await res.json();
+        if (res.ok) {
+          alert(`✅ ${data.message}`);
+          loadDashboardData();
+        } else {
+          alert('Error: ' + (data.error || 'Action failed'));
+        }
+      } catch (err) {
+        alert('Server communication error: ' + err.message);
+      }
+    }
+
+    function openUpiConfigModal() {
+      if (globalAdminData && globalAdminData.adminConfig) {
+        document.getElementById('cfgUpiId').value = globalAdminData.adminConfig.upiId || 'Q021541804@ybl';
+        document.getElementById('cfgUpiName').value = globalAdminData.adminConfig.upiName || 'Justcomes';
+      }
+      document.getElementById('upiConfigModal').classList.add('open');
+    }
+
+    document.getElementById('upiConfigForm').onsubmit = async (e) => {
+      e.preventDefault();
+      const upiId = document.getElementById('cfgUpiId').value.trim();
+      const upiName = document.getElementById('cfgUpiName').value.trim();
+
+      try {
+        const res = await fetch(`${API_BASE}/api/admin/upi-config`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ upiId, upiName })
+        });
+
+        const data = await res.json();
+        if (res.ok) {
+          alert('✅ PhonePe UPI configuration saved successfully!');
+          closeModal('upiConfigModal');
+          loadDashboardData();
+        } else {
+          alert('Error: ' + data.error);
+        }
+      } catch (err) {
+        alert('Failed to save UPI config: ' + err.message);
+      }
+    };
+
+    function renderUsers(users) {
+      const tbody = document.getElementById('usersTableBody');
+      if (!users || users.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:20px;color:#94a3b8;">No registered retailers found yet.</td></tr>';
+        return;
+      }
+
+      const q = (document.getElementById('searchUserInput').value || '').toLowerCase();
+      const filtered = users.filter(u => 
+        (u.shopName || '').toLowerCase().includes(q) || 
+        (u.mobile || '').includes(q) ||
+        (u.id || '').toLowerCase().includes(q)
+      );
+
+      tbody.innerHTML = filtered.map(u => {
+        const isBlocked = u.status === 'blocked';
+        const pkg = u.packageStatus || { isActive: false, name: 'Pay-Per-Print' };
+        const isPlanActive = pkg.isActive;
+        const expStr = pkg.expiresAt ? new Date(pkg.expiresAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : '';
+        
+        let planBadge = `<span style="font-size:11px;font-weight:750;color:#64748b;background:#f1f5f9;padding:2px 8px;border-radius:12px;">⚡ Pay-Per-Print</span>`;
+        if (isPlanActive) {
+          planBadge = `
+            <span style="font-size:11px;font-weight:800;color:#7c3aed;background:#f3e8ff;border:1px solid #d8b4fe;padding:2px 8px;border-radius:12px;display:inline-flex;align-items:center;gap:4px;">
+              <i class="fa-solid fa-crown"></i> ${pkg.name}
+            </span>
+            <div style="font-size:10px;color:#059669;margin-top:2px;font-weight:700;">Till ${expStr} (${pkg.daysRemaining}d left)</div>
+          `;
+        }
+
+        return `
+          <tr>
+            <td><b style="color:#7c3aed;">${u.id}</b></td>
+            <td><b>${u.shopName}</b></td>
+            <td><i class="fa-solid fa-phone" style="font-size:11px;color:#64748b;"></i> ${u.mobile}</td>
+            <td><b style="color:#059669;font-size:13.5px;">₹${Number(u.balance || 0).toFixed(2)}</b></td>
+            <td>${planBadge}</td>
+            <td>
+              <span style="font-size:11px;font-weight:800;padding:2px 8px;border-radius:12px;background:${isBlocked ? '#fee2e2' : '#ecfdf5'};color:${isBlocked ? '#dc2626' : '#047857'};">
+                ${isBlocked ? 'Blocked' : 'Active'}
+              </span>
+            </td>
+            <td style="text-align:right;">
+              <button type="button" class="btn btn-outline btn-sm" onclick="openAssignPackageModal('${u.id}', '${u.shopName}', '${u.mobile}', '${pkg.name}', '${expStr}')" style="color:#7c3aed;border-color:#d8b4fe;" title="Assign/Extend Unlimited Subscription Plan">
+                <i class="fa-solid fa-crown"></i> Plan
+              </button>
+              <button type="button" class="btn btn-green btn-sm" onclick="openRechargeModal('${u.id}', '${u.shopName}', '${u.mobile}')" style="margin-left:3px;">
+                <i class="fa-solid fa-plus"></i> Recharge
+              </button>
+              <button type="button" class="btn btn-outline btn-sm" onclick="openResetUserPinModal('${u.id}', '${u.shopName}', '${u.mobile}', '${u.pin || ''}')" style="margin-left:3px;" title="Reset Security PIN">
+                <i class="fa-solid fa-key"></i>
+              </button>
+              <button type="button" class="btn btn-outline btn-sm" onclick="toggleUserStatus('${u.id}', '${u.status}')" style="margin-left:3px;">
+                ${isBlocked ? '<i class="fa-solid fa-unlock"></i>' : '<i class="fa-solid fa-ban" style="color:#dc2626;"></i>'}
+              </button>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    function renderTransactions(txns) {
+      const tbody = document.getElementById('txnsTableBody');
+      if (!txns || txns.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:20px;color:#94a3b8;">No transaction history.</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = txns.map(t => {
+        const isDebit = t.type === 'debit';
+        const isFree = t.type === 'free';
+        const d = new Date(t.timestamp).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' });
+        
+        let typeBadge = `<span style="font-size:11px;font-weight:800;padding:2px 6px;border-radius:6px;background:${isDebit ? '#fee2e2' : '#ecfdf5'};color:${isDebit ? '#dc2626' : '#047857'};">${isDebit ? 'DEBIT' : 'CREDIT'}</span>`;
+        if (isFree) {
+          typeBadge = `<span style="font-size:11px;font-weight:800;padding:2px 6px;border-radius:6px;background:#f3e8ff;color:#7e22ce;">FREE PLAN</span>`;
+        }
+
+        return `
+          <tr>
+            <td style="font-size:11px;color:#64748b;font-weight:700;">${t.id}</td>
+            <td style="font-size:11.5px;color:#475569;">${d}</td>
+            <td><b>${t.shopName || t.mobile}</b></td>
+            <td>${t.service || t.note}</td>
+            <td>${typeBadge}</td>
+            <td><b style="color:${isDebit ? '#dc2626' : (isFree ? '#7c3aed' : '#059669')};font-size:13px;">${isFree ? '₹0.00 (Free)' : `${isDebit ? '-' : '+'}₹${Number(t.amount || 0).toFixed(2)}`}</b></td>
+            <td style="font-weight:700;color:#0f172a;">₹${Number(t.balanceAfter || 0).toFixed(2)}</td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    document.getElementById('searchUserInput').oninput = () => {
+      if (globalAdminData) renderUsers(globalAdminData.users);
+    };
+
+    // Save Service Pricing
+    document.getElementById('savePricingBtn').onclick = async () => {
+      const singlePrint = parseFloat(document.getElementById('priceSinglePrint').value) || 0;
+      const a4Document = parseFloat(document.getElementById('priceA4Document').value) || 0;
+      const photoMaker = parseFloat(document.getElementById('pricePhotoMaker').value) || 0;
+      const resumeMaker = parseFloat(document.getElementById('priceResumeMaker').value) || 0;
+
+      try {
+        const res = await fetch(`${API_BASE}/api/admin/pricing`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            pricing: { singlePrint, a4Document, photoMaker, resumeMaker }
+          })
+        });
+        const data = await res.json();
+        if (res.ok) {
+          alert('✅ Per-Print Service Rates saved successfully!');
+          loadDashboardData();
+        } else {
+          alert('Error: ' + data.error);
+        }
+      } catch (err) {
+        alert('Failed to save service pricing.');
+      }
+    };
+
+    // Save Packages Pricing
+    document.getElementById('savePackagesBtn').onclick = async () => {
+      const silver = parseFloat(document.getElementById('pkgPriceSilver').value) || 0;
+      const gold = parseFloat(document.getElementById('pkgPriceGold').value) || 0;
+      const platinum = parseFloat(document.getElementById('pkgPricePlatinum').value) || 0;
+      const diamond = parseFloat(document.getElementById('pkgPriceDiamond').value) || 0;
+
+      try {
+        const res = await fetch(`${API_BASE}/api/admin/packages`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            packages: { silver, gold, platinum, diamond }
+          })
+        });
+        const data = await res.json();
+        if (res.ok) {
+          alert('✅ Subscription Package Prices saved successfully!');
+          loadDashboardData();
+        } else {
+          alert('Error: ' + data.error);
+        }
+      } catch (err) {
+        alert('Failed to save package prices.');
+      }
+    };
+
+    // Assign / Extend Package Modal
+    function openAssignPackageModal(userId, shopName, mobile, currentPlan, expStr) {
+      document.getElementById('pkgUserId').value = userId;
+      document.getElementById('pkgUserDisplay').innerText = `${shopName} (${mobile})`;
+      document.getElementById('pkgCurrentStatusDisplay').innerText = currentPlan && currentPlan !== 'Pay-Per-Print' ? `Current Active: ${currentPlan} (Valid till ${expStr})` : 'Current: Pay-Per-Print (No active package)';
+      document.getElementById('pkgSelect').value = 'diamond';
+      document.getElementById('pkgCustomDaysGroup').style.display = 'none';
+      document.getElementById('pkgCustomDays').value = '';
+      document.getElementById('pkgNote').value = '';
+      document.getElementById('assignPackageModal').classList.add('open');
+    }
+
+    document.getElementById('pkgSelect').onchange = (e) => {
+      document.getElementById('pkgCustomDaysGroup').style.display = e.target.value === 'custom' ? 'block' : 'none';
+    };
+
+    document.getElementById('assignPackageForm').onsubmit = async (e) => {
+      e.preventDefault();
+      const userId = document.getElementById('pkgUserId').value;
+      const packageKey = document.getElementById('pkgSelect').value;
+      const customDays = document.getElementById('pkgCustomDays').value;
+      const note = document.getElementById('pkgNote').value.trim();
+
+      try {
+        const res = await fetch(`${API_BASE}/api/admin/assign-package`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ userId, packageKey, customDays, note })
+        });
+        const data = await res.json();
+        if (res.ok) {
+          alert(data.message);
+          closeModal('assignPackageModal');
+          loadDashboardData();
+        } else {
+          alert('Error: ' + data.error);
+        }
+      } catch (err) {
+        alert('Failed to assign package: ' + err.message);
+      }
+    };
+
+    // Recharge Modal
+    function openRechargeModal(userId, shopName, mobile) {
+      document.getElementById('recUserId').value = userId;
+      document.getElementById('recUserDisplay').innerText = `${shopName} (${mobile})`;
+      document.getElementById('recAmount').value = '';
+      document.getElementById('recNote').value = '';
+      document.getElementById('rechargeModal').classList.add('open');
+    }
+    function setRecAmt(val) {
+      document.getElementById('recAmount').value = val;
+    }
+    function closeModal(id) {
+      document.getElementById(id).classList.remove('open');
+    }
+
+    document.getElementById('rechargeForm').onsubmit = async (e) => {
+      e.preventDefault();
+      const userId = document.getElementById('recUserId').value;
+      const amount = parseFloat(document.getElementById('recAmount').value);
+      const type = document.getElementById('recType').value;
+      const note = document.getElementById('recNote').value.trim();
+
+      try {
+        const res = await fetch(`${API_BASE}/api/admin/recharge`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ userId, amount, type, note })
+        });
+        const data = await res.json();
+        if (res.ok) {
+          alert(data.message);
+          closeModal('rechargeModal');
+          loadDashboardData();
+        } else {
+          alert('Error: ' + data.error);
+        }
+      } catch (err) {
+        alert('Server error: ' + err.message);
+      }
+    };
+
+    async function toggleUserStatus(userId, currentStatus) {
+      const nextStatus = currentStatus === 'active' ? 'blocked' : 'active';
+      if (!confirm(`Are you sure you want to ${nextStatus} this retailer?`)) return;
+
+      try {
+        const res = await fetch(`${API_BASE}/api/admin/toggle-user`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ userId, status: nextStatus })
+        });
+        if (res.ok) {
+          loadDashboardData();
+        }
+      } catch (err) {
+        alert('Failed to update status');
+      }
+    }
+
+    function openChangePinModal() {
+      document.getElementById('newPinInput').value = '';
+      document.getElementById('changePinModal').classList.add('open');
+    }
+
+    document.getElementById('changePinForm').onsubmit = async (e) => {
+      e.preventDefault();
+      const newPin = document.getElementById('newPinInput').value.trim();
+      try {
+        const res = await fetch(`${API_BASE}/api/admin/change-pin`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ newPin })
+        });
+        const data = await res.json();
+        if (res.ok) {
+          alert('✅ Admin Master PIN changed successfully!');
+          closeModal('changePinModal');
+        } else {
+          alert('Error: ' + data.error);
+        }
+      } catch (err) {
+        alert('Failed to change PIN');
+      }
+    };
+
+    // Reset Retailer PIN Handlers
+    function openResetUserPinModal(userId, shopName, mobile, currentPin) {
+      document.getElementById('resetUserId').value = userId;
+      document.getElementById('resetUserDisplay').innerText = `${shopName} (${mobile})`;
+      document.getElementById('resetCurrentPinDisplay').innerText = currentPin ? `Current PIN: ${currentPin}` : 'Not set';
+      document.getElementById('resetNewPinInput').value = '1234';
+      document.getElementById('resetUserPinModal').classList.add('open');
+    }
+
+    document.getElementById('resetUserPinForm').onsubmit = async (e) => {
+      e.preventDefault();
+      const userId = document.getElementById('resetUserId').value;
+      const newPin = document.getElementById('resetNewPinInput').value.trim();
+
+      try {
+        const res = await fetch(`${API_BASE}/api/admin/reset-user-pin`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ userId, newPin })
+        });
+        const data = await res.json();
+        if (res.ok) {
+          alert(`✅ ${data.message}`);
+          closeModal('resetUserPinModal');
+          loadDashboardData();
+        } else {
+          alert('Error: ' + data.error);
+        }
+      } catch (err) {
+        alert('Failed to reset PIN: ' + err.message);
+      }
+    };
+
+    // Auto-login if already authenticated in session
+    if (sessionStorage.getItem('justcard_admin_token')) {
+      document.getElementById('adminLockScreen').style.display = 'none';
+      document.getElementById('adminDashboardContent').style.display = 'block';
+      loadDashboardData();
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,6 @@
+JUSTCARD V15 SIMPLE WEB
+
+This cannot work by double-clicking index.html because Remove.bg needs a server-side API proxy.
+Deploy this folder/ZIP to Vercel. Add Environment Variable REMOVE_BG_API_KEY with your NEW key. No BAT and no local server is needed for users.
+
+Flow: Upload -> Crop -> Remove BG -> White/Custom Background -> Download.
