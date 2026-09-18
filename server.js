@@ -2,6 +2,34 @@ const http = require('http');
 const fs = require('fs');
 const path = require('path');
 
+function loadEnv() {
+  const envPath = path.join(__dirname, '.env');
+  if (fs.existsSync(envPath)) {
+    try {
+      const content = fs.readFileSync(envPath, 'utf8');
+      const lines = content.split(/\r?\n/);
+      for (const line of lines) {
+        const trimmed = line.trim();
+        if (!trimmed || trimmed.startsWith('#')) continue;
+        const idx = trimmed.indexOf('=');
+        if (idx !== -1) {
+          const key = trimmed.slice(0, idx).trim();
+          const val = trimmed.slice(idx + 1).trim().replace(/^['"]|['"]$/g, '');
+          process.env[key] = val;
+        }
+      }
+    } catch (e) {
+      console.warn('Could not read .env file:', e.message);
+    }
+  }
+}
+loadEnv();
+
+const dbManager = require('./db');
+
+// Initialize Database (MySQL with auto-fallback to JSON)
+dbManager.initDatabase();
+
 const PORT = process.env.PORT || 3000;
 const DB_FILE = path.join(__dirname, 'data', 'db.json');
 
@@ -141,6 +169,26 @@ function readDb() {
 function writeDb(data) {
   try {
     fs.writeFileSync(DB_FILE, JSON.stringify(data, null, 2), 'utf8');
+    if (dbManager && typeof dbManager.isMySqlActive === 'function' && dbManager.isMySqlActive()) {
+      (async () => {
+        try {
+          if (data.users) {
+            for (const u of data.users) await dbManager.saveUser(u);
+          }
+          if (data.transactions && data.transactions.length > 0) {
+            await dbManager.addTransaction(data.transactions[0]);
+          }
+          if (data.rechargeRequests && data.rechargeRequests.length > 0) {
+            await dbManager.addRechargeRequest(data.rechargeRequests[0]);
+          }
+          if (data.pricing) await dbManager.setConfig('pricing', data.pricing);
+          if (data.packages) await dbManager.setConfig('packages', data.packages);
+          if (data.adminConfig) await dbManager.setConfig('adminConfig', data.adminConfig);
+        } catch (syncErr) {
+          console.error('MySQL background sync error:', syncErr);
+        }
+      })();
+    }
     return true;
   } catch (err) {
     console.error('Database write error:', err);
@@ -168,29 +216,6 @@ function getUserPackageStatus(user) {
   }
   return { isActive: false, key: user.package.key, name: 'Expired Plan', expiresAt: user.package.expiresAt, daysRemaining: 0 };
 }
-
-function loadEnv() {
-  const envPath = path.join(__dirname, '.env');
-  if (fs.existsSync(envPath)) {
-    try {
-      const content = fs.readFileSync(envPath, 'utf8');
-      const lines = content.split(/\r?\n/);
-      for (const line of lines) {
-        const trimmed = line.trim();
-        if (!trimmed || trimmed.startsWith('#')) continue;
-        const idx = trimmed.indexOf('=');
-        if (idx !== -1) {
-          const key = trimmed.slice(0, idx).trim();
-          const val = trimmed.slice(idx + 1).trim().replace(/^['"]|['"]$/g, '');
-          process.env[key] = val;
-        }
-      }
-    } catch (e) {
-      console.warn('Could not read .env file:', e.message);
-    }
-  }
-}
-loadEnv();
 
 function parseJsonBody(req) {
   return new Promise((resolve, reject) => {
