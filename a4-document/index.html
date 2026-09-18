@@ -415,6 +415,32 @@ input[type="range"] { width: 100%; accent-color: var(--p); height: 5px; border-r
 }
 .crop-inst b { color: #818cf8; }
 
+@media (max-width: 900px) {
+  .main-layout {
+    grid-template-columns: 1fr;
+    height: auto;
+    overflow: visible;
+  }
+  header {
+    height: auto;
+    padding: 10px 14px;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .stage-area {
+    min-height: 380px;
+    padding: 16px 8px;
+  }
+  .a4-preview-sheet {
+    max-width: 96vw;
+  }
+}
+@media (max-width: 480px) {
+  .app-title span { display: none; }
+  .back-btn { padding: 5px 10px; font-size: 11.5px; }
+  .logo-icon { width: 28px; height: 28px; font-size: 16px; }
+}
+
 @media print {
   body * { visibility: hidden; }
   #printStage, #printStage * { visibility: visible; }

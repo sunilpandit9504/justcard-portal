@@ -320,11 +320,10 @@ button{
 <h2><i class="fa-solid fa-pen-to-square" style="color:var(--p)"></i> Text / Details Edit Karein</h2>
 
 <div class="sec">
-<label>Full Name</label><input id="name" value="AMIT KUMAR">
-<div class="row"><div><label>Email ID</label><input id="email" value="amitkumar@gmail.com"></div><div><label>Mobile No</label><input id="mobile" value="9876543210"></div></div>
-<div class="row"><div><label>WhatsApp No</label><input id="whatsapp" value="9876543210"></div><div><label>Date of Birth</label><input id="dob" value="15/08/2000"></div></div>
-<label>Address</label><textarea id="address">Vill - Rampur, P.O - Rampur, P.S - Godda
-Dist - Godda, Jharkhand - 814133</textarea>
+<label>Full Name</label><input id="name" placeholder="Enter Full Name">
+<div class="row"><div><label>Email ID</label><input id="email" placeholder="example@gmail.com"></div><div><label>Mobile No</label><input id="mobile" placeholder="10-digit Mobile Number"></div></div>
+<div class="row"><div><label>WhatsApp No</label><input id="whatsapp" placeholder="WhatsApp Number"></div><div><label>Date of Birth</label><input id="dob" placeholder="DD/MM/YYYY"></div></div>
+<label>Address</label><textarea id="address" placeholder="Vill/Street, Post Office, Police Station, District, State - PIN"></textarea>
 <label>Upload Photo</label><input id="photo" type="file" accept="image/*">
 </div>
 
@@ -332,19 +331,19 @@ Dist - Godda, Jharkhand - 814133</textarea>
 
 <div class="sec"><h2>Education Qualifications</h2><div id="eduForm"></div><button type="button" class="light" onclick="addEdu()">+ Add Education Row</button></div>
 
-<div class="sec"><h2>Extra Qualification</h2><textarea id="extra">Basic Know Computer Knowledge</textarea></div>
+<div class="sec"><h2>Extra Qualification</h2><textarea id="extra" placeholder="e.g. Basic Computer Knowledge (DCA, Tally, Typing, etc.)"></textarea></div>
 
 <div class="sec"><h2>Work Experience</h2><div id="expForm"></div><button type="button" class="light" onclick="addExp()">+ Add Experience</button></div>
 
 <div class="sec"><h2>Personal Detail</h2>
-<div class="row"><div><label>Gender</label><input id="gender" value="Male"></div><div><label>Father's Name</label><input id="father" value="Ramesh Kumar"></div></div>
-<div class="row"><div><label>Mother's Name</label><input id="mother" value="Sunita Devi"></div><div><label>Marital Status</label><input id="marital" value="Unmarried"></div></div>
-<div class="row"><div><label>Hobbies</label><input id="hobbies"></div><div><label>Religion</label><input id="religion" value="Hindu"></div></div>
-<div class="row"><div><label>Nationality</label><input id="nationality" value="Indian"></div><div><label>Language Known</label><input id="language" value="Hindi"></div></div>
+<div class="row"><div><label>Gender</label><input id="gender" placeholder="Male / Female"></div><div><label>Father's Name</label><input id="father" placeholder="Father's Full Name"></div></div>
+<div class="row"><div><label>Mother's Name</label><input id="mother" placeholder="Mother's Full Name"></div><div><label>Marital Status</label><input id="marital" placeholder="Unmarried / Married"></div></div>
+<div class="row"><div><label>Hobbies</label><input id="hobbies" placeholder="e.g. Reading, Music, Sports"></div><div><label>Religion</label><input id="religion" placeholder="e.g. Hindu / Muslim / Sikh / Christian"></div></div>
+<div class="row"><div><label>Nationality</label><input id="nationality" value="Indian"></div><div><label>Language Known</label><input id="language" placeholder="e.g. Hindi, English"></div></div>
 </div>
 
 <div class="sec"><h2>Declaration</h2><textarea id="declaration">I hereby declare that the information given above is true and correct to the best of my knowledge and belief.</textarea>
-<div class="row"><div><label>Date</label><input id="date" value="31/08/2026"></div><div><label>Place</label><input id="place" value="GODDA"></div></div>
+<div class="row"><div><label>Date</label><input id="date" placeholder="DD/MM/YYYY"></div><div><label>Place</label><input id="place" placeholder="City / District"></div></div>
 <div style="margin-top:14px;display:flex;flex-wrap:wrap;gap:8px">
 <button type="button" class="blue" onclick="printA4()"><i class="fa-solid fa-print"></i> PRINT A4 / SAVE PDF</button>
 <button type="button" class="light" onclick="saveData()"><i class="fa-solid fa-floppy-disk"></i> SAVE</button>
@@ -359,7 +358,7 @@ Dist - Godda, Jharkhand - 814133</textarea>
 <div class="title">Bio-Data</div>
 <div class="toparea">
 <div class="info">
-<div class="n">Name: <span id="rname">RAVI KUMAR</span></div>
+<div class="n">Name: <span id="rname"></span></div>
 <div>Email ID: <span id="remail"></span></div>
 <div>Mobile No: <span id="rmobile"></span></div>
 <div>WhatsApp No: <span id="rwhatsapp"></span></div>
@@ -424,7 +423,7 @@ function collect(){return{f:Object.fromEntries(F.map(id=>[id,$(id).value])),edu:
 function saveData(){localStorage.v3=JSON.stringify(collect());alert("Saved successfully.");}
 function loadData(){let d=JSON.parse(localStorage.v3||"null");if(!d)return;F.forEach(id=>$(id).value=d.f[id]||"");$("eduForm").innerHTML="";$("expForm").innerHTML="";(d.edu||[]).forEach(addEdu);(d.exp||[]).forEach(addExp);if(localStorage.v3photo){$("rphoto").src=localStorage.v3photo;$("rphoto").style.display="block"}update();}
 function resetData(){if(confirm("Reset all data?")){localStorage.removeItem("v3");localStorage.removeItem("v3photo");location.reload();}}
-addEdu({degree:"MATRIC",board:"JAC",year:"2012",result:"2ND"});addEdu({degree:"INTER",board:"JAC",year:"2014",result:"2ND"});addExp({post:"Office Assistant",company:"Private Organization",duration:"1 Year",detail:"Handled documentation, customer support and basic computer-related office work."});update();
+addEdu();update();
 </script>
 <div id="samePrintPreview" style="display:none;position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,.72);overflow:auto">
 <div style="width:210mm;min-height:297mm;margin:18px auto;background:#fff;position:relative;box-shadow:0 4px 24px #0008">
