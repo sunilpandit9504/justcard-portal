@@ -550,6 +550,7 @@ input[type="range"] { width: 100%; accent-color: var(--p); height: 5px; border-r
           <option value="15mm">15mm Margins</option>
           <option value="18mm">18mm Margins</option>
           <option value="25mm">25mm Margins</option>
+          <option value="30mm">30mm Margins</option>
         </select>
       </div>
       <button type="button" class="btn btn-crop-normal" id="autoFitTruePvcBtn">
@@ -1005,7 +1006,7 @@ function renderSheet() {
   const isLandscape = document.getElementById('paperOrientation')?.value === 'landscape';
   const layout = document.getElementById('layoutMode')?.value || 'full';
   const margins = document.getElementById('marginMode')?.value || 'standard';
-  const marginMm = margins === 'none' ? 0 : margins === 'small' ? 3 : margins === '9mm' ? 9 : margins === '12mm' ? 12 : margins === '15mm' ? 15 : margins === '18mm' ? 18 : margins === '25mm' ? 25 : 6;
+  const marginMm = margins === 'none' ? 0 : margins === 'small' ? 3 : margins === '9mm' ? 9 : margins === '12mm' ? 12 : margins === '15mm' ? 15 : margins === '18mm' ? 18 : margins === '25mm' ? 25 : margins === '30mm' ? 30 : 6;
   const pad = marginMm + 'mm';
   const filterStyle = getFilterCss();
   const rotStyle = state.rotation ? `transform:rotate(${state.rotation}deg);` : '';
@@ -1705,7 +1706,7 @@ async function doPrint() {
       const isLandscape = document.getElementById('paperOrientation')?.value === 'landscape';
       const layout = document.getElementById('layoutMode')?.value || 'full';
       const margins = document.getElementById('marginMode')?.value || 'standard';
-      const marginMm = margins === 'none' ? 0 : margins === 'small' ? 3 : margins === '9mm' ? 9 : margins === '12mm' ? 12 : margins === '15mm' ? 15 : margins === '18mm' ? 18 : margins === '25mm' ? 25 : 6;
+      const marginMm = margins === 'none' ? 0 : margins === 'small' ? 3 : margins === '9mm' ? 9 : margins === '12mm' ? 12 : margins === '15mm' ? 15 : margins === '18mm' ? 18 : margins === '25mm' ? 25 : margins === '30mm' ? 30 : 6;
       const list = [pf, pb].filter(Boolean);
 
       let gridStyle = '', cards = '';
@@ -1784,7 +1785,7 @@ document.getElementById('downloadPdfBtn').onclick = async () => {
       const doc = new window.jspdf.jsPDF({ orientation: isLandscape ? 'landscape' : 'portrait', unit: 'mm', format: 'a4' });
       const pageW = isLandscape ? 297 : 210, pageH = isLandscape ? 210 : 297;
       const margins = document.getElementById('marginMode').value;
-      const marginMm = margins === 'none' ? 0 : margins === 'small' ? 3 : margins === '9mm' ? 9 : margins === '12mm' ? 12 : margins === '15mm' ? 15 : margins === '18mm' ? 18 : margins === '25mm' ? 25 : 6;
+      const marginMm = margins === 'none' ? 0 : margins === 'small' ? 3 : margins === '9mm' ? 9 : margins === '12mm' ? 12 : margins === '15mm' ? 15 : margins === '18mm' ? 18 : margins === '25mm' ? 25 : margins === '30mm' ? 30 : 6;
       const availW = pageW - marginMm * 2, availH = pageH - marginMm * 2;
 
       const im = new Image();
