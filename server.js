@@ -136,39 +136,112 @@ if (!fs.existsSync(DB_FILE)) {
   fs.writeFileSync(DB_FILE, JSON.stringify(initialData, null, 2), 'utf8');
 }
 
+const BACKUP_FILE = path.join(__dirname, 'data', 'db.backup.json');
+let cachedDb = null;
+
 function readDb() {
   try {
-    const raw = fs.readFileSync(DB_FILE, 'utf8');
-    const data = JSON.parse(raw);
-    if (!data.packages) {
-      data.packages = JSON.parse(JSON.stringify(DEFAULT_PACKAGES));
+    if (fs.existsSync(DB_FILE)) {
+      const raw = fs.readFileSync(DB_FILE, 'utf8');
+      if (raw && raw.trim().length > 0) {
+        const data = JSON.parse(raw);
+        if (data && typeof data === 'object') {
+          // Anti-wipe protection: If disk users is empty but cache had users, preserve them!
+          if ((!data.users || data.users.length === 0) && cachedDb && cachedDb.users && cachedDb.users.length > 0) {
+            console.warn('⚠️ Anti-wipe guard: Preserved existing users from memory cache.');
+            data.users = cachedDb.users;
+          }
+          if (!data.packages) data.packages = JSON.parse(JSON.stringify(DEFAULT_PACKAGES));
+          if (!data.adminConfig) data.adminConfig = { adminPin: '1234', adminName: 'Justcard Admin', ...DEFAULT_UPI_CONFIG };
+          if (!data.rechargeRequests) data.rechargeRequests = [];
+          if (!data.transactions) data.transactions = [];
+          if (!data.users) data.users = [];
+
+          cachedDb = data;
+          return data;
+        }
+      }
     }
-    if (!data.adminConfig) {
-      data.adminConfig = { adminPin: '1234', adminName: 'Justcard Admin', ...DEFAULT_UPI_CONFIG };
-    } else {
-      if (!data.adminConfig.upiId) data.adminConfig.upiId = DEFAULT_UPI_CONFIG.upiId;
-      if (!data.adminConfig.upiName) data.adminConfig.upiName = DEFAULT_UPI_CONFIG.upiName;
-    }
-    if (!data.rechargeRequests) {
-      data.rechargeRequests = [];
-    }
-    return data;
   } catch (err) {
-    console.error('Database read error:', err);
-    return {
-      adminConfig: { adminPin: '1234', ...DEFAULT_UPI_CONFIG },
-      pricing: {},
-      packages: DEFAULT_PACKAGES,
-      users: [],
-      rechargeRequests: [],
-      transactions: []
-    };
+    console.error('Database read error, attempting backup restore...', err);
   }
+
+  // Backup fallback
+  try {
+    if (fs.existsSync(BACKUP_FILE)) {
+      const bkpRaw = fs.readFileSync(BACKUP_FILE, 'utf8');
+      if (bkpRaw && bkpRaw.trim().length > 0) {
+        const bkpData = JSON.parse(bkpRaw);
+        if (bkpData && typeof bkpData === 'object') {
+          console.log('🔄 Restored database from db.backup.json');
+          cachedDb = bkpData;
+          return bkpData;
+        }
+      }
+    }
+  } catch (bkpErr) {
+    console.error('Backup read error:', bkpErr);
+  }
+
+  if (cachedDb) return cachedDb;
+
+  return {
+    adminConfig: { adminPin: '1234', ...DEFAULT_UPI_CONFIG },
+    pricing: { singlePrint: 5, a4Document: 2, photoMaker: 3, resumeMaker: 5 },
+    packages: DEFAULT_PACKAGES,
+    users: [
+      {
+        id: 'USR-1001',
+        mobile: '9999999999',
+        shopName: 'Demo Justcard Cyber Cafe',
+        pin: '1234',
+        balance: 100,
+        createdAt: new Date().toISOString(),
+        status: 'active',
+        package: null
+      }
+    ],
+    rechargeRequests: [],
+    transactions: []
+  };
 }
 
 function writeDb(data) {
   try {
-    fs.writeFileSync(DB_FILE, JSON.stringify(data, null, 2), 'utf8');
+    if (!data || typeof data !== 'object') return false;
+
+    // Anti-wipe guard: Never overwrite existing users with an empty list
+    if ((!data.users || data.users.length === 0) && cachedDb && cachedDb.users && cachedDb.users.length > 0) {
+      console.warn('⚠️ Anti-wipe guard: Prevented writing empty user list. Retaining active users.');
+      data.users = cachedDb.users;
+    }
+
+    cachedDb = data;
+    const jsonStr = JSON.stringify(data, null, 2);
+
+    const dir = path.dirname(DB_FILE);
+    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+
+    // 1. Write atomic temp file
+    const tmpFile = DB_FILE + '.tmp';
+    fs.writeFileSync(tmpFile, jsonStr, 'utf8');
+
+    // 2. Save backup whenever users exist
+    if (data.users && data.users.length > 0) {
+      try {
+        fs.writeFileSync(BACKUP_FILE, jsonStr, 'utf8');
+      } catch (bErr) {
+        console.warn('Backup file write warning:', bErr);
+      }
+    }
+
+    // 3. Atomically rename/replace
+    try {
+      fs.renameSync(tmpFile, DB_FILE);
+    } catch (renameErr) {
+      fs.writeFileSync(DB_FILE, jsonStr, 'utf8');
+    }
+
     if (dbManager && typeof dbManager.isMySqlActive === 'function' && dbManager.isMySqlActive()) {
       (async () => {
         try {

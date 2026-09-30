@@ -49,7 +49,31 @@
       "badgeColor": "#a855f7"
     }
   },
-  "users": [],
-  "transactions": [],
+  "users": [
+    {
+      "id": "USR-1001",
+      "mobile": "9999999999",
+      "shopName": "Demo Justcard Cyber Cafe",
+      "pin": "1234",
+      "balance": 100,
+      "createdAt": "2026-09-30T10:00:00.000Z",
+      "status": "active",
+      "package": null
+    }
+  ],
+  "transactions": [
+    {
+      "id": "TXN-10001",
+      "userId": "USR-1001",
+      "mobile": "9999999999",
+      "shopName": "Demo Justcard Cyber Cafe",
+      "type": "credit",
+      "amount": 100,
+      "service": "Welcome Bonus",
+      "balanceAfter": 100,
+      "timestamp": "2026-09-30T10:00:00.000Z",
+      "note": "Initial Demo Balance"
+    }
+  ],
   "rechargeRequests": []
 }

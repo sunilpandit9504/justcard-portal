@@ -31,25 +31,78 @@ let pool = null;
 let isMySqlActive = false;
 
 // -------------------------------------------------------------
-// JSON File Helpers (Fallback / Local Backup)
+// JSON File Helpers (Fallback / Local Backup & Anti-Wipe Protection)
 // -------------------------------------------------------------
+const BACKUP_FILE = path.join(__dirname, 'data', 'db.backup.json');
+let cachedJsonDb = null;
+
 function readJsonDb() {
   try {
-    if (!fs.existsSync(DB_FILE)) {
-      return { users: [], transactions: [], rechargeRequests: [], adminConfig: {}, pricing: {}, packages: {} };
+    if (fs.existsSync(DB_FILE)) {
+      const raw = fs.readFileSync(DB_FILE, 'utf-8');
+      if (raw && raw.trim().length > 0) {
+        const data = JSON.parse(raw);
+        if (data && typeof data === 'object') {
+          if ((!data.users || data.users.length === 0) && cachedJsonDb && cachedJsonDb.users && cachedJsonDb.users.length > 0) {
+            data.users = cachedJsonDb.users;
+          }
+          if (!data.users) data.users = [];
+          if (!data.transactions) data.transactions = [];
+          if (!data.rechargeRequests) data.rechargeRequests = [];
+          cachedJsonDb = data;
+          return data;
+        }
+      }
     }
-    const raw = fs.readFileSync(DB_FILE, 'utf-8');
-    return JSON.parse(raw);
   } catch (e) {
-    return { users: [], transactions: [], rechargeRequests: [], adminConfig: {}, pricing: {}, packages: {} };
+    console.error('db.js readJsonDb error:', e);
   }
+
+  // Backup fallback
+  try {
+    if (fs.existsSync(BACKUP_FILE)) {
+      const bkpRaw = fs.readFileSync(BACKUP_FILE, 'utf-8');
+      if (bkpRaw && bkpRaw.trim().length > 0) {
+        const bkpData = JSON.parse(bkpRaw);
+        if (bkpData && typeof bkpData === 'object') {
+          cachedJsonDb = bkpData;
+          return bkpData;
+        }
+      }
+    }
+  } catch (bkpErr) {}
+
+  if (cachedJsonDb) return cachedJsonDb;
+
+  return { users: [], transactions: [], rechargeRequests: [], adminConfig: {}, pricing: {}, packages: {} };
 }
 
 function writeJsonDb(data) {
   try {
+    if (!data || typeof data !== 'object') return;
+
+    if ((!data.users || data.users.length === 0) && cachedJsonDb && cachedJsonDb.users && cachedJsonDb.users.length > 0) {
+      data.users = cachedJsonDb.users;
+    }
+
+    cachedJsonDb = data;
+    const jsonStr = JSON.stringify(data, null, 2);
+
     const dir = path.dirname(DB_FILE);
     if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
-    fs.writeFileSync(DB_FILE, JSON.stringify(data, null, 2), 'utf-8');
+
+    const tmpFile = DB_FILE + '.tmp';
+    fs.writeFileSync(tmpFile, jsonStr, 'utf-8');
+
+    if (data.users && data.users.length > 0) {
+      try { fs.writeFileSync(BACKUP_FILE, jsonStr, 'utf-8'); } catch (b) {}
+    }
+
+    try {
+      fs.renameSync(tmpFile, DB_FILE);
+    } catch (e) {
+      fs.writeFileSync(DB_FILE, jsonStr, 'utf-8');
+    }
   } catch (e) {
     console.error('Error writing JSON DB:', e);
   }
