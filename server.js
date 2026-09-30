@@ -1314,9 +1314,90 @@ const server = http.createServer(async (req, res) => {
       db.adminConfig.adminPin = String(newPin).trim();
       writeDb(db);
 
+  // -------------------------------------------------------------
+  // 19.1 Admin Add / Restore Retailer (/api/admin/add-user)
+  // -------------------------------------------------------------
+  if (pathname === '/api/admin/add-user' && req.method === 'POST') {
+    try {
+      const body = await parseJsonBody(req);
+      const { mobile, shopName, pin, balance, packageKey } = body;
+
+      const cleanMobile = String(mobile || '').trim();
+      const cleanShop = String(shopName || '').trim();
+      const cleanPin = String(pin || '1234').trim();
+      const numBalance = Number(balance || 0);
+
+      if (!cleanMobile || cleanMobile.length < 10) {
+        return sendJson(res, 400, { error: 'Valid 10-digit mobile number is required.' });
+      }
+      if (!cleanShop) {
+        return sendJson(res, 400, { error: 'Shop Name is required.' });
+      }
+
+      const db = readDb();
+      if (!db.users) db.users = [];
+
+      const existingIndex = db.users.findIndex(u => u.mobile === cleanMobile);
+      let targetUser;
+
+      if (existingIndex >= 0) {
+        targetUser = db.users[existingIndex];
+        targetUser.shopName = cleanShop;
+        targetUser.pin = cleanPin;
+        targetUser.balance = numBalance;
+        targetUser.status = 'active';
+      } else {
+        const newUserId = 'USR-' + (1000 + db.users.length + 1);
+        targetUser = {
+          id: newUserId,
+          mobile: cleanMobile,
+          shopName: cleanShop,
+          pin: cleanPin,
+          balance: numBalance,
+          createdAt: new Date().toISOString(),
+          status: 'active',
+          package: null
+        };
+        db.users.push(targetUser);
+      }
+
+      if (packageKey && packageKey !== 'none') {
+        const packages = db.packages || DEFAULT_PACKAGES;
+        const targetPkg = packages[packageKey];
+        if (targetPkg) {
+          const now = new Date();
+          const expiryDate = new Date(now.getTime());
+          expiryDate.setMonth(expiryDate.getMonth() + (targetPkg.months || 1));
+          targetUser.package = {
+            key: targetPkg.key || packageKey,
+            name: targetPkg.name,
+            activatedAt: now.toISOString(),
+            expiresAt: expiryDate.toISOString()
+          };
+        }
+      }
+
+      if (numBalance > 0) {
+        db.transactions.unshift({
+          id: 'TXN-' + Date.now().toString().slice(-6),
+          userId: targetUser.id,
+          mobile: cleanMobile,
+          shopName: cleanShop,
+          type: 'credit',
+          amount: numBalance,
+          service: 'Admin Account Setup',
+          balanceAfter: numBalance,
+          timestamp: new Date().toISOString(),
+          note: 'Account Created / Restored by Admin'
+        });
+      }
+
+      writeDb(db);
+
       return sendJson(res, 200, {
         success: true,
-        message: 'Admin Master PIN updated successfully!'
+        message: `✅ Retailer "${cleanShop}" (${cleanMobile}) successfully saved!`,
+        user: targetUser
       });
     } catch (e) {
       return sendJson(res, 500, { error: e.message });

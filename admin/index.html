@@ -551,8 +551,9 @@
             <i class="fa-solid fa-users-gear" style="color:var(--primary);"></i>
             <span>3. Registered Retailers, Plans &amp; Wallet Balances</span>
           </div>
-          <div style="display:flex;gap:8px;">
-            <input type="text" id="searchUserInput" placeholder="Search shop name or mobile..." style="padding:6px 12px;border:1.5px solid #e2e8f0;border-radius:8px;font-size:12.5px;outline:none;width:240px;">
+          <div style="display:flex;gap:8px;align-items:center;">
+            <input type="text" id="searchUserInput" placeholder="Search shop name or mobile..." style="padding:6px 12px;border:1.5px solid #e2e8f0;border-radius:8px;font-size:12.5px;outline:none;width:220px;">
+            <button type="button" class="btn btn-green btn-sm" onclick="openAddUserModal()"><i class="fa-solid fa-user-plus"></i> ➕ Add / Restore Retailer</button>
             <button type="button" class="btn btn-outline btn-sm" onclick="loadDashboardData()"><i class="fa-solid fa-rotate"></i></button>
           </div>
         </div>
@@ -610,6 +611,54 @@
       </div>
 
     </main>
+  </div>
+
+  <!-- ADD / RESTORE RETAILER MODAL -->
+  <div class="modal-overlay" id="addUserModal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <b><i class="fa-solid fa-user-plus" style="color:#059669;"></i> ➕ Add / Restore Retailer Account</b>
+        <button type="button" class="back-btn" style="padding:4px 8px;" onclick="closeModal('addUserModal')">✕</button>
+      </div>
+      <div class="modal-body">
+        <form id="addUserForm">
+          <div class="form-group">
+            <label>Shop / Cyber Cafe Name</label>
+            <input type="text" id="addShopName" class="form-input" placeholder="e.g. Sharma Cyber Point" required>
+          </div>
+
+          <div class="form-group">
+            <label>10-Digit Mobile Number</label>
+            <input type="tel" id="addMobile" class="form-input" placeholder="e.g. 9876543210" maxlength="10" minlength="10" required>
+          </div>
+
+          <div class="form-group">
+            <label>Login PIN (Default: 1234)</label>
+            <input type="text" id="addPin" class="form-input" placeholder="4-digit PIN" value="1234" maxlength="8" minlength="4" required>
+          </div>
+
+          <div class="form-group">
+            <label>Initial Wallet Balance (₹)</label>
+            <input type="number" id="addBalance" class="form-input" placeholder="e.g. 100" value="100" min="0" step="1">
+          </div>
+
+          <div class="form-group">
+            <label>Assign Subscription Plan (Optional)</label>
+            <select id="addPackageKey" class="form-input">
+              <option value="none">⚡ Pay-Per-Print (No Subscription)</option>
+              <option value="silver">🥈 Silver Plan (1 Month Unlimited Free)</option>
+              <option value="gold">🥇 Gold Plan (3 Months Unlimited Free)</option>
+              <option value="platinum">💎 Platinum Plan (6 Months Unlimited Free)</option>
+              <option value="diamond">👑 Diamond Plan (1 Year Unlimited Free)</option>
+            </select>
+          </div>
+
+          <button type="submit" class="btn btn-green" style="width:100%;margin-top:10px;padding:12px;font-size:14px;">
+            <i class="fa-solid fa-check"></i> Save Retailer &amp; Activate
+          </button>
+        </form>
+      </div>
+    </div>
   </div>
 
   <!-- RECHARGE / ADJUST BALANCE MODAL -->
@@ -1320,6 +1369,43 @@
         }
       } catch (err) {
         alert('Failed to reset PIN: ' + err.message);
+      }
+    };
+
+    // Add / Restore Retailer Handlers
+    function openAddUserModal() {
+      document.getElementById('addShopName').value = '';
+      document.getElementById('addMobile').value = '';
+      document.getElementById('addPin').value = '1234';
+      document.getElementById('addBalance').value = '100';
+      document.getElementById('addPackageKey').value = 'none';
+      document.getElementById('addUserModal').classList.add('open');
+    }
+
+    document.getElementById('addUserForm').onsubmit = async (e) => {
+      e.preventDefault();
+      const shopName = document.getElementById('addShopName').value.trim();
+      const mobile = document.getElementById('addMobile').value.trim();
+      const pin = document.getElementById('addPin').value.trim();
+      const balance = parseFloat(document.getElementById('addBalance').value) || 0;
+      const packageKey = document.getElementById('addPackageKey').value;
+
+      try {
+        const res = await fetch(`${API_BASE}/api/admin/add-user`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ shopName, mobile, pin, balance, packageKey })
+        });
+        const data = await res.json();
+        if (res.ok) {
+          alert(`✅ ${data.message}`);
+          closeModal('addUserModal');
+          loadDashboardData();
+        } else {
+          alert('Error: ' + (data.error || 'Failed to save retailer'));
+        }
+      } catch (err) {
+        alert('Failed to connect to server: ' + err.message);
       }
     };
 
