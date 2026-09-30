@@ -540,13 +540,13 @@ input[type="range"] { width: 100%; accent-color: var(--p); height: 5px; border-r
         </select>
       </div>
       <div class="form-group">
-        <label>Margins</label>
+        <label>Margins (मार्जिन)</label>
         <select id="marginMode" class="select-field">
-          <option value="standard">Standard (6mm Margins)</option>
-          <option value="9mm">9mm Margins</option>
-          <option value="12mm">12mm Margins</option>
-          <option value="small">Compact (3mm Margins)</option>
           <option value="none">Borderless (0mm Margins)</option>
+          <option value="small">Compact (3mm Margins)</option>
+          <option value="standard" selected>Standard (6mm Margins)</option>
+          <option value="9mm">9mm Margins (Wide)</option>
+          <option value="12mm">12mm Margins (Extra Wide)</option>
         </select>
       </div>
       <button type="button" class="btn btn-crop-normal" id="autoFitTruePvcBtn">
