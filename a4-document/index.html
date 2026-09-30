@@ -543,6 +543,8 @@ input[type="range"] { width: 100%; accent-color: var(--p); height: 5px; border-r
         <label>Margins</label>
         <select id="marginMode" class="select-field">
           <option value="standard">Standard (6mm Margins)</option>
+          <option value="9mm">9mm Margins</option>
+          <option value="12mm">12mm Margins</option>
           <option value="small">Compact (3mm Margins)</option>
           <option value="none">Borderless (0mm Margins)</option>
         </select>
@@ -1000,7 +1002,8 @@ function renderSheet() {
   const isLandscape = document.getElementById('paperOrientation')?.value === 'landscape';
   const layout = document.getElementById('layoutMode')?.value || 'full';
   const margins = document.getElementById('marginMode')?.value || 'standard';
-  const pad = margins === 'none' ? '0' : margins === 'small' ? '4mm' : '8mm';
+  const marginMm = margins === 'none' ? 0 : margins === 'small' ? 3 : margins === '9mm' ? 9 : margins === '12mm' ? 12 : 6;
+  const pad = marginMm + 'mm';
   const filterStyle = getFilterCss();
   const rotStyle = state.rotation ? `transform:rotate(${state.rotation}deg);` : '';
 
@@ -1699,7 +1702,7 @@ async function doPrint() {
       const isLandscape = document.getElementById('paperOrientation')?.value === 'landscape';
       const layout = document.getElementById('layoutMode')?.value || 'full';
       const margins = document.getElementById('marginMode')?.value || 'standard';
-      const marginMm = margins === 'none' ? 0 : margins === 'small' ? 3 : 6;
+      const marginMm = margins === 'none' ? 0 : margins === 'small' ? 3 : margins === '9mm' ? 9 : margins === '12mm' ? 12 : 6;
       const list = [pf, pb].filter(Boolean);
 
       let gridStyle = '', cards = '';
@@ -1778,7 +1781,7 @@ document.getElementById('downloadPdfBtn').onclick = async () => {
       const doc = new window.jspdf.jsPDF({ orientation: isLandscape ? 'landscape' : 'portrait', unit: 'mm', format: 'a4' });
       const pageW = isLandscape ? 297 : 210, pageH = isLandscape ? 210 : 297;
       const margins = document.getElementById('marginMode').value;
-      const marginMm = margins === 'none' ? 0 : margins === 'small' ? 3 : 6;
+      const marginMm = margins === 'none' ? 0 : margins === 'small' ? 3 : margins === '9mm' ? 9 : margins === '12mm' ? 12 : 6;
       const availW = pageW - marginMm * 2, availH = pageH - marginMm * 2;
 
       const im = new Image();
