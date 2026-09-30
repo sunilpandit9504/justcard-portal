@@ -1314,6 +1314,15 @@ const server = http.createServer(async (req, res) => {
       db.adminConfig.adminPin = String(newPin).trim();
       writeDb(db);
 
+      return sendJson(res, 200, {
+        success: true,
+        message: 'Admin Master PIN updated successfully!'
+      });
+    } catch (e) {
+      return sendJson(res, 500, { error: e.message });
+    }
+  }
+
   // -------------------------------------------------------------
   // 19.1 Admin Add / Restore Retailer (/api/admin/add-user)
   // -------------------------------------------------------------
