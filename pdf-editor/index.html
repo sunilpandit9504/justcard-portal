@@ -326,6 +326,12 @@
       box-shadow: 0 4px 20px rgba(0,0,0,0.15), 0 1px 3px rgba(0,0,0,0.08);
       border-radius: 2px;
       transform-origin: top center;
+      transition: outline 0.15s ease, box-shadow 0.15s ease;
+    }
+    .page-wrapper.drag-target-hover {
+      outline: 3px dashed #7c3aed !important;
+      outline-offset: 4px;
+      box-shadow: 0 8px 30px rgba(124, 58, 237, 0.25) !important;
     }
     .page-canvas-bg {
       display: block;
@@ -528,6 +534,35 @@
       padding: 2px 6px;
       border-radius: 4px;
       text-transform: uppercase;
+    }
+    .obj-page-selector {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      background: rgba(255,255,255,0.18);
+      padding: 2px 6px;
+      border-radius: 5px;
+      font-size: 11px;
+      color: #e2e8f0;
+      border: 1px solid rgba(255,255,255,0.25);
+    }
+    .obj-page-selector i {
+      font-size: 10px;
+      color: #93c5fd;
+    }
+    .page-move-select {
+      background: transparent;
+      border: none;
+      color: #ffffff;
+      font-size: 11.5px;
+      font-weight: 800;
+      cursor: pointer;
+      outline: none;
+      padding: 1px 2px;
+    }
+    .page-move-select option {
+      background: #0f172a;
+      color: #ffffff;
     }
 
     /* 8 RESIZE HANDLES (CHHOTA / BADA KARNE KE POINTS) */
@@ -1131,6 +1166,7 @@
       fileName: 'Document.pdf',
       pageCount: 0,
       zoom: 1.0,
+      activePageIndex: 0,
       activeTool: 'text',
       activeTextNode: null,
       activeSelectedObjectId: null,
@@ -1360,8 +1396,18 @@
         const pageWrap = document.createElement('div');
         pageWrap.className = 'page-wrapper';
         pageWrap.id = `pageWrapper_${idx}`;
+        pageWrap.dataset.pageIndex = idx;
         pageWrap.style.width = `${baseViewport.width}px`;
         pageWrap.style.height = `${baseViewport.height}px`;
+
+        pageWrap.addEventListener('mousedown', () => {
+          state.activePageIndex = idx;
+          document.querySelectorAll('.thumb-item').forEach((t, tIdx) => t.classList.toggle('active', tIdx === idx));
+        });
+        pageWrap.addEventListener('click', () => {
+          state.activePageIndex = idx;
+          document.querySelectorAll('.thumb-item').forEach((t, tIdx) => t.classList.toggle('active', tIdx === idx));
+        });
 
         // 1. Canvas Background
         const canvas = document.createElement('canvas');
@@ -1415,6 +1461,7 @@
         const thumbBox = document.createElement('div');
         thumbBox.className = `thumb-item ${idx === 0 ? 'active' : ''}`;
         thumbBox.onclick = () => {
+          state.activePageIndex = idx;
           document.querySelectorAll('.thumb-item').forEach(t => t.classList.remove('active'));
           thumbBox.classList.add('active');
           pageWrap.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -1833,22 +1880,34 @@
     }
 
     function getActiveVisiblePageIndex() {
-      const viewport = $('pdfViewport');
-      if (!viewport) return 0;
-      const vRect = viewport.getBoundingClientRect();
-      const vCenterY = vRect.top + vRect.height / 2;
-      
+      // 1. If user explicitly clicked/focused a valid non-deleted page, check if it's currently in viewport
+      if (typeof state.activePageIndex === 'number' && state.activePageIndex >= 0 && state.activePageIndex < state.pagesData.length && !state.pagesData[state.activePageIndex].isDeleted) {
+        const wrap = $(`pageWrapper_${state.activePageIndex}`);
+        if (wrap) {
+          const r = wrap.getBoundingClientRect();
+          const vH = window.innerHeight;
+          // If the selected page is visible on screen, prioritize it
+          if (r.bottom > 80 && r.top < vH - 80) {
+            return state.activePageIndex;
+          }
+        }
+      }
+
+      // 2. Otherwise find which non-deleted page has the largest visible vertical height in viewport
+      const vH = window.innerHeight;
       let bestIdx = 0;
-      let minDiff = Infinity;
+      let maxVisibleH = -1;
+
       for (let i = 0; i < state.pagesData.length; i++) {
         if (state.pagesData[i].isDeleted) continue;
         const wrap = $(`pageWrapper_${i}`);
         if (wrap) {
           const r = wrap.getBoundingClientRect();
-          const pageCenterY = r.top + r.height / 2;
-          const diff = Math.abs(pageCenterY - vCenterY);
-          if (diff < minDiff) {
-            minDiff = diff;
+          const visibleTop = Math.max(70, r.top);
+          const visibleBottom = Math.min(vH - 70, r.bottom);
+          const visibleH = Math.max(0, visibleBottom - visibleTop);
+          if (visibleH > maxVisibleH) {
+            maxVisibleH = visibleH;
             bestIdx = i;
           }
         }
@@ -1856,10 +1915,56 @@
       return bestIdx;
     }
 
+    function findPageUnderCursor(clientX, clientY) {
+      for (let p = 0; p < state.pagesData.length; p++) {
+        if (state.pagesData[p].isDeleted) continue;
+        const wrap = $(`pageWrapper_${p}`);
+        if (wrap) {
+          const r = wrap.getBoundingClientRect();
+          if (clientX >= r.left && clientX <= r.right && clientY >= r.top && clientY <= r.bottom) {
+            return p;
+          }
+        }
+      }
+      return -1;
+    }
+
+    function moveObjectToPage(objId, fromPageIndex, toPageIndex) {
+      fromPageIndex = parseInt(fromPageIndex, 10);
+      toPageIndex = parseInt(toPageIndex, 10);
+      if (isNaN(fromPageIndex) || isNaN(toPageIndex) || fromPageIndex === toPageIndex) return;
+      if (!state.pagesData[fromPageIndex] || !state.pagesData[toPageIndex]) return;
+
+      const fromList = state.pagesData[fromPageIndex].objects || [];
+      const objIndex = fromList.findIndex(o => o.id === objId);
+      if (objIndex === -1) return;
+
+      const [obj] = fromList.splice(objIndex, 1);
+      const targetWrap = $(`pageWrapper_${toPageIndex}`);
+      if (targetWrap) {
+        obj.x = Math.max(10, Math.min(targetWrap.offsetWidth - obj.width - 10, obj.x));
+        obj.y = Math.max(10, Math.min(targetWrap.offsetHeight - obj.height - 10, obj.y));
+      }
+      state.pagesData[toPageIndex].objects = state.pagesData[toPageIndex].objects || [];
+      state.pagesData[toPageIndex].objects.push(obj);
+      state.activePageIndex = toPageIndex;
+
+      renderOverlayObjects($(`pageOverlay_${fromPageIndex}`), fromPageIndex);
+      renderOverlayObjects($(`pageOverlay_${toPageIndex}`), toPageIndex);
+      selectOverlayObject(obj.id);
+
+      if (targetWrap) {
+        targetWrap.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+      saveHistoryState(`Move to Page ${toPageIndex + 1}`);
+      showToast(`Moved to Page ${toPageIndex + 1}!`);
+    }
+
     function addOverlayObject(pageIndex, obj) {
-      if (pageIndex === undefined || pageIndex === null || pageIndex < 0) {
+      if (pageIndex === undefined || pageIndex === null || pageIndex < 0 || pageIndex >= state.pagesData.length) {
         pageIndex = getActiveVisiblePageIndex();
       }
+      state.activePageIndex = pageIndex;
       obj.id = 'obj_' + Date.now() + Math.random().toString(36).substr(2, 4);
       obj.rotation = obj.rotation || 0;
       state.pagesData[pageIndex].objects.push(obj);
@@ -1872,6 +1977,12 @@
       if (!overlay) return;
       overlay.innerHTML = '';
       const objs = state.pagesData[pageIndex].objects || [];
+
+      let pageOptionsHtml = '';
+      for (let p = 0; p < state.pagesData.length; p++) {
+        if (state.pagesData[p].isDeleted) continue;
+        pageOptionsHtml += `<option value="${p}" ${p === pageIndex ? 'selected' : ''}>Page ${p + 1}</option>`;
+      }
 
       objs.forEach(obj => {
         const el = document.createElement('div');
@@ -1888,6 +1999,12 @@
         const typeLabel = obj.type === 'sign' ? 'Sign' : (obj.type === 'image' ? 'Image' : (obj.type === 'whiteout' ? 'Whiteout' : 'Shape'));
         controls.innerHTML = `
           <span class="obj-badge">${typeLabel}</span>
+          <div class="obj-page-selector" title="Move to Page">
+            <i class="fa-solid fa-file-export"></i>
+            <select class="page-move-select" onchange="moveObjectToPage('${obj.id}', ${pageIndex}, this.value)">
+              ${pageOptionsHtml}
+            </select>
+          </div>
           <button type="button" onclick="scaleOverlayObject('${obj.id}', 1.10)" title="Bada Karein (+10%)"><i class="fa-solid fa-magnifying-glass-plus"></i> +10%</button>
           <button type="button" onclick="scaleOverlayObject('${obj.id}', 0.90)" title="Chhota Karein (-10%)"><i class="fa-solid fa-magnifying-glass-minus"></i> -10%</button>
           <button type="button" onclick="rotateOverlayObject('${obj.id}')" title="Rotate 90°"><i class="fa-solid fa-rotate-right"></i> 90°</button>
@@ -1947,6 +2064,7 @@
       let activeHandle = '';
       let startClientX = 0, startClientY = 0;
       let origX = 0, origY = 0, origW = 0, origH = 0;
+      let lastClientX = 0, lastClientY = 0;
 
       const getClientPos = e => {
         if (e.touches && e.touches.length > 0) {
@@ -1962,6 +2080,7 @@
           e.preventDefault();
         }
         
+        state.activePageIndex = pageIndex;
         deactivateActiveTextEditor();
         selectOverlayObject(obj.id);
 
@@ -1972,6 +2091,8 @@
         origH = obj.height;
         startClientX = pos.x;
         startClientY = pos.y;
+        lastClientX = pos.x;
+        lastClientY = pos.y;
 
         if (e.target.classList.contains('resize-handle')) {
           isResizing = true;
@@ -1983,18 +2104,27 @@
 
         const onMove = ev => {
           const curPos = getClientPos(ev);
+          lastClientX = curPos.x;
+          lastClientY = curPos.y;
           const dx = (curPos.x - startClientX) / state.zoom;
           const dy = (curPos.y - startClientY) / state.zoom;
 
           const wrap = $(`pageWrapper_${pageIndex}`);
-          const maxW = wrap ? wrap.offsetWidth : 1200;
-          const maxH = wrap ? wrap.offsetHeight : 1600;
 
           if (isDragging) {
-            obj.x = Math.max(0, Math.min(maxW - 20, Math.round(origX + dx)));
-            obj.y = Math.max(0, Math.min(maxH - 20, Math.round(origY + dy)));
+            // Allow fluid movement even outside page boundaries during drag
+            obj.x = Math.round(origX + dx);
+            obj.y = Math.round(origY + dy);
             el.style.left = `${obj.x}px`;
             el.style.top = `${obj.y}px`;
+
+            // Highlight target page if hovering over a different page
+            const hoveredPage = findPageUnderCursor(curPos.x, curPos.y);
+            document.querySelectorAll('.page-wrapper').forEach(w => w.classList.remove('drag-target-hover'));
+            if (hoveredPage !== -1 && hoveredPage !== pageIndex) {
+              const targetPageWrap = $(`pageWrapper_${hoveredPage}`);
+              if (targetPageWrap) targetPageWrap.classList.add('drag-target-hover');
+            }
           } else if (isResizing) {
             const ratio = origW / Math.max(1, origH);
 
@@ -2060,9 +2190,50 @@
         };
 
         const endAction = () => {
-          if (isDragging || isResizing) {
-            saveHistoryState('Transform ' + obj.type);
+          document.querySelectorAll('.page-wrapper').forEach(w => w.classList.remove('drag-target-hover'));
+          
+          if (isDragging) {
+            const dropPageIdx = findPageUnderCursor(lastClientX, lastClientY);
+            if (dropPageIdx !== -1 && dropPageIdx !== pageIndex) {
+              // CROSS-PAGE MOVE: Transfer object to target page
+              const targetWrap = $(`pageWrapper_${dropPageIdx}`);
+              if (targetWrap) {
+                const tRect = targetWrap.getBoundingClientRect();
+                const dropX = (lastClientX - tRect.left) / state.zoom;
+                const dropY = (lastClientY - tRect.top) / state.zoom;
+                
+                obj.x = Math.max(0, Math.min(targetWrap.offsetWidth - obj.width, Math.round(dropX - obj.width / 2)));
+                obj.y = Math.max(0, Math.min(targetWrap.offsetHeight - obj.height, Math.round(dropY - obj.height / 2)));
+                
+                const oldList = state.pagesData[pageIndex].objects;
+                const idx = oldList.findIndex(o => o.id === obj.id);
+                if (idx !== -1) oldList.splice(idx, 1);
+                
+                state.pagesData[dropPageIdx].objects = state.pagesData[dropPageIdx].objects || [];
+                state.pagesData[dropPageIdx].objects.push(obj);
+                state.activePageIndex = dropPageIdx;
+
+                renderOverlayObjects($(`pageOverlay_${pageIndex}`), pageIndex);
+                renderOverlayObjects($(`pageOverlay_${dropPageIdx}`), dropPageIdx);
+                selectOverlayObject(obj.id);
+                saveHistoryState(`Moved ${obj.type} to Page ${dropPageIdx + 1}`);
+                showToast(`Moved to Page ${dropPageIdx + 1}!`);
+              }
+            } else {
+              // Same Page drop: clamp to page bounds
+              const wrap = $(`pageWrapper_${pageIndex}`);
+              const maxW = wrap ? wrap.offsetWidth : 1200;
+              const maxH = wrap ? wrap.offsetHeight : 1600;
+              obj.x = Math.max(0, Math.min(maxW - obj.width, obj.x));
+              obj.y = Math.max(0, Math.min(maxH - obj.height, obj.y));
+              el.style.left = `${obj.x}px`;
+              el.style.top = `${obj.y}px`;
+              saveHistoryState('Move ' + obj.type);
+            }
+          } else if (isResizing) {
+            saveHistoryState('Resize ' + obj.type);
           }
+
           isDragging = false;
           isResizing = false;
           el.classList.remove('dragging');
@@ -2286,6 +2457,7 @@
       closeSignatureModal();
 
       const activePage = getActiveVisiblePageIndex();
+      state.activePageIndex = activePage;
       const wrap = $(`pageWrapper_${activePage}`);
       const pw = wrap ? wrap.offsetWidth : 600;
       const ph = wrap ? wrap.offsetHeight : 800;
@@ -2294,7 +2466,8 @@
       const y = Math.max(40, Math.round((ph - h) / 3));
 
       addOverlayObject(activePage, { type: 'sign', imgSrc: dataUrl, x, y, width: w, height: h, rotation: 0 });
-      showToast('Signature placed! Click & drag to move, use handles or +/- to resize.');
+      if (wrap) wrap.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      showToast(`Signature placed on Page ${activePage + 1}! Drag across pages or use handles to resize.`);
     }
 
     function triggerImageUpload() { $('imageToolInput').click(); }
@@ -2306,6 +2479,7 @@
         const img = new Image();
         img.onload = () => {
           const activePage = getActiveVisiblePageIndex();
+          state.activePageIndex = activePage;
           const wrap = $(`pageWrapper_${activePage}`);
           const pw = wrap ? wrap.offsetWidth : 600;
           const ph = wrap ? wrap.offsetHeight : 800;
@@ -2321,7 +2495,8 @@
           const y = Math.max(40, Math.round((ph - h) / 3));
 
           addOverlayObject(activePage, { type: 'image', imgSrc: reader.result, x, y, width: w, height: h, rotation: 0 });
-          showToast('Image added! Click & drag to move, use handles or +/- to resize.');
+          if (wrap) wrap.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+          showToast(`Image placed on Page ${activePage + 1}! Drag across pages or use handles to resize.`);
         };
         img.src = reader.result;
       };
