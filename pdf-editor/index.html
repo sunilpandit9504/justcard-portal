@@ -220,6 +220,37 @@
     .page-action-btn.danger { color: #dc2626; border-color: #fecaca; }
     .page-action-btn.danger:hover { background: #fee2e2; }
 
+    /* BOTTOM ADD A4 PAGE BUTTON BANNER */
+    .bottom-add-page-wrapper {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin: 24px 0 60px;
+      width: 100%;
+    }
+    .btn-add-page-bottom {
+      background: #ffffff;
+      color: #7c3aed;
+      border: 2px dashed #a855f7;
+      padding: 13px 26px;
+      border-radius: 12px;
+      font-size: 14px;
+      font-weight: 800;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      box-shadow: 0 4px 16px rgba(124, 58, 237, 0.08);
+      transition: all 0.2s;
+    }
+    .btn-add-page-bottom:hover {
+      background: #faf5ff;
+      border-color: #7c3aed;
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(124, 58, 237, 0.18);
+      color: #6d28d9;
+    }
+
     /* MAIN WORKSPACE AREA */
     .editor-container {
       display: flex;
@@ -861,6 +892,9 @@
       <button type="button" class="tool-btn" id="toolShapeBtn" onclick="activateTool('shape')">
         <i class="fa-solid fa-shapes"></i> <span>Shapes</span> <i class="fa-solid fa-caret-down caret"></i>
       </button>
+      <button type="button" class="tool-btn" onclick="addBlankA4PageAtBottom()" title="Add Blank A4 Page at Bottom">
+        <i class="fa-solid fa-file-circle-plus" style="color:#059669;"></i> <span>+ A4 Page</span>
+      </button>
     </div>
 
     <div class="tool-btn-group">
@@ -1285,32 +1319,44 @@
       container.innerHTML = '';
       thumbsContainer.innerHTML = '';
 
-      const pdf = state.pdfDoc;
-      if (!pdf) return;
+      if (!state.pagesData || state.pagesData.length === 0) return;
 
       for (let idx = 0; idx < state.pagesData.length; idx++) {
         const pageMeta = state.pagesData[idx];
         if (pageMeta.isDeleted) continue;
 
-        const pNum = pageMeta.pageNum;
-        const page = await pdf.getPage(pNum);
-        
-        const effectiveRotation = (page.rotate + pageMeta.rotation) % 360;
-        const baseViewport = page.getViewport({ scale: 1.33 * state.zoom, rotation: effectiveRotation });
+        let baseViewport = null;
+        let effectiveRotation = (pageMeta.rotation || 0) % 360;
 
-        // Page Controls
+        if (!pageMeta.isNewBlankPage && state.pdfDoc && pageMeta.pageNum >= 1) {
+          const page = await state.pdfDoc.getPage(pageMeta.pageNum);
+          effectiveRotation = (page.rotate + pageMeta.rotation) % 360;
+          baseViewport = page.getViewport({ scale: 1.33 * state.zoom, rotation: effectiveRotation });
+        } else {
+          // Standard A4 Dimensions in points: 595.28 x 841.89
+          const a4W = (pageMeta.originalWidth || 595.28) * 1.33 * state.zoom;
+          const a4H = (pageMeta.originalHeight || 841.89) * 1.33 * state.zoom;
+          baseViewport = {
+            width: effectiveRotation % 180 === 0 ? a4W : a4H,
+            height: effectiveRotation % 180 === 0 ? a4H : a4W,
+            scale: 1.33 * state.zoom,
+            transform: [1, 0, 0, 1, 0, 0]
+          };
+        }
+
+        // Page Controls Bar
         const controlBar = document.createElement('div');
         controlBar.className = 'page-action-bar';
         controlBar.innerHTML = `
-          <span class="page-num-tag">${idx + 1}</span>
+          <span class="page-num-tag">Page ${idx + 1}</span>
           <button type="button" class="page-action-btn danger" onclick="deletePage(${idx})" title="Delete page"><i class="fa-solid fa-trash-can"></i></button>
           <button type="button" class="page-action-btn" onclick="rotatePage(${idx}, -90)" title="Rotate Left"><i class="fa-solid fa-rotate-left"></i></button>
           <button type="button" class="page-action-btn" onclick="rotatePage(${idx}, 90)" title="Rotate Right"><i class="fa-solid fa-rotate-right"></i></button>
-          <button type="button" class="page-action-btn green" onclick="insertBlankPage(${idx})" title="Insert Blank Page Below"><i class="fa-solid fa-plus"></i> Insert page here</button>
+          <button type="button" class="page-action-btn green" onclick="insertBlankPage(${idx})" title="Insert Blank Page Below"><i class="fa-solid fa-plus"></i> + Insert A4 Page Below</button>
         `;
         container.appendChild(controlBar);
 
-        // Page Box
+        // Page Box Wrapper
         const pageWrap = document.createElement('div');
         pageWrap.className = 'page-wrapper';
         pageWrap.id = `pageWrapper_${idx}`;
@@ -1326,18 +1372,29 @@
         canvas.style.height = `${baseViewport.height}px`;
         const ctx = canvas.getContext('2d');
         ctx.scale(1.5, 1.5);
-        await page.render({ canvasContext: ctx, viewport: baseViewport }).promise;
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0, 0, baseViewport.width, baseViewport.height);
+
+        if (!pageMeta.isNewBlankPage && state.pdfDoc && pageMeta.pageNum >= 1) {
+          const page = await state.pdfDoc.getPage(pageMeta.pageNum);
+          await page.render({ canvasContext: ctx, viewport: baseViewport }).promise;
+        }
         pageWrap.appendChild(canvas);
 
-        // 2. Extracted Text Layer
+        // 2. Extracted / User Text Layer
         const textLayer = document.createElement('div');
         textLayer.className = 'pdf-text-layer';
         textLayer.id = `textLayer_${idx}`;
         textLayer.dataset.pageIndex = idx;
         
         if (!pageMeta.textNodes || pageMeta.textNodes.length === 0) {
-          const textContent = await page.getTextContent();
-          pageMeta.textNodes = extractAndMergeTextLines(textContent.items, baseViewport, page);
+          if (!pageMeta.isNewBlankPage && state.pdfDoc && pageMeta.pageNum >= 1) {
+            const page = await state.pdfDoc.getPage(pageMeta.pageNum);
+            const textContent = await page.getTextContent();
+            pageMeta.textNodes = extractAndMergeTextLines(textContent.items, baseViewport, page);
+          } else {
+            pageMeta.textNodes = [];
+          }
         }
 
         renderTextLayerNodes(textLayer, idx);
@@ -1354,7 +1411,7 @@
 
         container.appendChild(pageWrap);
 
-        // Thumbnail
+        // Thumbnail Item in Left Sidebar
         const thumbBox = document.createElement('div');
         thumbBox.className = `thumb-item ${idx === 0 ? 'active' : ''}`;
         thumbBox.onclick = () => {
@@ -1363,14 +1420,44 @@
           pageWrap.scrollIntoView({ behavior: 'smooth', block: 'center' });
         };
         const thumbCanvas = document.createElement('canvas');
-        const thumbViewport = page.getViewport({ scale: 0.22, rotation: effectiveRotation });
-        thumbCanvas.width = thumbViewport.width;
-        thumbCanvas.height = thumbViewport.height;
-        await page.render({ canvasContext: thumbCanvas.getContext('2d'), viewport: thumbViewport }).promise;
+        const thumbScale = 0.22;
+        const tw = Math.round(baseViewport.width * (thumbScale / (1.33 * state.zoom)));
+        const th = Math.round(baseViewport.height * (thumbScale / (1.33 * state.zoom)));
+        thumbCanvas.width = tw;
+        thumbCanvas.height = th;
+        const tCtx = thumbCanvas.getContext('2d');
+        tCtx.fillStyle = '#ffffff';
+        tCtx.fillRect(0, 0, tw, th);
+
+        if (!pageMeta.isNewBlankPage && state.pdfDoc && pageMeta.pageNum >= 1) {
+          const page = await state.pdfDoc.getPage(pageMeta.pageNum);
+          const thumbViewport = page.getViewport({ scale: thumbScale, rotation: effectiveRotation });
+          await page.render({ canvasContext: tCtx, viewport: thumbViewport }).promise;
+        } else {
+          tCtx.strokeStyle = '#cbd5e1';
+          tCtx.lineWidth = 1;
+          tCtx.strokeRect(2, 2, tw - 4, th - 4);
+          tCtx.fillStyle = '#94a3b8';
+          tCtx.font = 'bold 9px sans-serif';
+          tCtx.textAlign = 'center';
+          tCtx.fillText('Blank A4', tw / 2, th / 2);
+        }
+
         thumbBox.appendChild(thumbCanvas);
         thumbBox.innerHTML += `<div class="thumb-label">Page ${idx + 1}</div>`;
         thumbsContainer.appendChild(thumbBox);
       }
+
+      // Bottom prominent "+ Add Blank A4 Page" action banner
+      const bottomAddWrap = document.createElement('div');
+      bottomAddWrap.className = 'bottom-add-page-wrapper';
+      bottomAddWrap.innerHTML = `
+        <button type="button" class="btn-add-page-bottom" onclick="addBlankA4PageAtBottom()">
+          <i class="fa-solid fa-file-circle-plus" style="font-size:18px;color:#7c3aed;"></i>
+          <span>+ Add Blank A4 Page at Bottom (नीचे नया A4 पेज जोड़ें)</span>
+        </button>
+      `;
+      container.appendChild(bottomAddWrap);
 
       $('pageCountInfo').innerText = `${state.pagesData.filter(p => !p.isDeleted).length} Pages`;
     }
@@ -2271,7 +2358,8 @@
 
     function insertBlankPage(afterIndex) {
       state.pagesData.splice(afterIndex + 1, 0, {
-        pageNum: 1,
+        isNewBlankPage: true,
+        pageNum: -1,
         rotation: 0,
         originalWidth: 595.28,
         originalHeight: 841.89,
@@ -2282,8 +2370,35 @@
         objects: [],
         isDeleted: false
       });
-      renderAllPages();
-      saveHistoryState('Insert Page');
+      renderAllPages().then(() => {
+        const wrap = $(`pageWrapper_${afterIndex + 1}`);
+        if (wrap) wrap.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      });
+      saveHistoryState('Insert A4 Page Below');
+      showToast('Blank A4 Page inserted!');
+    }
+
+    function addBlankA4PageAtBottom() {
+      state.pagesData.push({
+        isNewBlankPage: true,
+        pageNum: -1,
+        rotation: 0,
+        originalWidth: 595.28,
+        originalHeight: 841.89,
+        width: 595.28,
+        height: 841.89,
+        scale: 1.0,
+        textNodes: [],
+        objects: [],
+        isDeleted: false
+      });
+      renderAllPages().then(() => {
+        const lastIdx = state.pagesData.length - 1;
+        const wrap = $(`pageWrapper_${lastIdx}`);
+        if (wrap) wrap.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      });
+      saveHistoryState('Add Blank A4 Page at Bottom');
+      showToast('New Blank A4 Page added at bottom!');
     }
 
     function saveHistoryState(name) {
