@@ -8,7 +8,7 @@
   const STORAGE_KEY = 'justcard_user_session';
   const API_BASE = (window.location.protocol === 'file:' || !window.location.origin || window.location.origin === 'null') ? 'http://localhost:3000' : '';
   let currentUser = null;
-  let currentPricing = { singlePrint: 5, a4Document: 2, photoMaker: 3, resumeMaker: 5 };
+  let currentPricing = { singlePrint: 5, a4Document: 2, photoMaker: 3, resumeMaker: 5, pdfEditor: 3 };
   let currentPackages = {
     silver: { key: 'silver', name: 'Silver Plan', durationText: '1 Month', months: 1, price: 299 },
     gold: { key: 'gold', name: 'Gold Plan', durationText: '3 Months', months: 3, price: 699 },

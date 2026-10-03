@@ -481,6 +481,15 @@
                 </div>
                 <small style="color:#64748b;font-size:11px;margin-top:4px;display:block;">Per Resume PDF download</small>
               </div>
+
+              <div class="price-box">
+                <label><i class="fa-solid fa-file-pdf" style="color:#ef4444;"></i> Online PDF Editor</label>
+                <div class="price-input-wrap">
+                  <span class="currency">₹</span>
+                  <input type="number" id="pricePdfEditor" step="0.5" min="0" required>
+                </div>
+                <small style="color:#64748b;font-size:11px;margin-top:4px;display:block;">Per PDF edit / download</small>
+              </div>
             </div>
           </form>
         </div>
@@ -907,6 +916,7 @@
           document.getElementById('priceA4Document').value = data.pricing.a4Document;
           document.getElementById('pricePhotoMaker').value = data.pricing.photoMaker;
           document.getElementById('priceResumeMaker').value = data.pricing.resumeMaker;
+          document.getElementById('pricePdfEditor').value = data.pricing.pdfEditor || 3;
         }
 
         // Package Pricing
@@ -1164,13 +1174,14 @@
       const a4Document = parseFloat(document.getElementById('priceA4Document').value) || 0;
       const photoMaker = parseFloat(document.getElementById('pricePhotoMaker').value) || 0;
       const resumeMaker = parseFloat(document.getElementById('priceResumeMaker').value) || 0;
+      const pdfEditor = parseFloat(document.getElementById('pricePdfEditor').value) || 0;
 
       try {
         const res = await fetch(`${API_BASE}/api/admin/pricing`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            pricing: { singlePrint, a4Document, photoMaker, resumeMaker }
+            pricing: { singlePrint, a4Document, photoMaker, resumeMaker, pdfEditor }
           })
         });
         const data = await res.json();

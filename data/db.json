@@ -9,7 +9,8 @@
     "singlePrint": 5,
     "a4Document": 2,
     "photoMaker": 3,
-    "resumeMaker": 5
+    "resumeMaker": 5,
+    "pdfEditor": 3
   },
   "packages": {
     "silver": {

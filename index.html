@@ -665,6 +665,7 @@
       <a href="a4-document/index.html" class="nav-link"><i class="fa-solid fa-file-lines"></i> A4 Studio</a>
       <a href="photo-maker/index.html" class="nav-link"><i class="fa-solid fa-camera"></i> Photo Studio</a>
       <a href="resume-builder/index.html" class="nav-link"><i class="fa-solid fa-graduation-cap"></i> Resume Maker</a>
+      <a href="pdf-editor/index.html" class="nav-link"><i class="fa-solid fa-file-pdf"></i> PDF Editor</a>
     </nav>
 
     <div class="header-right">
@@ -797,6 +798,25 @@
         </div>
         <a href="resume-builder/index.html" class="btn-launch">
           <i class="fa-solid fa-arrow-up-right-from-square"></i> Open Resume Studio
+        </a>
+      </div>
+
+      <!-- SERVICE 5 -->
+      <div class="service-card">
+        <div class="card-top">
+          <span class="service-rate-badge rate-pdf-badge">₹3.00 / PDF</span>
+          <div class="service-icon pdf" style="background:#fef2f2;color:#ef4444;border:1px solid #fee2e2;"><i class="fa-solid fa-file-pen"></i></div>
+          <div class="service-title">Online PDF Editor Studio</div>
+          <p class="service-desc">Sejda-style full PDF editing: Text, Forms, Signatures, Whiteout, Stamps, Annotations &amp; Page management.</p>
+          <ul class="service-points">
+            <li><i class="fa-solid fa-check"></i> Edit &amp; Add Live Text, Fonts &amp; Colors</li>
+            <li><i class="fa-solid fa-check"></i> Digital Signatures &amp; Government Seals</li>
+            <li><i class="fa-solid fa-check"></i> Whiteout / Redact &amp; Erase Details</li>
+            <li><i class="fa-solid fa-check"></i> Delete, Rotate, Merge &amp; Insert Pages</li>
+          </ul>
+        </div>
+        <a href="pdf-editor/index.html" class="btn-launch">
+          <i class="fa-solid fa-arrow-up-right-from-square"></i> Open PDF Editor
         </a>
       </div>
 
@@ -1083,6 +1103,25 @@
           </a>
         </div>
 
+        <!-- SERVICE 5 -->
+        <div class="service-card">
+          <div class="card-top">
+            <span class="service-rate-badge rate-pdf-badge">₹3.00 / PDF</span>
+            <div class="service-icon pdf" style="background:#fef2f2;color:#ef4444;border:1px solid #fee2e2;"><i class="fa-solid fa-file-pen"></i></div>
+            <div class="service-title">Online PDF Editor Studio</div>
+            <p class="service-desc">Sejda-style full PDF editing: Text, Forms, Signatures, Whiteout, Stamps, Annotations &amp; Page management.</p>
+            <ul class="service-points">
+              <li><i class="fa-solid fa-check"></i> Edit &amp; Add Live Text, Fonts &amp; Colors</li>
+              <li><i class="fa-solid fa-check"></i> Digital Signatures &amp; Government Seals</li>
+              <li><i class="fa-solid fa-check"></i> Whiteout / Redact &amp; Erase Details</li>
+              <li><i class="fa-solid fa-check"></i> Delete, Rotate, Merge &amp; Insert Pages</li>
+            </ul>
+          </div>
+          <a href="pdf-editor/index.html" class="btn-launch">
+            <i class="fa-solid fa-arrow-right"></i> Open PDF Editor
+          </a>
+        </div>
+
       </div>
     </section>
 
@@ -1221,6 +1260,11 @@
             <div class="s-price" id="rateResumeMaker">₹5.00</div>
             <small style="color:#64748b;font-size:10.5px;">Per Resume PDF</small>
           </div>
+          <div class="rate-box">
+            <div class="s-name">📑 PDF Editor</div>
+            <div class="s-price" id="ratePdfEditor">₹3.00</div>
+            <small style="color:#64748b;font-size:10.5px;">Per PDF Edit / Print</small>
+          </div>
         </div>
 
         <button type="button" class="btn-hero primary" onclick="JustcardWallet.openAuth('register')" style="font-size:13.5px;padding:10px 22px;">
@@ -1243,6 +1287,7 @@
         <a href="a4-document/index.html" style="color:#7c3aed;font-weight:750;text-decoration:none;">A4 Studio</a>
         <a href="photo-maker/index.html" style="color:#7c3aed;font-weight:750;text-decoration:none;">Photo Studio</a>
         <a href="resume-builder/index.html" style="color:#7c3aed;font-weight:750;text-decoration:none;">Resume Maker</a>
+        <a href="pdf-editor/index.html" style="color:#7c3aed;font-weight:750;text-decoration:none;">PDF Editor</a>
       </div>
     </div>
   </footer>
@@ -1262,16 +1307,19 @@
             const doc = '₹' + Number(data.pricing.a4Document || 2).toFixed(2);
             const photo = '₹' + Number(data.pricing.photoMaker || 3).toFixed(2);
             const resume = '₹' + Number(data.pricing.resumeMaker || 5).toFixed(2);
+            const pdfEditor = '₹' + Number(data.pricing.pdfEditor || 3).toFixed(2);
 
             if (document.getElementById('rateSinglePrint')) document.getElementById('rateSinglePrint').innerText = pvc;
             if (document.getElementById('rateA4Document')) document.getElementById('rateA4Document').innerText = doc;
             if (document.getElementById('ratePhotoMaker')) document.getElementById('ratePhotoMaker').innerText = photo;
             if (document.getElementById('rateResumeMaker')) document.getElementById('rateResumeMaker').innerText = resume;
+            if (document.getElementById('ratePdfEditor')) document.getElementById('ratePdfEditor').innerText = pdfEditor;
 
             document.querySelectorAll('.rate-pvc-badge').forEach(el => el.innerText = `${pvc} / print`);
             document.querySelectorAll('.rate-a4-badge').forEach(el => el.innerText = `${doc} / print`);
             document.querySelectorAll('.rate-photo-badge').forEach(el => el.innerText = `${photo} / sheet`);
             document.querySelectorAll('.rate-resume-badge').forEach(el => el.innerText = `${resume} / PDF`);
+            document.querySelectorAll('.rate-pdf-badge').forEach(el => el.innerText = `${pdfEditor} / PDF`);
           }
 
           if (data.packages) {

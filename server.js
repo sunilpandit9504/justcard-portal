@@ -103,7 +103,7 @@ if (!fs.existsSync(DB_FILE)) {
       upiId: 'Q021541804@ybl',
       upiName: 'Justcomes'
     },
-    pricing: { singlePrint: 5, a4Document: 2, photoMaker: 3, resumeMaker: 5 },
+    pricing: { singlePrint: 5, a4Document: 2, photoMaker: 3, resumeMaker: 5, pdfEditor: 3 },
     packages: DEFAULT_PACKAGES,
     users: [
       {
@@ -187,7 +187,7 @@ function readDb() {
 
   return {
     adminConfig: { adminPin: '1234', ...DEFAULT_UPI_CONFIG },
-    pricing: { singlePrint: 5, a4Document: 2, photoMaker: 3, resumeMaker: 5 },
+    pricing: { singlePrint: 5, a4Document: 2, photoMaker: 3, resumeMaker: 5, pdfEditor: 3 },
     packages: DEFAULT_PACKAGES,
     users: [
       {
@@ -414,7 +414,7 @@ const server = http.createServer(async (req, res) => {
     const db = readDb();
     return sendJson(res, 200, {
       success: true,
-      pricing: db.pricing || { singlePrint: 5, a4Document: 2, photoMaker: 3, resumeMaker: 5 },
+      pricing: db.pricing || { singlePrint: 5, a4Document: 2, photoMaker: 3, resumeMaker: 5, pdfEditor: 3 },
       packages: db.packages || DEFAULT_PACKAGES,
       upiConfig: {
         upiId: (db.adminConfig && db.adminConfig.upiId) || DEFAULT_UPI_CONFIG.upiId,
@@ -768,7 +768,8 @@ const server = http.createServer(async (req, res) => {
         singlePrint: 'Single Print PVC',
         a4Document: 'A4 Document Studio',
         photoMaker: 'Photo Maker Studio',
-        resumeMaker: 'Resume Maker'
+        resumeMaker: 'Resume Maker',
+        pdfEditor: 'Online PDF Editor Studio'
       };
 
       const pkgStatus = getUserPackageStatus(user);
@@ -807,7 +808,7 @@ const server = http.createServer(async (req, res) => {
       }
 
       // NORMAL PAY-PER-PRINT DEDUCTION
-      const pricing = db.pricing || { singlePrint: 5, a4Document: 2, photoMaker: 3, resumeMaker: 5 };
+      const pricing = db.pricing || { singlePrint: 5, a4Document: 2, photoMaker: 3, resumeMaker: 5, pdfEditor: 3 };
       const chargeAmount = Number(pricing[serviceKey] !== undefined ? pricing[serviceKey] : (body.customAmount || 0));
       const currentBalance = Number(user.balance || 0);
 
@@ -1064,7 +1065,8 @@ const server = http.createServer(async (req, res) => {
         singlePrint: Number(pricing.singlePrint !== undefined ? pricing.singlePrint : db.pricing.singlePrint || 5),
         a4Document: Number(pricing.a4Document !== undefined ? pricing.a4Document : db.pricing.a4Document || 2),
         photoMaker: Number(pricing.photoMaker !== undefined ? pricing.photoMaker : db.pricing.photoMaker || 3),
-        resumeMaker: Number(pricing.resumeMaker !== undefined ? pricing.resumeMaker : db.pricing.resumeMaker || 5)
+        resumeMaker: Number(pricing.resumeMaker !== undefined ? pricing.resumeMaker : db.pricing.resumeMaker || 5),
+        pdfEditor: Number(pricing.pdfEditor !== undefined ? pricing.pdfEditor : db.pricing.pdfEditor || 3)
       };
 
       writeDb(db);

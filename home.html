@@ -552,6 +552,23 @@
         </div>
         <a href="resume-builder/index.html" class="btn-launch">Launch Resume Maker <i class="fa-solid fa-arrow-right"></i></a>
       </div>
+
+      <!-- Service 5: Online PDF Editor Studio -->
+      <div class="service-card">
+        <div class="card-top">
+          <div class="service-icon pdf" style="background:#fef2f2;color:#ef4444;border:1px solid #fee2e2;"><i class="fa-solid fa-file-pen"></i></div>
+          <div class="service-title">5. Online PDF Editor Pro</div>
+          <div class="service-desc">
+            Sejda-style full online PDF editor: Text, Forms, Signatures, Whiteout eraser, Stamps &amp; Page management.
+          </div>
+          <ul class="service-points">
+            <li><i class="fa-solid fa-check"></i> Add &amp; Edit Text, Custom Fonts &amp; Colors</li>
+            <li><i class="fa-solid fa-check"></i> Digital Signatures &amp; Stamps Overlay</li>
+            <li><i class="fa-solid fa-check"></i> Whiteout / Redact Sensitive Details</li>
+          </ul>
+        </div>
+        <a href="pdf-editor/index.html" class="btn-launch">Launch PDF Editor <i class="fa-solid fa-arrow-right"></i></a>
+      </div>
     </div>
   </section>
 
@@ -642,6 +659,11 @@
           <div class="s-price" id="rateResumeMaker">₹5.00</div>
           <small style="color:#64748b;font-size:10.5px;">Per Resume PDF</small>
         </div>
+        <div class="rate-box">
+          <div class="s-name">📑 PDF Editor</div>
+          <div class="s-price" id="ratePdfEditor">₹3.00</div>
+          <small style="color:#64748b;font-size:10.5px;">Per PDF Edit / Print</small>
+        </div>
       </div>
 
       <button type="button" class="btn-hero primary" onclick="JustcardWallet.openAuth('register')" style="font-size:13.5px;padding:10px 22px;">
@@ -688,6 +710,7 @@
         <a href="a4-document/index.html" style="color:#7c3aed;font-weight:750;text-decoration:none;">A4 Studio</a>
         <a href="photo-maker/index.html" style="color:#7c3aed;font-weight:750;text-decoration:none;">Photo Studio</a>
         <a href="resume-builder/index.html" style="color:#7c3aed;font-weight:750;text-decoration:none;">Resume Maker</a>
+        <a href="pdf-editor/index.html" style="color:#7c3aed;font-weight:750;text-decoration:none;">PDF Editor</a>
       </div>
     </div>
   </footer>
@@ -702,6 +725,7 @@
           document.getElementById('rateA4Document').innerText = '₹' + Number(data.pricing.a4Document || 2).toFixed(2);
           document.getElementById('ratePhotoMaker').innerText = '₹' + Number(data.pricing.photoMaker || 3).toFixed(2);
           document.getElementById('rateResumeMaker').innerText = '₹' + Number(data.pricing.resumeMaker || 5).toFixed(2);
+          if (document.getElementById('ratePdfEditor')) document.getElementById('ratePdfEditor').innerText = '₹' + Number(data.pricing.pdfEditor || 3).toFixed(2);
         }
       } catch (e) {
         console.warn('Could not load dynamic pricing:', e);
