@@ -8,7 +8,7 @@
   <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&family=Dancing+Script:wght@700&family=Great+Vibes&family=Marck+Script&family=Outfit:wght@400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Roboto+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&family=Dancing+Script:wght@700&family=Great+Vibes&family=Marck+Script&family=Outfit:wght@400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Roboto+Mono:wght@400;500;700&family=Noto+Sans+Devanagari:wght@400;600;700&display=swap" rel="stylesheet">
   
   <!-- FontAwesome -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -36,6 +36,7 @@
       --border-focus: #7c3aed;
       --text: #1f2937;
       --text-muted: #6b7280;
+      --sejda-blue: #2563eb;
       --sejda-green: #059669;
       --sejda-green-hover: #047857;
       --sejda-green-glow: rgba(5, 150, 105, 0.3);
@@ -183,46 +184,7 @@
     .tool-btn i { font-size: 13px; }
     .tool-btn .caret { font-size: 9px; margin-left: 2px; opacity: 0.7; }
 
-    /* SUB TOOLBAR / FORMATTING BAR (APPEARS WHEN ACTIVE) */
-    .format-subbar {
-      background: #f8fafc;
-      border-bottom: 1px solid #e2e8f0;
-      padding: 6px 16px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 12px;
-      font-size: 12px;
-      flex-wrap: wrap;
-      min-height: 38px;
-    }
-    .format-group {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-    .format-select, .format-input {
-      padding: 3px 8px;
-      border: 1px solid #cbd5e1;
-      border-radius: 5px;
-      font-size: 12px;
-      outline: none;
-      background: #fff;
-      font-family: inherit;
-    }
-    .color-swatch-btn {
-      width: 22px;
-      height: 22px;
-      border-radius: 50%;
-      border: 2px solid #ffffff;
-      box-shadow: 0 0 0 1px #cbd5e1;
-      cursor: pointer;
-      padding: 0;
-      display: inline-block;
-    }
-    .color-swatch-btn.active { box-shadow: 0 0 0 2px var(--primary); }
-
-    /* PAGE CONTROLS BAR (ABOVE EACH PAGE / FLOATING) */
+    /* PAGE CONTROLS BAR */
     .page-action-bar {
       display: flex;
       align-items: center;
@@ -318,7 +280,7 @@
       background: #e5e7eb;
       background-image: radial-gradient(#d1d5db 1px, transparent 1px);
       background-size: 20px 20px;
-      padding: 24px 20px 100px;
+      padding: 24px 20px 120px;
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -341,19 +303,124 @@
       pointer-events: none;
     }
 
-    /* OVERLAY INTERACTION LAYER */
+    /* EXISTING PDF TEXT LAYER (IN-PLACE LETTER EDITING) */
+    .pdf-text-layer {
+      position: absolute;
+      inset: 0;
+      overflow: hidden;
+      pointer-events: auto;
+    }
+
+    .pdf-text-node {
+      position: absolute;
+      box-sizing: border-box;
+      cursor: text;
+      user-select: text;
+      white-space: pre;
+      line-height: 1.15;
+      padding: 0 1px;
+      border: 1px solid transparent;
+      border-radius: 2px;
+      color: transparent; /* transparent over background text until hovered or edited */
+      transition: background 0.1s, border-color 0.1s;
+      z-index: 10;
+    }
+
+    /* Sejda-style hover box on existing text */
+    .tool-text .pdf-text-node:hover,
+    .pdf-text-node.hovered {
+      border: 1px dashed #3b82f6 !important;
+      background: rgba(59, 130, 246, 0.12) !important;
+      color: transparent !important;
+    }
+
+    /* Active in-place editing state (replaces background text with whiteout mask + crisp editable text) */
+    .pdf-text-node.editing,
+    .pdf-text-node.has-edits {
+      background: #ffffff !important;
+      color: #0f172a !important;
+      border: 1.5px solid #2563eb !important;
+      box-shadow: 0 2px 8px rgba(37, 99, 235, 0.18);
+      outline: none;
+      z-index: 25;
+    }
+    .pdf-text-node.has-edits:not(.editing) {
+      border: 1px solid #93c5fd !important;
+      box-shadow: none;
+    }
+
+    /* SEJDA FLOATING INLINE FORMATTING TOOLBAR */
+    .sejda-floating-toolbar {
+      position: absolute;
+      background: #ffffff;
+      border: 1px solid #93c5fd;
+      border-radius: 6px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+      display: none;
+      align-items: center;
+      padding: 3px 6px;
+      gap: 3px;
+      z-index: 9999;
+      user-select: none;
+      white-space: nowrap;
+      animation: fadeIn 0.15s ease;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(4px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .sejda-tb-btn {
+      background: #ffffff;
+      border: 1px solid transparent;
+      border-radius: 4px;
+      padding: 3px 6px;
+      font-size: 12px;
+      font-weight: 700;
+      color: #2563eb;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 24px;
+      height: 24px;
+      transition: all 0.15s;
+    }
+    .sejda-tb-btn:hover {
+      background: #eff6ff;
+      border-color: #bfdbfe;
+      color: #1d4ed8;
+    }
+    .sejda-tb-btn.active {
+      background: #2563eb;
+      color: #ffffff;
+    }
+    .sejda-tb-btn.del:hover {
+      background: #fee2e2;
+      color: #dc2626;
+      border-color: #fca5a5;
+    }
+    .sejda-tb-divider {
+      width: 1px;
+      height: 16px;
+      background: #e2e8f0;
+      margin: 0 2px;
+    }
+
+    /* OVERLAY INTERACTION LAYER FOR SHAPES, IMAGES, SIGNS, WHITEOUT */
     .page-overlay-layer {
       position: absolute;
       inset: 0;
       overflow: hidden;
       cursor: default;
+      pointer-events: none;
+      z-index: 20;
     }
-    .page-overlay-layer.tool-text { cursor: text; }
+    .page-overlay-layer.active-tool {
+      pointer-events: auto;
+    }
     .page-overlay-layer.tool-whiteout { cursor: crosshair; }
     .page-overlay-layer.tool-draw { cursor: crosshair; }
-    .page-overlay-layer.tool-highlight { cursor: crosshair; }
     .page-overlay-layer.tool-shape { cursor: crosshair; }
-    .page-overlay-layer.tool-link { cursor: pointer; }
 
     /* EDITABLE OBJECTS ON PDF */
     .pdf-object {
@@ -361,6 +428,8 @@
       user-select: none;
       box-sizing: border-box;
       touch-action: none;
+      pointer-events: auto;
+      z-index: 30;
     }
     .pdf-object.selected {
       outline: 1.5px dashed #2563eb;
@@ -381,9 +450,7 @@
       white-space: nowrap;
       box-shadow: 0 2px 8px rgba(0,0,0,0.25);
     }
-    .pdf-object.selected .obj-controls {
-      display: flex;
-    }
+    .pdf-object.selected .obj-controls { display: flex; }
     .obj-controls button {
       background: transparent;
       border: none;
@@ -413,23 +480,6 @@
     .handle-se { bottom: -4px; right: -4px; cursor: nwse-resize; }
     .handle-sw { bottom: -4px; left: -4px; cursor: nesw-resize; }
 
-    /* TEXT ELEMENT */
-    .pdf-text-elem {
-      font-family: 'Plus Jakarta Sans', Arial, sans-serif;
-      min-width: 40px;
-      min-height: 20px;
-      outline: none;
-      white-space: pre-wrap;
-      word-break: break-word;
-      line-height: 1.25;
-      padding: 2px 4px;
-      cursor: move;
-    }
-    .pdf-text-elem[contenteditable="true"] {
-      cursor: text;
-      user-select: text;
-    }
-
     /* WHITEOUT ELEMENT */
     .pdf-whiteout-elem {
       background: #ffffff;
@@ -437,23 +487,11 @@
       cursor: move;
     }
 
-    /* IMAGE ELEMENT */
-    .pdf-image-elem {
+    /* IMAGE / SIGN ELEMENT */
+    .pdf-image-elem, .pdf-sign-elem {
       cursor: move;
     }
-    .pdf-image-elem img {
-      width: 100%;
-      height: 100%;
-      object-fit: contain;
-      display: block;
-      pointer-events: none;
-    }
-
-    /* SIGNATURE ELEMENT */
-    .pdf-sign-elem {
-      cursor: move;
-    }
-    .pdf-sign-elem img {
+    .pdf-image-elem img, .pdf-sign-elem img {
       width: 100%;
       height: 100%;
       object-fit: contain;
@@ -726,13 +764,6 @@
       opacity: 1;
       transform: translateY(0);
     }
-
-    /* Print styling */
-    @media print {
-      body * { visibility: hidden; }
-      #printStageArea, #printStageArea * { visibility: visible; }
-      #printStageArea { position: absolute; left: 0; top: 0; width: 100%; margin: 0; padding: 0; }
-    }
   </style>
 </head>
 <body>
@@ -762,7 +793,6 @@
   <!-- SEJDA STYLE TOP ACTION RIBBON -->
   <div class="editor-ribbon" id="editorToolbar" style="display: none;">
     
-    <!-- Text Tool -->
     <div class="tool-btn-group">
       <button type="button" class="tool-btn active" id="toolTextBtn" onclick="activateTool('text')">
         <i class="fa-solid fa-font"></i> <span>Text</span> <i class="fa-solid fa-caret-down caret"></i>
@@ -799,7 +829,6 @@
       </button>
     </div>
 
-    <!-- Zoom & Page Layout Tools -->
     <div class="tool-btn-group">
       <button type="button" class="tool-btn" onclick="changeZoom(-0.1)" title="Zoom Out"><i class="fa-solid fa-magnifying-glass-minus"></i></button>
       <span style="font-size:11.5px;font-weight:750;padding:6px 8px;display:flex;align-items:center;background:#fff;border-right:1px solid #e5e7eb;" id="zoomLabel">100%</span>
@@ -809,98 +838,39 @@
 
   </div>
 
-  <!-- FORMAT SUB-BAR (DYNAMIC OPTIONS BASED ON ACTIVE TOOL) -->
-  <div class="format-subbar" id="formatSubBar" style="display:none;">
+  <!-- SEJDA FLOATING INLINE FORMATTING TOOLBAR -->
+  <div class="sejda-floating-toolbar" id="sejdaFloatingToolbar">
+    <button type="button" class="sejda-tb-btn" id="tbBtnBold" onclick="toggleActiveTextFormat('bold')" title="Bold (Ctrl+B)"><b>B</b></button>
+    <button type="button" class="sejda-tb-btn" id="tbBtnItalic" onclick="toggleActiveTextFormat('italic')" title="Italic (Ctrl+I)"><i>I</i></button>
     
-    <!-- Text Format Controls -->
-    <div class="format-group" id="fmtTextControls">
-      <span style="font-weight:750;color:#64748b;">Font:</span>
-      <select id="fmtFontFamily" class="format-select" onchange="updateActiveObjectStyle('fontFamily', this.value)">
-        <option value="'Plus Jakarta Sans', Arial, sans-serif">Plus Jakarta Sans</option>
-        <option value="'Outfit', sans-serif">Outfit</option>
-        <option value="Arial, Helvetica, sans-serif">Arial / Helvetica</option>
-        <option value="'Times New Roman', Times, serif">Times New Roman</option>
-        <option value="'Courier New', Courier, monospace">Courier Mono</option>
-        <option value="'Caveat', cursive">Handwritten (Caveat)</option>
-      </select>
+    <div class="sejda-tb-divider"></div>
 
-      <span style="font-weight:750;color:#64748b;">Size:</span>
-      <select id="fmtFontSize" class="format-select" onchange="updateActiveObjectStyle('fontSize', this.value + 'px')">
-        <option value="11">11 px</option>
-        <option value="12">12 px</option>
-        <option value="14" selected>14 px</option>
-        <option value="16">16 px</option>
-        <option value="18">18 px</option>
-        <option value="20">20 px</option>
-        <option value="24">24 px</option>
-        <option value="28">28 px</option>
-        <option value="36">36 px</option>
-      </select>
+    <!-- Font Size -->
+    <button type="button" class="sejda-tb-btn" onclick="adjustActiveFontSize(-1)" title="Decrease Size"><i class="fa-solid fa-minus" style="font-size:9px;"></i></button>
+    <span id="tbFontSizeDisplay" style="font-size:11px;font-weight:800;padding:0 3px;color:#1e293b;">14</span>
+    <button type="button" class="sejda-tb-btn" onclick="adjustActiveFontSize(1)" title="Increase Size"><i class="fa-solid fa-plus" style="font-size:9px;"></i></button>
 
-      <button type="button" class="page-action-btn" onclick="toggleTextStyle('bold')" title="Bold"><i class="fa-solid fa-bold"></i></button>
-      <button type="button" class="page-action-btn" onclick="toggleTextStyle('italic')" title="Italic"><i class="fa-solid fa-italic"></i></button>
-      <button type="button" class="page-action-btn" onclick="toggleTextStyle('underline')" title="Underline"><i class="fa-solid fa-underline"></i></button>
+    <div class="sejda-tb-divider"></div>
 
-      <span style="font-weight:750;color:#64748b;margin-left:6px;">Color:</span>
-      <input type="color" id="fmtTextColor" value="#0f172a" style="width:24px;height:24px;border:none;cursor:pointer;border-radius:4px;" onchange="updateActiveObjectStyle('color', this.value)">
-    </div>
+    <!-- Font Family -->
+    <select id="tbFontFamilySelect" onchange="changeActiveFontFamily(this.value)" style="border:1px solid #cbd5e1;border-radius:4px;padding:2px 4px;font-size:11px;outline:none;background:#fff;color:#1e293b;">
+      <option value="'Plus Jakarta Sans', Arial, sans-serif">Sans-Serif (Standard)</option>
+      <option value="'Outfit', sans-serif">Modern (Outfit)</option>
+      <option value="'Times New Roman', Times, serif">Serif (Times / Gov)</option>
+      <option value="'Courier New', Courier, monospace">Monospace (Typewriter)</option>
+      <option value="'Noto Sans Devanagari', sans-serif">Hindi / Devanagari</option>
+    </select>
 
-    <!-- Shapes Subcontrols -->
-    <div class="format-group" id="fmtShapeControls" style="display:none;">
-      <span style="font-weight:750;color:#64748b;">Shape Type:</span>
-      <select id="fmtShapeType" class="format-select">
-        <option value="rect">Rectangle / Box</option>
-        <option value="ellipse">Circle / Ellipse</option>
-        <option value="line">Straight Line</option>
-        <option value="arrow">Arrow Line</option>
-        <option value="check">Checkmark Box (✓)</option>
-      </select>
-      <span style="font-weight:750;color:#64748b;">Border:</span>
-      <input type="color" id="fmtShapeBorderColor" value="#dc2626" style="width:24px;height:24px;border:none;cursor:pointer;">
-      <select id="fmtShapeBorderWidth" class="format-select">
-        <option value="1">1 px</option>
-        <option value="2" selected>2 px</option>
-        <option value="3">3 px</option>
-        <option value="5">5 px</option>
-      </select>
-      <span style="font-weight:750;color:#64748b;">Fill:</span>
-      <input type="color" id="fmtShapeFillColor" value="#ffffff" style="width:24px;height:24px;border:none;cursor:pointer;">
-      <label style="display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:700;">
-        <input type="checkbox" id="fmtShapeTransparent" checked> Transparent Fill
-      </label>
-    </div>
+    <div class="sejda-tb-divider"></div>
 
-    <!-- Drawing Subcontrols -->
-    <div class="format-group" id="fmtDrawControls" style="display:none;">
-      <span style="font-weight:750;color:#64748b;">Pen Type:</span>
-      <select id="fmtPenMode" class="format-select" onchange="onPenModeChange(this.value)">
-        <option value="pen">Freehand Pen</option>
-        <option value="highlighter">Text Highlighter</option>
-      </select>
-      <span style="font-weight:750;color:#64748b;">Color:</span>
-      <input type="color" id="fmtDrawColor" value="#2563eb" style="width:24px;height:24px;border:none;cursor:pointer;">
-      <span style="font-weight:750;color:#64748b;">Thickness:</span>
-      <select id="fmtDrawThickness" class="format-select">
-        <option value="2">2 px (Fine)</option>
-        <option value="4" selected>4 px (Normal)</option>
-        <option value="8">8 px (Thick)</option>
-        <option value="16">16 px (Highlighter)</option>
-      </select>
-    </div>
+    <!-- Color -->
+    <input type="color" id="tbTextColorPicker" value="#0f172a" style="width:20px;height:20px;border:none;cursor:pointer;border-radius:3px;" onchange="changeActiveTextColor(this.value)" title="Text Color">
 
-    <!-- Form Field Controls -->
-    <div class="format-group" id="fmtFormControls" style="display:none;">
-      <span style="font-weight:750;color:#64748b;">Form Item:</span>
-      <select id="fmtFormType" class="format-select">
-        <option value="text">Single Line Text Box</option>
-        <option value="checkbox">Checkbox [✓]</option>
-        <option value="radio">Radio Button (◉)</option>
-        <option value="cross">Cross Mark [✗]</option>
-        <option value="date">Date Field</option>
-      </select>
-      <span style="font-size:11px;color:#6b7280;">Click on PDF page to place item</span>
-    </div>
+    <div class="sejda-tb-divider"></div>
 
+    <!-- Actions -->
+    <button type="button" class="sejda-tb-btn" onclick="duplicateActiveTextNode()" title="Duplicate line"><i class="fa-regular fa-copy"></i></button>
+    <button type="button" class="sejda-tb-btn del" onclick="deleteActiveTextNode()" title="Delete text"><i class="fa-solid fa-trash-can"></i></button>
   </div>
 
   <!-- MAIN CONTAINER (SPLIT: SIDEBAR THUMBNAILS + PDF CANVAS VIEWPORT) -->
@@ -912,7 +882,7 @@
     </div>
 
     <!-- MAIN PDF VIEWPORT STAGE -->
-    <div class="pdf-stage-viewport" id="pdfViewport">
+    <div class="pdf-stage-viewport" id="pdfViewport" onclick="handleViewportClick(event)">
       <div id="pagesStageContainer">
         <!-- Rendered Pages & Interactive Canvas Overlays go here -->
       </div>
@@ -926,7 +896,7 @@
       Online PDF editor <span class="beta-badge" style="font-size:12px;">BETA</span>
     </div>
     <div class="upload-hero-sub">
-      Edit PDF files for free. Fill &amp; sign PDF. Add text, images, whiteout, annotations &amp; signatures.
+      Edit PDF files for free. Fill &amp; sign PDF. Click on any text to edit letters directly.
     </div>
 
     <div class="drop-zone" id="dropZone" onclick="document.getElementById('pdfFileInput').click()">
@@ -947,7 +917,7 @@
 
     <div class="sample-docs-grid">
       <button type="button" class="btn-sample-doc" onclick="loadSampleDoc('acknowledgement')">
-        <i class="fa-solid fa-file-invoice"></i> JharSewa / CSC Acknowledgement Slip
+        <i class="fa-solid fa-file-invoice"></i> JharSewa / CSC Acknowledgement Slip (MD LIYAKAT ALI Sample)
       </button>
       <button type="button" class="btn-sample-doc" onclick="loadSampleDoc('blank')">
         <i class="fa-solid fa-file"></i> Create New Blank A4 PDF Page
@@ -991,9 +961,9 @@
         <div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px;">
           <div style="display:flex;gap:8px;align-items:center;">
             <span style="font-size:11.5px;font-weight:750;color:#6b7280;">Color:</span>
-            <button type="button" class="color-swatch-btn active" style="background:#0f172a;" onclick="setSignPenColor('#0f172a', this)"></button>
-            <button type="button" class="color-swatch-btn" style="background:#2563eb;" onclick="setSignPenColor('#2563eb', this)"></button>
-            <button type="button" class="color-swatch-btn" style="background:#dc2626;" onclick="setSignPenColor('#dc2626', this)"></button>
+            <button type="button" class="color-swatch-btn active" style="background:#0f172a;width:20px;height:20px;border-radius:50%;border:none;cursor:pointer;" onclick="setSignPenColor('#0f172a')"></button>
+            <button type="button" class="color-swatch-btn" style="background:#2563eb;width:20px;height:20px;border-radius:50%;border:none;cursor:pointer;" onclick="setSignPenColor('#2563eb')"></button>
+            <button type="button" class="color-swatch-btn" style="background:#dc2626;width:20px;height:20px;border-radius:50%;border:none;cursor:pointer;" onclick="setSignPenColor('#dc2626')"></button>
           </div>
           <button type="button" class="page-action-btn" onclick="clearSignCanvas()"><i class="fa-solid fa-eraser"></i> Clear</button>
         </div>
@@ -1004,7 +974,7 @@
         <input type="text" id="typeSignInput" placeholder="Type your full name here..." style="width:100%;padding:9px 12px;border:1.5px solid #cbd5e1;border-radius:8px;font-size:15px;outline:none;" oninput="updateTypeSignPreview()">
         
         <div style="display:flex;gap:10px;margin-top:10px;">
-          <select id="typeSignFont" class="format-select" style="flex:1;" onchange="updateTypeSignPreview()">
+          <select id="typeSignFont" class="format-select" style="flex:1;padding:6px;border:1px solid #cbd5e1;border-radius:6px;" onchange="updateTypeSignPreview()">
             <option value="'Great Vibes', cursive">Calligraphy (Great Vibes)</option>
             <option value="'Dancing Script', cursive">Classic Script (Dancing Script)</option>
             <option value="'Caveat', cursive">Natural Hand (Caveat)</option>
@@ -1048,7 +1018,7 @@
         <i class="fa-solid fa-lock"></i>
       </div>
       <h3 style="font-size:17px;font-weight:800;color:#111827;margin-bottom:6px;">Password Protected PDF</h3>
-      <p style="font-size:12.5px;color:#6b7280;margin-bottom:14px;">Aadhaar / Bank statement password enter karein (e.g. First 4 capital letters + Birth Year):</p>
+      <p style="font-size:12.5px;color:#6b7280;margin-bottom:14px;">Aadhaar / Bank statement password enter karein:</p>
       
       <input type="password" id="pdfPasswordInput" placeholder="Enter PDF Password" style="width:100%;padding:10px 14px;border:1.5px solid #d1d5db;border-radius:8px;font-size:14px;outline:none;margin-bottom:14px;">
       
@@ -1070,14 +1040,10 @@
     <span id="toastMsg">Action completed</span>
   </div>
 
-  <!-- HIDDEN PRINT CONTAINER -->
-  <div id="printStageArea" style="display:none;"></div>
-
   <!-- =========================================================================
-       CORE PDF EDITOR JAVASCRIPT ENGINE
+       CORE PDF EDITOR JAVASCRIPT ENGINE (SEJDA LIVE TEXT EDITING)
        ========================================================================= -->
   <script>
-    // PDF.js worker setup
     if (typeof pdfjsLib !== 'undefined') {
       pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
     }
@@ -1090,28 +1056,17 @@
       pageCount: 0,
       zoom: 1.0,
       activeTool: 'text', // 'text', 'link', 'form', 'whiteout', 'draw', 'shape'
+      activeTextNode: null,
       activeObject: null,
-      activeSignData: null,
-      pagesData: [], // Array of { pageNum, rotation, width, height, scale, objects: [], isDeleted: false }
+      pagesData: [], // Array of { pageNum, rotation, width, height, textNodes: [], objects: [], isDeleted: false }
       history: [],
       historyIndex: -1,
       isSidebarOpen: true,
-      pendingPasswordCallback: null,
-      drawState: {
-        isDrawing: false,
-        lastX: 0,
-        lastY: 0,
-        currentPath: [],
-        color: '#2563eb',
-        thickness: 4,
-        mode: 'pen'
-      }
+      pendingPasswordCallback: null
     };
 
-    // DOM References
     const $ = id => document.getElementById(id);
 
-    // Toast Utility
     function showToast(msg, isSuccess = true) {
       const toast = $('toastNotify');
       const icon = $('toastIcon');
@@ -1122,7 +1077,7 @@
       setTimeout(() => toast.classList.remove('show'), 2600);
     }
 
-    // Initialize Drag and Drop
+    // Setup Drag & Drop
     function setupDragAndDrop() {
       const dropZone = $('dropZone');
       ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
@@ -1141,7 +1096,6 @@
         if (file) handleFileSelected(file);
       });
 
-      // Also listen to Ctrl+V paste on window
       window.addEventListener('paste', e => {
         const items = (e.clipboardData || e.originalEvent.clipboardData).items;
         for (const item of items) {
@@ -1161,9 +1115,8 @@
       });
     }
 
-    // Convert pasted image to PDF
     async function convertImageToPdfAndLoad(imageFile) {
-      showToast('Converting image to PDF document...');
+      showToast('Converting image to PDF...');
       const reader = new FileReader();
       reader.onload = async () => {
         const img = new Image();
@@ -1177,16 +1130,13 @@
           });
           const pageWidth = pdf.internal.pageSize.getWidth();
           const pageHeight = pdf.internal.pageSize.getHeight();
-          
           let w = pageWidth;
           let h = (img.height * pageWidth) / img.width;
           if (h > pageHeight) {
             h = pageHeight;
             w = (img.width * pageHeight) / img.height;
           }
-          const x = (pageWidth - w) / 2;
-          const y = (pageHeight - h) / 2;
-          pdf.addImage(img, 'PNG', x, y, w, h);
+          pdf.addImage(img, 'PNG', (pageWidth - w) / 2, (pageHeight - h) / 2, w, h);
           const pdfBytes = pdf.output('arraybuffer');
           state.fileName = (imageFile.name || 'Image').replace(/\.[^/.]+$/, '') + '.pdf';
           loadPdfFromBytes(pdfBytes);
@@ -1196,7 +1146,6 @@
       reader.readAsDataURL(imageFile);
     }
 
-    // Handle Selected File
     function handleFileSelected(file) {
       if (!file) return;
       if (file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf')) {
@@ -1206,12 +1155,10 @@
         reader.readAsArrayBuffer(file);
       } else if (file.type.startsWith('image/')) {
         convertImageToPdfAndLoad(file);
-      } else {
-        alert('Please select a valid PDF or Image file.');
       }
     }
 
-    // Load PDF from ArrayBuffer
+    // Load PDF Document
     async function loadPdfFromBytes(arrayBuffer, password = '') {
       try {
         state.pdfRawBytes = arrayBuffer;
@@ -1238,12 +1185,10 @@
         $('editorToolbar').style.display = 'flex';
         $('editorMainContainer').style.display = 'flex';
         $('floatingBottomBar').style.display = 'flex';
-        $('formatSubBar').style.display = 'flex';
 
         $('currentDocNameTag').innerText = state.fileName;
         $('pageCountInfo').innerText = `${pdf.numPages} Page${pdf.numPages > 1 ? 's' : ''}`;
 
-        // Initialize pages data
         state.pagesData = [];
         for (let i = 1; i <= pdf.numPages; i++) {
           const page = await pdf.getPage(i);
@@ -1256,20 +1201,21 @@
             width: viewport.width,
             height: viewport.height,
             scale: 1.0,
+            textNodes: [],
             objects: [],
             isDeleted: false
           });
         }
 
-        renderAllPages();
+        await renderAllPages();
         saveHistoryState('Document Opened');
-        showToast('PDF loaded successfully!');
+        showToast('PDF loaded! Move cursor over any text to edit letters.');
       } catch (err) {
         console.error('PDF load error:', err);
         if (err.name === 'PasswordException') {
           showToast('Invalid password! Please try again.', false);
         } else {
-          alert('Could not open PDF file. Error: ' + err.message);
+          alert('Could not open PDF file: ' + err.message);
         }
       }
     }
@@ -1290,7 +1236,9 @@
       state.pendingPasswordCallback = null;
     }
 
-    // Render All PDF Pages in Stage & Sidebar
+    // -------------------------------------------------------------
+    // RENDER ALL PAGES (Canvas + Text Extraction Layer + Overlays)
+    // -------------------------------------------------------------
     async function renderAllPages() {
       const container = $('pagesStageContainer');
       const thumbsContainer = $('sidebarThumbs');
@@ -1307,76 +1255,79 @@
         const pNum = pageMeta.pageNum;
         const page = await pdf.getPage(pNum);
         
-        // Effective rotation
         const effectiveRotation = (page.rotate + pageMeta.rotation) % 360;
         const baseViewport = page.getViewport({ scale: 1.33 * state.zoom, rotation: effectiveRotation });
 
-        // Page Control Bar Header
+        // Page Control Bar
         const controlBar = document.createElement('div');
         controlBar.className = 'page-action-bar';
         controlBar.innerHTML = `
           <span class="page-num-tag">${idx + 1}</span>
-          <button type="button" class="page-action-btn danger" onclick="deletePage(${idx})" title="Delete this page"><i class="fa-solid fa-trash-can"></i></button>
+          <button type="button" class="page-action-btn danger" onclick="deletePage(${idx})" title="Delete page"><i class="fa-solid fa-trash-can"></i></button>
           <button type="button" class="page-action-btn" onclick="rotatePage(${idx}, -90)" title="Rotate Left"><i class="fa-solid fa-rotate-left"></i></button>
           <button type="button" class="page-action-btn" onclick="rotatePage(${idx}, 90)" title="Rotate Right"><i class="fa-solid fa-rotate-right"></i></button>
           <button type="button" class="page-action-btn green" onclick="insertBlankPage(${idx})" title="Insert Blank Page Below"><i class="fa-solid fa-plus"></i> Insert page here</button>
         `;
         container.appendChild(controlBar);
 
-        // Page Card Box
+        // Page Wrapper
         const pageWrap = document.createElement('div');
         pageWrap.className = 'page-wrapper';
         pageWrap.id = `pageWrapper_${idx}`;
         pageWrap.style.width = `${baseViewport.width}px`;
         pageWrap.style.height = `${baseViewport.height}px`;
 
-        // Canvas element
+        // 1. High DPI Canvas Background
         const canvas = document.createElement('canvas');
         canvas.className = 'page-canvas-bg';
-        canvas.width = baseViewport.width * 1.5; // High DPI crisp rendering
+        canvas.width = baseViewport.width * 1.5;
         canvas.height = baseViewport.height * 1.5;
         canvas.style.width = `${baseViewport.width}px`;
         canvas.style.height = `${baseViewport.height}px`;
-
         const ctx = canvas.getContext('2d');
         ctx.scale(1.5, 1.5);
-
-        const renderContext = {
-          canvasContext: ctx,
-          viewport: baseViewport
-        };
-        await page.render(renderContext).promise;
+        await page.render({ canvasContext: ctx, viewport: baseViewport }).promise;
         pageWrap.appendChild(canvas);
 
-        // Overlay interaction layer for text, whiteouts, drawings, etc.
+        // 2. Extracted Text Layer for In-Place Letter Editing (Sejda Style)
+        const textLayer = document.createElement('div');
+        textLayer.className = 'pdf-text-layer';
+        textLayer.id = `textLayer_${idx}`;
+        textLayer.dataset.pageIndex = idx;
+        
+        // Extract text items from PDF and create editable nodes if not already done
+        if (!pageMeta.textNodes || pageMeta.textNodes.length === 0) {
+          const textContent = await page.getTextContent();
+          pageMeta.textNodes = extractAndMergeTextLines(textContent.items, baseViewport, page);
+        }
+
+        renderTextLayerNodes(textLayer, idx);
+        pageWrap.appendChild(textLayer);
+
+        // 3. User Overlays (Stamps, Signs, Shapes, Whiteouts)
         const overlay = document.createElement('div');
-        overlay.className = `page-overlay-layer tool-${state.activeTool}`;
+        overlay.className = `page-overlay-layer ${state.activeTool !== 'text' ? 'active-tool' : ''}`;
         overlay.id = `pageOverlay_${idx}`;
         overlay.dataset.pageIndex = idx;
-        setupOverlayInteractions(overlay, idx, baseViewport);
+        setupOverlayDrawing(overlay, idx, baseViewport);
+        renderOverlayObjects(overlay, idx);
         pageWrap.appendChild(overlay);
-
-        // Re-render existing added objects on this page
-        renderPageObjects(idx);
 
         container.appendChild(pageWrap);
 
         // Sidebar Thumbnail
         const thumbBox = document.createElement('div');
         thumbBox.className = `thumb-item ${idx === 0 ? 'active' : ''}`;
-        thumbBox.id = `thumbItem_${idx}`;
         thumbBox.onclick = () => {
           document.querySelectorAll('.thumb-item').forEach(t => t.classList.remove('active'));
           thumbBox.classList.add('active');
           pageWrap.scrollIntoView({ behavior: 'smooth', block: 'center' });
         };
-
         const thumbCanvas = document.createElement('canvas');
-        const thumbViewport = page.getViewport({ scale: 0.25, rotation: effectiveRotation });
+        const thumbViewport = page.getViewport({ scale: 0.22, rotation: effectiveRotation });
         thumbCanvas.width = thumbViewport.width;
         thumbCanvas.height = thumbViewport.height;
         await page.render({ canvasContext: thumbCanvas.getContext('2d'), viewport: thumbViewport }).promise;
-
         thumbBox.appendChild(thumbCanvas);
         thumbBox.innerHTML += `<div class="thumb-label">Page ${idx + 1}</div>`;
         thumbsContainer.appendChild(thumbBox);
@@ -1385,426 +1336,279 @@
       $('pageCountInfo').innerText = `${state.pagesData.filter(p => !p.isDeleted).length} Pages`;
     }
 
-    // Setup interactive events on page overlay
-    function setupOverlayInteractions(overlay, pageIndex, viewport) {
-      let isMouseDown = false;
-      let startX = 0;
-      let startY = 0;
-      let tempElement = null;
-
-      overlay.addEventListener('mousedown', e => {
-        // If clicking on an existing object or control handle, ignore stage creation
-        if (e.target.closest('.pdf-object') || e.target.closest('.obj-controls') || e.target.closest('.resize-handle')) {
-          return;
-        }
-
-        deselectAllObjects();
-
-        const rect = overlay.getBoundingClientRect();
-        startX = e.clientX - rect.left;
-        startY = e.clientY - rect.top;
-        isMouseDown = true;
-
-        if (state.activeTool === 'text') {
-          createTextObject(pageIndex, startX, startY);
-          isMouseDown = false;
-        } else if (state.activeTool === 'whiteout') {
-          tempElement = document.createElement('div');
-          tempElement.style.position = 'absolute';
-          tempElement.style.left = `${startX}px`;
-          tempElement.style.top = `${startY}px`;
-          tempElement.style.background = '#ffffff';
-          tempElement.style.border = '1px dashed #94a3b8';
-          overlay.appendChild(tempElement);
-        } else if (state.activeTool === 'draw') {
-          state.drawState.isDrawing = true;
-          state.drawState.currentPath = [{ x: startX, y: startY }];
-          tempElement = document.createElement('canvas');
-          tempElement.width = overlay.offsetWidth;
-          tempElement.height = overlay.offsetHeight;
-          tempElement.style.position = 'absolute';
-          tempElement.style.inset = '0';
-          tempElement.style.pointerEvents = 'none';
-          overlay.appendChild(tempElement);
-        } else if (state.activeTool === 'shape') {
-          tempElement = document.createElement('div');
-          tempElement.style.position = 'absolute';
-          tempElement.style.left = `${startX}px`;
-          tempElement.style.top = `${startY}px`;
-          tempElement.style.border = `2px solid ${$('fmtShapeBorderColor').value}`;
-          tempElement.style.background = $('fmtShapeTransparent').checked ? 'transparent' : $('fmtShapeFillColor').value;
-          overlay.appendChild(tempElement);
-        } else if (state.activeTool === 'link') {
-          createLinkObjectPrompt(pageIndex, startX, startY);
-          isMouseDown = false;
-        } else if (state.activeTool === 'form') {
-          createFormObject(pageIndex, startX, startY);
-          isMouseDown = false;
-        }
-      });
-
-      overlay.addEventListener('mousemove', e => {
-        if (!isMouseDown || !tempElement) return;
-        const rect = overlay.getBoundingClientRect();
-        const currentX = e.clientX - rect.left;
-        const currentY = e.clientY - rect.top;
-
-        if (state.activeTool === 'whiteout' || state.activeTool === 'shape') {
-          const w = Math.abs(currentX - startX);
-          const h = Math.abs(currentY - startY);
-          tempElement.style.width = `${w}px`;
-          tempElement.style.height = `${h}px`;
-          tempElement.style.left = `${Math.min(startX, currentX)}px`;
-          tempElement.style.top = `${Math.min(startY, currentY)}px`;
-          if (state.activeTool === 'shape' && $('fmtShapeType').value === 'ellipse') {
-            tempElement.style.borderRadius = '50%';
-          }
-        } else if (state.activeTool === 'draw' && state.drawState.isDrawing) {
-          state.drawState.currentPath.push({ x: currentX, y: currentY });
-          const ctx = tempElement.getContext('2d');
-          ctx.clearRect(0, 0, tempElement.width, tempElement.height);
-          ctx.strokeStyle = state.drawState.mode === 'highlighter' ? $('fmtDrawColor').value + '66' : $('fmtDrawColor').value;
-          ctx.lineWidth = Number($('fmtDrawThickness').value);
-          ctx.lineCap = 'round';
-          ctx.lineJoin = 'round';
-          ctx.beginPath();
-          state.drawState.currentPath.forEach((pt, i) => {
-            if (i === 0) ctx.moveTo(pt.x, pt.y);
-            else ctx.lineTo(pt.x, pt.y);
-          });
-          ctx.stroke();
-        }
-      });
-
-      const finishDrawingOrShape = e => {
-        if (!isMouseDown) return;
-        isMouseDown = false;
-
-        if (state.activeTool === 'whiteout' && tempElement) {
-          const rect = overlay.getBoundingClientRect();
-          const endX = e.clientX - rect.left;
-          const endY = e.clientY - rect.top;
-          const w = Math.max(14, Math.abs(endX - startX));
-          const h = Math.max(10, Math.abs(endY - startY));
-          const left = Math.min(startX, endX);
-          const top = Math.min(startY, endY);
-          tempElement.remove();
-
-          addObjectToPage(pageIndex, {
-            type: 'whiteout',
-            x: left,
-            y: top,
-            width: w,
-            height: h,
-            bg: '#ffffff'
-          });
-        } else if (state.activeTool === 'shape' && tempElement) {
-          const rect = overlay.getBoundingClientRect();
-          const endX = e.clientX - rect.left;
-          const endY = e.clientY - rect.top;
-          const w = Math.max(20, Math.abs(endX - startX));
-          const h = Math.max(20, Math.abs(endY - startY));
-          const left = Math.min(startX, endX);
-          const top = Math.min(startY, endY);
-          tempElement.remove();
-
-          addObjectToPage(pageIndex, {
-            type: 'shape',
-            shapeType: $('fmtShapeType').value,
-            x: left,
-            y: top,
-            width: w,
-            height: h,
-            borderColor: $('fmtShapeBorderColor').value,
-            borderWidth: Number($('fmtShapeBorderWidth').value),
-            fillColor: $('fmtShapeTransparent').checked ? 'transparent' : $('fmtShapeFillColor').value
-          });
-        } else if (state.activeTool === 'draw' && tempElement && state.drawState.currentPath.length > 1) {
-          const dataUrl = tempElement.toDataURL('image/png');
-          tempElement.remove();
-          addObjectToPage(pageIndex, {
-            type: 'image',
-            imgSrc: dataUrl,
-            x: 0,
-            y: 0,
-            width: overlay.offsetWidth,
-            height: overlay.offsetHeight,
-            isDrawingLayer: true
-          });
-          state.drawState.isDrawing = false;
-        }
-      };
-
-      overlay.addEventListener('mouseup', finishDrawingOrShape);
-      overlay.addEventListener('mouseleave', finishDrawingOrShape);
-    }
-
     // -------------------------------------------------------------
-    // OBJECT MANAGEMENT (Text, Image, Whiteout, Sign, Shapes)
+    // EXTRACT & GROUP PDF TEXT ITEMS INTO CONTINUOUS EDITABLE LINES
     // -------------------------------------------------------------
-    function createTextObject(pageIndex, x, y, initialText = 'Type text here') {
-      const obj = {
-        id: 'obj_' + Date.now() + Math.random().toString(36).substr(2, 4),
-        type: 'text',
-        text: initialText,
-        x: Math.max(10, x),
-        y: Math.max(10, y),
-        fontFamily: $('fmtFontFamily').value,
-        fontSize: $('fmtFontSize').value + 'px',
-        color: $('fmtTextColor').value,
-        isBold: false,
-        isItalic: false,
-        isUnderline: false
-      };
-      addObjectToPage(pageIndex, obj);
-    }
+    function extractAndMergeTextLines(items, viewport, page) {
+      if (!items || items.length === 0) return [];
+      
+      const rawNodes = [];
+      for (const item of items) {
+        if (!item.str || item.str.trim() === '') continue;
+        
+        const transform = pdfjsLib.Util.transform(viewport.transform, item.transform);
+        const fontSize = Math.sqrt(transform[0] * transform[0] + transform[1] * transform[1]);
+        const x = transform[4];
+        const y = transform[5] - fontSize;
+        const width = item.width * (viewport.scale || 1.33);
 
-    function createFormObject(pageIndex, x, y) {
-      const formType = $('fmtFormType').value;
-      if (formType === 'checkbox') {
-        createTextObject(pageIndex, x, y, '☑');
-      } else if (formType === 'radio') {
-        createTextObject(pageIndex, x, y, '◉');
-      } else if (formType === 'cross') {
-        createTextObject(pageIndex, x, y, '☒');
-      } else if (formType === 'date') {
-        const today = new Date().toLocaleDateString('en-GB');
-        createTextObject(pageIndex, x, y, today);
-      } else {
-        createTextObject(pageIndex, x, y, '[ ____________________ ]');
-      }
-    }
+        let fontFamily = "'Plus Jakarta Sans', Arial, sans-serif";
+        const fn = (item.fontName || '').toLowerCase();
+        if (fn.includes('times') || fn.includes('serif') || fn.includes('roman')) {
+          fontFamily = "'Times New Roman', Times, serif";
+        } else if (fn.includes('courier') || fn.includes('mono')) {
+          fontFamily = "'Courier New', Courier, monospace";
+        } else if (fn.includes('hindi') || fn.includes('kruti') || fn.includes('devanagari')) {
+          fontFamily = "'Noto Sans Devanagari', sans-serif";
+        }
 
-    function createLinkObjectPrompt(pageIndex, x, y) {
-      const url = prompt('Enter Hyperlink URL (e.g. https://serviceonline.bihar.gov.in):', 'https://');
-      if (url && url.trim() !== '') {
-        addObjectToPage(pageIndex, {
-          type: 'text',
-          text: `🔗 ${url}`,
-          x: x,
-          y: y,
-          color: '#2563eb',
-          fontSize: '13px',
-          isUnderline: true,
-          linkUrl: url
+        const isBold = fn.includes('bold') || fn.includes('black') || fn.includes('heavy');
+        const isItalic = fn.includes('italic') || fn.includes('oblique');
+
+        rawNodes.push({
+          id: 'text_' + Math.random().toString(36).substr(2, 9),
+          text: item.str,
+          originalText: item.str,
+          x: Math.round(x),
+          y: Math.round(y),
+          width: Math.round(width),
+          height: Math.round(fontSize * 1.25),
+          fontSize: Math.max(10, Math.round(fontSize)),
+          fontFamily: fontFamily,
+          isBold: isBold,
+          isItalic: isItalic,
+          color: '#0f172a',
+          isModified: false,
+          isDeleted: false
         });
       }
-    }
 
-    function addObjectToPage(pageIndex, obj) {
-      if (!obj.id) obj.id = 'obj_' + Date.now() + Math.random().toString(36).substr(2, 4);
-      state.pagesData[pageIndex].objects.push(obj);
-      renderPageObjects(pageIndex);
-      selectObject(obj.id);
-      saveHistoryState('Add ' + obj.type);
-    }
+      // Sort top-to-bottom, left-to-right
+      rawNodes.sort((a, b) => a.y !== b.y ? a.y - b.y : a.x - b.x);
 
-    function renderPageObjects(pageIndex) {
-      const overlay = $(`pageOverlay_${pageIndex}`);
-      if (!overlay) return;
-      overlay.innerHTML = '';
+      // Merge adjacent words on the same baseline into single editable sentences/names
+      const merged = [];
+      let current = null;
 
-      const pageObjects = state.pagesData[pageIndex].objects;
-      pageObjects.forEach(obj => {
-        const el = document.createElement('div');
-        el.className = 'pdf-object';
-        el.id = obj.id;
-        el.style.left = `${obj.x}px`;
-        el.style.top = `${obj.y}px`;
-
-        // Controls bar on selection
-        const controls = document.createElement('div');
-        controls.className = 'obj-controls';
-        controls.innerHTML = `
-          <button type="button" onclick="duplicateObject('${obj.id}')" title="Duplicate"><i class="fa-solid fa-copy"></i></button>
-          <button type="button" class="del-btn" onclick="deleteObject('${obj.id}')" title="Delete"><i class="fa-solid fa-trash-can"></i></button>
-        `;
-        el.appendChild(controls);
-
-        // 4 Resize corner handles
-        ['nw', 'ne', 'se', 'sw'].forEach(pos => {
-          const handle = document.createElement('div');
-          handle.className = `resize-handle handle-${pos}`;
-          handle.dataset.handle = pos;
-          el.appendChild(handle);
-        });
-
-        if (obj.type === 'text') {
-          el.classList.add('pdf-text-elem');
-          el.innerText = obj.text;
-          el.style.fontFamily = obj.fontFamily || "'Plus Jakarta Sans', Arial, sans-serif";
-          el.style.fontSize = obj.fontSize || '14px';
-          el.style.color = obj.color || '#0f172a';
-          el.style.fontWeight = obj.isBold ? '800' : '500';
-          el.style.fontStyle = obj.isItalic ? 'italic' : 'normal';
-          el.style.textDecoration = obj.isUnderline ? 'underline' : 'none';
-
-          el.ondblclick = e => {
-            e.stopPropagation();
-            el.contentEditable = 'true';
-            el.focus();
-            document.execCommand('selectAll', false, null);
-          };
-          el.onblur = () => {
-            el.contentEditable = 'false';
-            obj.text = el.innerText;
-            saveHistoryState('Edit text');
-          };
-        } else if (obj.type === 'whiteout') {
-          el.classList.add('pdf-whiteout-elem');
-          el.style.width = `${obj.width}px`;
-          el.style.height = `${obj.height}px`;
-          el.style.background = obj.bg || '#ffffff';
-        } else if (obj.type === 'image' || obj.type === 'sign') {
-          el.classList.add('pdf-image-elem');
-          el.style.width = `${obj.width}px`;
-          el.style.height = `${obj.height}px`;
-          const img = document.createElement('img');
-          img.src = obj.imgSrc;
-          el.appendChild(img);
-        } else if (obj.type === 'shape') {
-          el.classList.add('pdf-shape-elem');
-          el.style.width = `${obj.width}px`;
-          el.style.height = `${obj.height}px`;
-          el.style.border = `${obj.borderWidth || 2}px solid ${obj.borderColor || '#dc2626'}`;
-          el.style.background = obj.fillColor || 'transparent';
-          if (obj.shapeType === 'ellipse') el.style.borderRadius = '50%';
+      for (const node of rawNodes) {
+        if (!current) {
+          current = { ...node };
+          continue;
         }
 
-        setupDraggableAndResizable(el, obj, pageIndex);
-        overlay.appendChild(el);
-      });
-    }
+        const sameLine = Math.abs(current.y - node.y) <= 4;
+        const closeX = node.x - (current.x + current.width) <= (current.fontSize * 1.5);
 
-    // Draggable and Resizable Helper
-    function setupDraggableAndResizable(el, obj, pageIndex) {
-      let isDragging = false;
-      let isResizing = false;
-      let activeHandle = '';
-      let startMouseX = 0, startMouseY = 0;
-      let origX = 0, origY = 0, origW = 0, origH = 0;
-
-      el.addEventListener('mousedown', e => {
-        if (el.contentEditable === 'true') return;
-        e.stopPropagation();
-
-        if (e.target.classList.contains('resize-handle')) {
-          isResizing = true;
-          activeHandle = e.target.dataset.handle;
+        if (sameLine && closeX) {
+          const space = (node.x - (current.x + current.width)) > 2 ? ' ' : '';
+          current.text += (space + node.text);
+          current.originalText += (space + node.originalText);
+          current.width = (node.x + node.width) - current.x;
+          current.height = Math.max(current.height, node.height);
         } else {
-          isDragging = true;
-        }
-
-        selectObject(obj.id);
-
-        startMouseX = e.clientX;
-        startMouseY = e.clientY;
-        origX = obj.x;
-        origY = obj.y;
-        origW = el.offsetWidth;
-        origH = el.offsetHeight;
-
-        const onMouseMove = ev => {
-          const dx = (ev.clientX - startMouseX);
-          const dy = (ev.clientY - startMouseY);
-
-          if (isDragging) {
-            obj.x = Math.max(0, origX + dx);
-            obj.y = Math.max(0, origY + dy);
-            el.style.left = `${obj.x}px`;
-            el.style.top = `${obj.y}px`;
-          } else if (isResizing) {
-            if (activeHandle === 'se') {
-              obj.width = Math.max(16, origW + dx);
-              obj.height = Math.max(16, origH + dy);
-            } else if (activeHandle === 'sw') {
-              obj.width = Math.max(16, origW - dx);
-              obj.height = Math.max(16, origH + dy);
-              obj.x = origX + dx;
-              el.style.left = `${obj.x}px`;
-            } else if (activeHandle === 'ne') {
-              obj.width = Math.max(16, origW + dx);
-              obj.height = Math.max(16, origH - dy);
-              obj.y = origY + dy;
-              el.style.top = `${obj.y}px`;
-            } else if (activeHandle === 'nw') {
-              obj.width = Math.max(16, origW - dx);
-              obj.height = Math.max(16, origH - dy);
-              obj.x = origX + dx;
-              obj.y = origY + dy;
-              el.style.left = `${obj.x}px`;
-              el.style.top = `${obj.y}px`;
-            }
-            el.style.width = `${obj.width}px`;
-            el.style.height = `${obj.height}px`;
-          }
-        };
-
-        const onMouseUp = () => {
-          if (isDragging || isResizing) saveHistoryState('Transform ' + obj.type);
-          isDragging = false;
-          isResizing = false;
-          window.removeEventListener('mousemove', onMouseMove);
-          window.removeEventListener('mouseup', onMouseUp);
-        };
-
-        window.addEventListener('mousemove', onMouseMove);
-        window.addEventListener('mouseup', onMouseUp);
-      });
-    }
-
-    function selectObject(id) {
-      deselectAllObjects();
-      const el = $(id);
-      if (el) {
-        el.classList.add('selected');
-        state.activeObject = findObjectById(id);
-      }
-    }
-
-    function deselectAllObjects() {
-      document.querySelectorAll('.pdf-object').forEach(el => el.classList.remove('selected'));
-      state.activeObject = null;
-    }
-
-    function findObjectById(id) {
-      for (const p of state.pagesData) {
-        const found = p.objects.find(o => o.id === id);
-        if (found) return found;
-      }
-      return null;
-    }
-
-    function deleteObject(id) {
-      for (const p of state.pagesData) {
-        const idx = p.objects.findIndex(o => o.id === id);
-        if (idx !== -1) {
-          p.objects.splice(idx, 1);
-          renderPageObjects(state.pagesData.indexOf(p));
-          saveHistoryState('Delete object');
-          break;
+          merged.push(current);
+          current = { ...node };
         }
       }
-    }
+      if (current) merged.push(current);
 
-    function duplicateObject(id) {
-      const obj = findObjectById(id);
-      if (!obj) return;
-      for (let pIdx = 0; pIdx < state.pagesData.length; pIdx++) {
-        const p = state.pagesData[pIdx];
-        if (p.objects.includes(obj)) {
-          const clone = JSON.parse(JSON.stringify(obj));
-          clone.id = 'obj_' + Date.now() + Math.random().toString(36).substr(2, 4);
-          clone.x += 20;
-          clone.y += 20;
-          addObjectToPage(pIdx, clone);
-          break;
-        }
-      }
+      return merged;
     }
 
     // -------------------------------------------------------------
-    // TOOL ACTIVATION & SUB-BARS
+    // RENDER INTERACTIVE TEXT NODES ON PAGE
+    // -------------------------------------------------------------
+    function renderTextLayerNodes(textLayer, pageIndex) {
+      textLayer.innerHTML = '';
+      const nodes = state.pagesData[pageIndex].textNodes || [];
+
+      nodes.forEach(node => {
+        if (node.isDeleted) return;
+
+        const el = document.createElement('div');
+        el.className = 'pdf-text-node';
+        el.id = node.id;
+        el.dataset.nodeId = node.id;
+        el.dataset.pageIndex = pageIndex;
+        
+        el.style.left = `${node.x}px`;
+        el.style.top = `${node.y}px`;
+        el.style.fontSize = `${node.fontSize}px`;
+        el.style.fontFamily = node.fontFamily;
+        el.style.fontWeight = node.isBold ? '700' : '400';
+        el.style.fontStyle = node.isItalic ? 'italic' : 'normal';
+        el.innerText = node.text;
+
+        if (node.isModified) {
+          el.classList.add('has-edits');
+          el.style.color = node.color || '#0f172a';
+        }
+
+        // Click to activate in-place letter editing
+        el.addEventListener('click', e => {
+          e.stopPropagation();
+          activateInPlaceTextEditor(el, node, pageIndex);
+        });
+
+        textLayer.appendChild(el);
+      });
+    }
+
+    // -------------------------------------------------------------
+    // ACTIVATE IN-PLACE LETTER EDITING & SEJDA FLOATING TOOLBAR
+    // -------------------------------------------------------------
+    function activateInPlaceTextEditor(el, node, pageIndex) {
+      if (state.activeTextNode && state.activeTextNode.el === el) return;
+
+      // Blur previous if any
+      deactivateActiveTextEditor();
+
+      state.activeTextNode = { el, node, pageIndex };
+      el.classList.add('editing');
+      el.contentEditable = 'true';
+      el.style.color = node.color || '#0f172a';
+      el.focus();
+
+      // Show floating Sejda formatting bar right above the clicked text line
+      positionFloatingToolbar(el);
+
+      // Listen for text edits in real-time
+      el.oninput = () => {
+        node.text = el.innerText;
+        node.isModified = true;
+        el.classList.add('has-edits');
+        positionFloatingToolbar(el);
+      };
+
+      el.onkeydown = e => {
+        if (e.ctrlKey && e.key.toLowerCase() === 'b') {
+          e.preventDefault();
+          toggleActiveTextFormat('bold');
+        } else if (e.ctrlKey && e.key.toLowerCase() === 'i') {
+          e.preventDefault();
+          toggleActiveTextFormat('italic');
+        } else if (e.key === 'Escape') {
+          deactivateActiveTextEditor();
+        }
+      };
+    }
+
+    function positionFloatingToolbar(el) {
+      const tb = $('sejdaFloatingToolbar');
+      const rect = el.getBoundingClientRect();
+      const viewportRect = $('pdfViewport').getBoundingClientRect();
+
+      tb.style.display = 'flex';
+      let top = (rect.top - 42);
+      let left = rect.left;
+
+      if (top < viewportRect.top) top = rect.bottom + 6;
+      if (left + 340 > window.innerWidth) left = window.innerWidth - 350;
+
+      tb.style.top = `${top}px`;
+      tb.style.left = `${Math.max(10, left)}px`;
+
+      // Update toolbar control states
+      if (state.activeTextNode) {
+        const node = state.activeTextNode.node;
+        $('tbBtnBold').classList.toggle('active', !!node.isBold);
+        $('tbBtnItalic').classList.toggle('active', !!node.isItalic);
+        $('tbFontSizeDisplay').innerText = node.fontSize || 14;
+        $('tbFontFamilySelect').value = node.fontFamily || "'Plus Jakarta Sans', Arial, sans-serif";
+        $('tbTextColorPicker').value = node.color || '#0f172a';
+      }
+    }
+
+    function deactivateActiveTextEditor() {
+      if (state.activeTextNode) {
+        const { el, node } = state.activeTextNode;
+        el.contentEditable = 'false';
+        el.classList.remove('editing');
+        if (node.text !== node.originalText) {
+          node.isModified = true;
+          el.classList.add('has-edits');
+          saveHistoryState('Edit text: ' + node.text);
+        }
+        state.activeTextNode = null;
+      }
+      $('sejdaFloatingToolbar').style.display = 'none';
+    }
+
+    function handleViewportClick(e) {
+      if (!e.target.closest('.pdf-text-node') && !e.target.closest('#sejdaFloatingToolbar') && !e.target.closest('.pdf-object')) {
+        deactivateActiveTextEditor();
+      }
+    }
+
+    // Floating toolbar actions
+    function toggleActiveTextFormat(format) {
+      if (!state.activeTextNode) return;
+      const { el, node } = state.activeTextNode;
+      if (format === 'bold') {
+        node.isBold = !node.isBold;
+        el.style.fontWeight = node.isBold ? '700' : '400';
+        $('tbBtnBold').classList.toggle('active', !!node.isBold);
+      } else if (format === 'italic') {
+        node.isItalic = !node.isItalic;
+        el.style.fontStyle = node.isItalic ? 'italic' : 'normal';
+        $('tbBtnItalic').classList.toggle('active', !!node.isItalic);
+      }
+      node.isModified = true;
+      el.classList.add('has-edits');
+    }
+
+    function adjustActiveFontSize(delta) {
+      if (!state.activeTextNode) return;
+      const { el, node } = state.activeTextNode;
+      node.fontSize = Math.max(8, Math.min(60, (node.fontSize || 14) + delta));
+      el.style.fontSize = `${node.fontSize}px`;
+      $('tbFontSizeDisplay').innerText = node.fontSize;
+      node.isModified = true;
+      el.classList.add('has-edits');
+      positionFloatingToolbar(el);
+    }
+
+    function changeActiveFontFamily(val) {
+      if (!state.activeTextNode) return;
+      const { el, node } = state.activeTextNode;
+      node.fontFamily = val;
+      el.style.fontFamily = val;
+      node.isModified = true;
+      el.classList.add('has-edits');
+    }
+
+    function changeActiveTextColor(color) {
+      if (!state.activeTextNode) return;
+      const { el, node } = state.activeTextNode;
+      node.color = color;
+      el.style.color = color;
+      node.isModified = true;
+      el.classList.add('has-edits');
+    }
+
+    function duplicateActiveTextNode() {
+      if (!state.activeTextNode) return;
+      const { node, pageIndex } = state.activeTextNode;
+      const clone = { ...node, id: 'text_' + Math.random().toString(36).substr(2, 9), y: node.y + node.height + 6, isModified: true };
+      state.pagesData[pageIndex].textNodes.push(clone);
+      renderTextLayerNodes($(`textLayer_${pageIndex}`), pageIndex);
+      deactivateActiveTextEditor();
+      showToast('Text duplicated!');
+    }
+
+    function deleteActiveTextNode() {
+      if (!state.activeTextNode) return;
+      const { el, node, pageIndex } = state.activeTextNode;
+      node.isDeleted = true;
+      node.isModified = true;
+      node.text = ''; // Clear text so whiteout masks background
+      el.remove();
+      deactivateActiveTextEditor();
+      showToast('Text deleted');
+    }
+
+    // -------------------------------------------------------------
+    // OVERLAYS (STAMPS, DRAWINGS, SHAPES, WHITEOUT)
     // -------------------------------------------------------------
     function activateTool(toolName) {
       state.activeTool = toolName;
@@ -1818,200 +1622,193 @@
         draw: 'toolAnnotateBtn',
         shape: 'toolShapeBtn'
       };
-      if (btnMap[toolName] && $(btnMap[toolName])) {
-        $(btnMap[toolName]).classList.add('active');
-      }
+      if (btnMap[toolName] && $(btnMap[toolName])) $(btnMap[toolName]).classList.add('active');
 
-      // Update overlay cursor modes
       document.querySelectorAll('.page-overlay-layer').forEach(overlay => {
-        overlay.className = `page-overlay-layer tool-${toolName}`;
+        overlay.className = `page-overlay-layer ${toolName !== 'text' ? 'active-tool tool-' + toolName : ''}`;
       });
 
-      // Toggle format sub-bars
-      $('fmtTextControls').style.display = (toolName === 'text' || toolName === 'link') ? 'flex' : 'none';
-      $('fmtShapeControls').style.display = (toolName === 'shape') ? 'flex' : 'none';
-      $('fmtDrawControls').style.display = (toolName === 'draw') ? 'flex' : 'none';
-      $('fmtFormControls').style.display = (toolName === 'form') ? 'flex' : 'none';
-
-      showToast(`Selected tool: ${toolName.toUpperCase()}`);
-    }
-
-    function onPenModeChange(mode) {
-      state.drawState.mode = mode;
-      if (mode === 'highlighter') {
-        $('fmtDrawColor').value = '#facc15';
-        $('fmtDrawThickness').value = '16';
+      if (toolName === 'text') {
+        showToast('Text mode: Click any letter/word in PDF to edit.');
       } else {
-        $('fmtDrawColor').value = '#2563eb';
-        $('fmtDrawThickness').value = '4';
+        deactivateActiveTextEditor();
+        showToast(`Tool active: ${toolName.toUpperCase()}`);
       }
     }
 
-    function updateActiveObjectStyle(property, value) {
-      if (state.activeObject) {
-        state.activeObject[property] = value;
-        const el = $(state.activeObject.id);
-        if (el) {
-          el.style[property] = value;
-          saveHistoryState('Update Style');
-        }
-      }
-    }
+    function setupOverlayDrawing(overlay, pageIndex, viewport) {
+      let isDown = false, startX = 0, startY = 0, tempEl = null;
 
-    function toggleTextStyle(styleType) {
-      if (state.activeObject && state.activeObject.type === 'text') {
-        if (styleType === 'bold') {
-          state.activeObject.isBold = !state.activeObject.isBold;
-        } else if (styleType === 'italic') {
-          state.activeObject.isItalic = !state.activeObject.isItalic;
-        } else if (styleType === 'underline') {
-          state.activeObject.isUnderline = !state.activeObject.isUnderline;
+      overlay.onmousedown = e => {
+        if (state.activeTool === 'text') return;
+        const rect = overlay.getBoundingClientRect();
+        startX = e.clientX - rect.left;
+        startY = e.clientY - rect.top;
+        isDown = true;
+
+        if (state.activeTool === 'whiteout') {
+          tempEl = document.createElement('div');
+          tempEl.style.position = 'absolute';
+          tempEl.style.left = `${startX}px`;
+          tempEl.style.top = `${startY}px`;
+          tempEl.style.background = '#ffffff';
+          tempEl.style.border = '1px dashed #94a3b8';
+          overlay.appendChild(tempEl);
+        } else if (state.activeTool === 'shape') {
+          tempEl = document.createElement('div');
+          tempEl.style.position = 'absolute';
+          tempEl.style.left = `${startX}px`;
+          tempEl.style.top = `${startY}px`;
+          tempEl.style.border = '2px solid #dc2626';
+          tempEl.style.background = 'transparent';
+          overlay.appendChild(tempEl);
         }
-        for (let i = 0; i < state.pagesData.length; i++) {
-          if (state.pagesData[i].objects.includes(state.activeObject)) {
-            renderPageObjects(i);
-            selectObject(state.activeObject.id);
-            break;
+      };
+
+      overlay.onmousemove = e => {
+        if (!isDown || !tempEl) return;
+        const rect = overlay.getBoundingClientRect();
+        const curX = e.clientX - rect.left;
+        const curY = e.clientY - rect.top;
+        tempEl.style.width = `${Math.abs(curX - startX)}px`;
+        tempEl.style.height = `${Math.abs(curY - startY)}px`;
+        tempEl.style.left = `${Math.min(startX, curX)}px`;
+        tempEl.style.top = `${Math.min(startY, curY)}px`;
+      };
+
+      const finish = e => {
+        if (!isDown) return;
+        isDown = false;
+        if (tempEl) {
+          const rect = overlay.getBoundingClientRect();
+          const curX = e.clientX - rect.left;
+          const curY = e.clientY - rect.top;
+          const w = Math.max(14, Math.abs(curX - startX));
+          const h = Math.max(10, Math.abs(curY - startY));
+          const left = Math.min(startX, curX);
+          const top = Math.min(startY, curY);
+          tempEl.remove();
+
+          if (state.activeTool === 'whiteout') {
+            addOverlayObject(pageIndex, { type: 'whiteout', x: left, y: top, width: w, height: h, bg: '#ffffff' });
+          } else if (state.activeTool === 'shape') {
+            addOverlayObject(pageIndex, { type: 'shape', x: left, y: top, width: w, height: h, borderColor: '#dc2626', borderWidth: 2 });
           }
         }
-      }
-    }
-
-    // -------------------------------------------------------------
-    // PAGE OPERATIONS (Delete, Rotate, Zoom, Insert)
-    // -------------------------------------------------------------
-    function deletePage(pageIndex) {
-      const activeCount = state.pagesData.filter(p => !p.isDeleted).length;
-      if (activeCount <= 1) {
-        alert('Cannot delete the only remaining page in the document.');
-        return;
-      }
-      if (confirm(`Delete Page ${pageIndex + 1}?`)) {
-        state.pagesData[pageIndex].isDeleted = true;
-        renderAllPages();
-        saveHistoryState('Delete Page');
-        showToast('Page deleted');
-      }
-    }
-
-    function rotatePage(pageIndex, degrees) {
-      state.pagesData[pageIndex].rotation = (state.pagesData[pageIndex].rotation + degrees + 360) % 360;
-      renderAllPages();
-      saveHistoryState('Rotate Page');
-    }
-
-    function changeZoom(delta) {
-      state.zoom = Math.max(0.5, Math.min(2.5, state.zoom + delta));
-      $('zoomLabel').innerText = `${Math.round(state.zoom * 100)}%`;
-      renderAllPages();
-    }
-
-    function toggleSidebar() {
-      state.isSidebarOpen = !state.isSidebarOpen;
-      $('sidebarThumbs').classList.toggle('collapsed', !state.isSidebarOpen);
-    }
-
-    async function insertBlankPage(afterIndex) {
-      const { jsPDF } = window.jspdf;
-      const blankPdf = new jsPDF({ format: 'a4' });
-      const blankBytes = blankPdf.output('arraybuffer');
-      
-      const newPageMeta = {
-        pageNum: 1,
-        rotation: 0,
-        originalWidth: 595.28,
-        originalHeight: 841.89,
-        width: 595.28,
-        height: 841.89,
-        scale: 1.0,
-        objects: [],
-        isDeleted: false,
-        isCustomBlank: true
       };
-      
-      state.pagesData.splice(afterIndex + 1, 0, newPageMeta);
-      renderAllPages();
-      saveHistoryState('Insert Blank Page');
-      showToast('Blank page inserted!');
+
+      overlay.onmouseup = finish;
+      overlay.onmouseleave = finish;
+    }
+
+    function addOverlayObject(pageIndex, obj) {
+      obj.id = 'obj_' + Date.now() + Math.random().toString(36).substr(2, 4);
+      state.pagesData[pageIndex].objects.push(obj);
+      renderOverlayObjects($(`pageOverlay_${pageIndex}`), pageIndex);
+      saveHistoryState('Add ' + obj.type);
+    }
+
+    function renderOverlayObjects(overlay, pageIndex) {
+      if (!overlay) return;
+      overlay.innerHTML = '';
+      const objs = state.pagesData[pageIndex].objects || [];
+
+      objs.forEach(obj => {
+        const el = document.createElement('div');
+        el.className = 'pdf-object';
+        el.id = obj.id;
+        el.style.left = `${obj.x}px`;
+        el.style.top = `${obj.y}px`;
+        el.style.width = `${obj.width}px`;
+        el.style.height = `${obj.height}px`;
+
+        if (obj.type === 'whiteout') {
+          el.classList.add('pdf-whiteout-elem');
+          el.style.background = obj.bg || '#ffffff';
+        } else if (obj.type === 'sign' || obj.type === 'image') {
+          el.classList.add('pdf-image-elem');
+          const img = document.createElement('img');
+          img.src = obj.imgSrc;
+          el.appendChild(img);
+        } else if (obj.type === 'shape') {
+          el.classList.add('pdf-shape-elem');
+          el.style.border = `${obj.borderWidth || 2}px solid ${obj.borderColor || '#dc2626'}`;
+        }
+
+        // Delete button on click
+        el.onclick = e => {
+          e.stopPropagation();
+          if (confirm('Delete this overlay element?')) {
+            const idx = state.pagesData[pageIndex].objects.indexOf(obj);
+            if (idx !== -1) {
+              state.pagesData[pageIndex].objects.splice(idx, 1);
+              renderOverlayObjects(overlay, pageIndex);
+            }
+          }
+        };
+
+        overlay.appendChild(el);
+      });
     }
 
     // -------------------------------------------------------------
-    // SIGNATURE STUDIO (Draw, Type, Upload)
+    // SIGNATURES & STAMPS
     // -------------------------------------------------------------
     let signCanvas, signCtx, isSignDrawing = false;
 
     function openSignatureModal() {
       $('signModal').classList.add('open');
-      setTimeout(() => initSignCanvas(), 100);
+      setTimeout(() => {
+        signCanvas = $('signCanvas');
+        signCtx = signCanvas.getContext('2d');
+        signCtx.strokeStyle = '#0f172a';
+        signCtx.lineWidth = 3;
+        signCtx.lineCap = 'round';
+        signCanvas.onmousedown = e => {
+          isSignDrawing = true;
+          const r = signCanvas.getBoundingClientRect();
+          signCtx.beginPath();
+          signCtx.moveTo(e.clientX - r.left, e.clientY - r.top);
+        };
+        signCanvas.onmousemove = e => {
+          if (!isSignDrawing) return;
+          const r = signCanvas.getBoundingClientRect();
+          signCtx.lineTo(e.clientX - r.left, e.clientY - r.top);
+          signCtx.stroke();
+        };
+        signCanvas.onmouseup = () => isSignDrawing = false;
+        signCanvas.onmouseleave = () => isSignDrawing = false;
+      }, 100);
     }
 
-    function closeSignatureModal() {
-      $('signModal').classList.remove('open');
-    }
-
-    function initSignCanvas() {
-      signCanvas = $('signCanvas');
-      if (!signCanvas) return;
-      signCtx = signCanvas.getContext('2d');
-      signCtx.strokeStyle = '#0f172a';
-      signCtx.lineWidth = 3;
-      signCtx.lineCap = 'round';
-      signCtx.lineJoin = 'round';
-
-      signCanvas.onmousedown = e => {
-        isSignDrawing = true;
-        const rect = signCanvas.getBoundingClientRect();
-        signCtx.beginPath();
-        signCtx.moveTo(e.clientX - rect.left, e.clientY - rect.top);
-      };
-      signCanvas.onmousemove = e => {
-        if (!isSignDrawing) return;
-        const rect = signCanvas.getBoundingClientRect();
-        signCtx.lineTo(e.clientX - rect.left, e.clientY - rect.top);
-        signCtx.stroke();
-      };
-      signCanvas.onmouseup = () => isSignDrawing = false;
-      signCanvas.onmouseleave = () => isSignDrawing = false;
-    }
-
-    function clearSignCanvas() {
-      if (signCtx) signCtx.clearRect(0, 0, signCanvas.width, signCanvas.height);
-    }
-
-    function setSignPenColor(color, btn) {
-      if (signCtx) signCtx.strokeStyle = color;
-      document.querySelectorAll('.color-swatch-btn').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-    }
-
+    function closeSignatureModal() { $('signModal').classList.remove('open'); }
+    function clearSignCanvas() { if (signCtx) signCtx.clearRect(0, 0, signCanvas.width, signCanvas.height); }
+    function setSignPenColor(c) { if (signCtx) signCtx.strokeStyle = c; }
+    
     function switchSignTab(tab) {
       $('tabSignDraw').classList.toggle('active', tab === 'draw');
       $('tabSignType').classList.toggle('active', tab === 'type');
       $('tabSignUpload').classList.toggle('active', tab === 'upload');
-
       $('signDrawSection').style.display = tab === 'draw' ? 'block' : 'none';
       $('signTypeSection').style.display = tab === 'type' ? 'block' : 'none';
       $('signUploadSection').style.display = tab === 'upload' ? 'block' : 'none';
     }
 
     function updateTypeSignPreview() {
-      const text = $('typeSignInput').value || 'Your Signature';
-      const font = $('typeSignFont').value;
-      const color = $('typeSignColor').value;
       const box = $('typeSignPreviewBox');
-      box.innerText = text;
-      box.style.fontFamily = font;
-      box.style.color = color;
+      box.innerText = $('typeSignInput').value || 'Your Signature';
+      box.style.fontFamily = $('typeSignFont').value;
+      box.style.color = $('typeSignColor').value;
     }
 
     function handleSignImageUpload(file) {
       if (!file) return;
-      const reader = new FileReader();
-      reader.onload = () => {
-        $('signUploadedImg').src = reader.result;
+      const r = new FileReader();
+      r.onload = () => {
+        $('signUploadedImg').src = r.result;
         $('signUploadPreviewWrap').style.display = 'block';
       };
-      reader.readAsDataURL(file);
+      r.readAsDataURL(file);
     }
 
     function saveSignatureAndPlace() {
@@ -2019,10 +1816,8 @@
       if ($('tabSignDraw').classList.contains('active')) {
         dataUrl = signCanvas.toDataURL('image/png');
       } else if ($('tabSignType').classList.contains('active')) {
-        // Render styled text to temporary canvas
         const temp = document.createElement('canvas');
-        temp.width = 400;
-        temp.height = 120;
+        temp.width = 400; temp.height = 120;
         const ctx = temp.getContext('2d');
         ctx.font = `44px ${$('typeSignFont').value}`;
         ctx.fillStyle = $('typeSignColor').value;
@@ -2034,51 +1829,24 @@
         dataUrl = $('signUploadedImg').src;
       }
 
-      if (!dataUrl) {
-        alert('Please draw, type or upload a signature first.');
-        return;
-      }
-
+      if (!dataUrl) return;
       closeSignatureModal();
-      addObjectToPage(0, {
-        type: 'sign',
-        imgSrc: dataUrl,
-        x: 100,
-        y: 200,
-        width: 160,
-        height: 70
-      });
-      showToast('Signature placed on document!');
+      addOverlayObject(0, { type: 'sign', imgSrc: dataUrl, x: 100, y: 220, width: 160, height: 70 });
+      showToast('Signature placed!');
     }
 
-    // -------------------------------------------------------------
-    // IMAGE UPLOADER TOOL
-    // -------------------------------------------------------------
-    function triggerImageUpload() {
-      $('imageToolInput').click();
-    }
-
-    function handleImageToolUpload(file) {
-      if (!file) return;
-      placeImageOnActivePage(file);
-    }
+    function triggerImageUpload() { $('imageToolInput').click(); }
+    function handleImageToolUpload(file) { if (file) placeImageOnActivePage(file); }
 
     function placeImageOnActivePage(file) {
       const reader = new FileReader();
       reader.onload = () => {
         const img = new Image();
         img.onload = () => {
-          let w = 150;
-          let h = (img.height * 150) / img.width;
-          addObjectToPage(0, {
-            type: 'image',
-            imgSrc: reader.result,
-            x: 120,
-            y: 180,
-            width: w,
-            height: h
-          });
-          showToast('Image inserted successfully!');
+          let w = 140;
+          let h = (img.height * 140) / img.width;
+          addOverlayObject(0, { type: 'image', imgSrc: reader.result, x: 120, y: 160, width: w, height: h });
+          showToast('Image / Stamp added!');
         };
         img.src = reader.result;
       };
@@ -2086,9 +1854,51 @@
     }
 
     // -------------------------------------------------------------
-    // HISTORY STACK (UNDO / REDO)
+    // PAGE OPERATIONS (Delete, Rotate, Zoom, Insert)
     // -------------------------------------------------------------
-    function saveHistoryState(actionName) {
+    function deletePage(pageIndex) {
+      if (confirm(`Delete Page ${pageIndex + 1}?`)) {
+        state.pagesData[pageIndex].isDeleted = true;
+        renderAllPages();
+        saveHistoryState('Delete page');
+      }
+    }
+
+    function rotatePage(pageIndex, degrees) {
+      state.pagesData[pageIndex].rotation = (state.pagesData[pageIndex].rotation + degrees + 360) % 360;
+      renderAllPages();
+      saveHistoryState('Rotate page');
+    }
+
+    function changeZoom(delta) {
+      state.zoom = Math.max(0.6, Math.min(2.2, state.zoom + delta));
+      $('zoomLabel').innerText = `${Math.round(state.zoom * 100)}%`;
+      renderAllPages();
+    }
+
+    function toggleSidebar() {
+      state.isSidebarOpen = !state.isSidebarOpen;
+      $('sidebarThumbs').classList.toggle('collapsed', !state.isSidebarOpen);
+    }
+
+    function insertBlankPage(afterIndex) {
+      state.pagesData.splice(afterIndex + 1, 0, {
+        pageNum: 1,
+        rotation: 0,
+        originalWidth: 595.28,
+        originalHeight: 841.89,
+        width: 595.28,
+        height: 841.89,
+        scale: 1.0,
+        textNodes: [],
+        objects: [],
+        isDeleted: false
+      });
+      renderAllPages();
+      saveHistoryState('Insert Page');
+    }
+
+    function saveHistoryState(name) {
       state.history = state.history.slice(0, state.historyIndex + 1);
       state.history.push(JSON.stringify(state.pagesData));
       state.historyIndex = state.history.length - 1;
@@ -2099,7 +1909,7 @@
         state.historyIndex--;
         state.pagesData = JSON.parse(state.history[state.historyIndex]);
         renderAllPages();
-        showToast('Undo performed');
+        showToast('Undo');
       }
     }
 
@@ -2108,131 +1918,72 @@
         state.historyIndex++;
         state.pagesData = JSON.parse(state.history[state.historyIndex]);
         renderAllPages();
-        showToast('Redo performed');
+        showToast('Redo');
       }
     }
 
-    // Keyboard Shortcuts
-    window.addEventListener('keydown', e => {
-      if (e.target.tagName === 'INPUT' || e.target.contentEditable === 'true') return;
-      if (e.ctrlKey && e.key.toLowerCase() === 'z') {
-        e.preventDefault();
-        undoAction();
-      } else if (e.ctrlKey && e.key.toLowerCase() === 'y') {
-        e.preventDefault();
-        redoAction();
-      } else if (e.key === 'Delete' || e.key === 'Backspace') {
-        if (state.activeObject) {
-          e.preventDefault();
-          deleteObject(state.activeObject.id);
-        }
-      } else if (e.key === 'Escape') {
-        deselectAllObjects();
-      }
-    });
-
     // -------------------------------------------------------------
-    // LOAD SAMPLE GOVERNMENT CERTIFICATE / ACKNOWLEDGEMENT
+    // LOAD SAMPLE JHARKHAND / CSC ACKNOWLEDGEMENT WITH EDITABLE TEXT
     // -------------------------------------------------------------
     async function loadSampleDoc(type) {
-      showToast('Generating sample document...');
+      showToast('Loading document with editable text...');
       const { jsPDF } = window.jspdf;
       const pdf = new jsPDF({ format: 'a4', unit: 'pt' });
-      
       const width = pdf.internal.pageSize.getWidth();
       const height = pdf.internal.pageSize.getHeight();
 
       if (type === 'acknowledgement') {
-        state.fileName = 'JharSewa_Acknowledgement_Slip.pdf';
+        state.fileName = 'Acknowledgement_Slip_JharSewa.pdf';
         
-        // Header Border
         pdf.setLineWidth(1.5);
         pdf.setDrawColor(30, 41, 59);
         pdf.rect(20, 20, width - 40, height - 40);
-        pdf.rect(24, 24, width - 48, height - 48);
 
-        // Title
         pdf.setFont('helvetica', 'bold');
-        pdf.setFontSize(16);
+        pdf.setFontSize(15);
         pdf.setTextColor(15, 23, 42);
-        pdf.text('Government of Jharkhand / झारखण्ड सरकार', width / 2, 60, { align: 'center' });
-        
-        pdf.setFontSize(14);
-        pdf.setTextColor(37, 99, 235);
-        pdf.text('Acknowledgement Slip / पावती (JharSewa)', width / 2, 82, { align: 'center' });
+        pdf.text('Acknowledgement Slip पावती (JharSewa)', width / 2, 55, { align: 'center' });
 
-        // Notice Quote
         pdf.setFont('helvetica', 'normal');
-        pdf.setFontSize(9.5);
+        pdf.setFontSize(9);
         pdf.setTextColor(71, 85, 105);
-        pdf.text('"This is a system generated acknowledgement slip. It does not require any signature."', width / 2, 105, { align: 'center' });
+        pdf.text('"This is a system generated acknowledgement slip. It does not require any signature."', width / 2, 75, { align: 'center' });
+        pdf.text('Track application status on \'www.serviceonline.jharkhand.gov.in\'. Contact nearest CSC Operator.', width / 2, 90, { align: 'center' });
 
-        // Data Table
-        pdf.setDrawColor(203, 213, 225);
-        pdf.setFillColor(248, 250, 252);
-        pdf.rect(40, 125, width - 80, 24, 'FD');
-        pdf.setFont('helvetica', 'bold');
-        pdf.setFontSize(10);
-        pdf.setTextColor(15, 23, 42);
-        pdf.text('APPLICATION DETAILS / आवेदन विवरण', 50, 141);
-
+        // Table Rows
         const rows = [
-          ['Application Ref No / आवेदन संख्या:', 'JH-CC/2026/98421045'],
-          ['Applied Service Name / सेवा का नाम:', 'Issuance of Caste Certificate (OBC/EWS)'],
-          ['Applicant Full Name / आवेदक का नाम:', 'Rahul Kumar Sharma'],
-          ['Father / Husband Name / पिता का नाम:', 'Rajesh Kumar Sharma'],
-          ['Mobile Number / मोबाइल नंबर:', '+91 98765 43210'],
-          ['Applied Center / केंद्र का नाम:', 'CSC Jan Seva Kendra Ranchi (VLE-44210)'],
-          ['Application Submission Date:', '03/10/2026, 09:30 AM'],
-          ['Target Delivery Date / अंतिम तिथि:', '18/10/2026 (15 Working Days)']
+          ['Application Type / आवेदन का प्रकार', ': Normal'],
+          ['Applicant\'s Name / आवेदक का नाम', ': MD LIYAKAT ALI'],
+          ['Father Name / पिता का नाम', ': YUSUF ALI'],
+          ['Applicant\'s Address / पता', ': AT- BORIO BAZAR , BORIO,SAHEBGANJ , 816120'],
+          ['Service Applied for / आवेदित', ': Caste Certificate for EBC I'],
+          ['Application Reference No. / सन्दर्भ संख्या', ': JHCBC/2026/1031102'],
+          ['Application Received Date / आवेदन की तिथि', ': 25/08/2026'],
+          ['Payment Details / भुगतान की विवरणी', ': Payment received for amount Rs:30.0 via CSC E-Wallet Payment']
         ];
 
-        let startY = 170;
+        let startY = 160;
         rows.forEach(([label, val], idx) => {
           pdf.setFont('helvetica', 'bold');
-          pdf.setFontSize(9.5);
-          pdf.setTextColor(51, 65, 85);
-          pdf.text(label, 45, startY + (idx * 24));
+          pdf.setFontSize(10);
+          pdf.setTextColor(30, 41, 59);
+          pdf.text(label, 40, startY + (idx * 28));
 
-          pdf.setFont('helvetica', 'normal');
+          pdf.setFont('helvetica', 'bold');
           pdf.setTextColor(15, 23, 42);
-          pdf.text(val, 240, startY + (idx * 24));
-
-          pdf.setDrawColor(226, 232, 240);
-          pdf.line(40, startY + (idx * 24) + 6, width - 40, startY + (idx * 24) + 6);
+          pdf.text(val, 240, startY + (idx * 28));
         });
 
-        // Instructions
-        const footerY = 400;
-        pdf.setFillColor(239, 246, 255);
-        pdf.rect(40, footerY, width - 80, 80, 'FD');
-        pdf.setFont('helvetica', 'bold');
-        pdf.setTextColor(30, 58, 138);
-        pdf.text('Important Instructions / महत्वपूर्ण निर्देश:', 50, footerY + 20);
-        pdf.setFont('helvetica', 'normal');
-        pdf.setFontSize(8.5);
-        pdf.text('1. Track application status anytime at: https://serviceonline.gov.in', 50, footerY + 38);
-        pdf.text('2. Keep original documents ready for physical verification if required by Block Officer.', 50, footerY + 54);
-        pdf.text('3. You will receive an SMS notification once your digital certificate is ready for download.', 50, footerY + 70);
-
-      } else if (type === 'blank') {
-        state.fileName = 'Blank_A4_Document.pdf';
-        pdf.setFont('helvetica', 'normal');
-        pdf.setFontSize(12);
-        pdf.setTextColor(148, 163, 184);
-        pdf.text('Click anywhere on this page to start typing or insert images & signatures.', 40, 60);
       } else {
-        state.fileName = 'Income_Affidavit_Form.pdf';
+        state.fileName = 'Self_Declaration_Affidavit.pdf';
         pdf.setFont('helvetica', 'bold');
-        pdf.setFontSize(16);
+        pdf.setFontSize(15);
         pdf.text('FORM OF DECLARATION / SELF AFFIDAVIT', width / 2, 60, { align: 'center' });
         pdf.setFontSize(11);
         pdf.setFont('helvetica', 'normal');
-        pdf.text('I, ___________________________ Son/Daughter of ___________________________', 40, 100);
-        pdf.text('Resident of: ___________________________________________________________', 40, 130);
-        pdf.text('Do hereby solemnly affirm and declare that my annual family income from all sources', 40, 160);
-        pdf.text('is Rs. _______________ (Rupees: _________________________________________).', 40, 190);
-        pdf.text('Signature of Declarant / आवेदक का हस्ताक्षर:', 40, 320);
+        pdf.text('Applicant Full Name: RAJESH KUMAR SHARMA', 40, 110);
+        pdf.text('Father Name: RAMESH SHARMA', 40, 140);
+        pdf.text('District / Block: RANCHI SADAR, JHARKHAND', 40, 170);
       }
 
       const bytes = pdf.output('arraybuffer');
@@ -2240,46 +1991,42 @@
     }
 
     function resetEditorDocument() {
-      if (confirm('Close current document and open another? Any unsaved edits will be discarded.')) {
+      if (confirm('Close current document and open another?')) {
         state.pdfDoc = null;
         state.pdfRawBytes = null;
         state.pagesData = [];
-        state.history = [];
-        state.historyIndex = -1;
         $('uploadHeroWrap').style.display = 'block';
         $('headerDocInfo').style.display = 'none';
         $('editorToolbar').style.display = 'none';
         $('editorMainContainer').style.display = 'none';
         $('floatingBottomBar').style.display = 'none';
-        $('formatSubBar').style.display = 'none';
+        $('sejdaFloatingToolbar').style.display = 'none';
       }
     }
 
     // -------------------------------------------------------------
-    // APPLY CHANGES & EXPORT HIGH DEFINITION PDF (WITH WALLET DEDUCTION)
+    // APPLY CHANGES & EXPORT (WITH IN-PLACE REPLACED LETTERS)
     // -------------------------------------------------------------
     async function applyAndExportPdf(isDirectPrint = false) {
       if (!state.pdfDoc) return;
+      deactivateActiveTextEditor();
 
       const executeExport = async () => {
-        showToast('Compiling and saving High-Definition PDF...');
+        showToast('Rendering and compiling edited PDF...');
 
         try {
           const { jsPDF } = window.jspdf;
           let outputPdf = null;
 
-          // Render each page with its full canvas & overlay elements
           for (let i = 0; i < state.pagesData.length; i++) {
             const pageMeta = state.pagesData[i];
             if (pageMeta.isDeleted) continue;
 
             const wrap = $(`pageWrapper_${i}`);
             const pageCanvas = wrap.querySelector('.page-canvas-bg');
-            const overlay = $(`pageOverlay_${i}`);
 
-            // Create high-res composite export canvas
             const exportCanvas = document.createElement('canvas');
-            const scale = 2.0; // 2x for sharp print quality
+            const scale = 2.0; // 2x high resolution
             exportCanvas.width = wrap.offsetWidth * scale;
             exportCanvas.height = wrap.offsetHeight * scale;
             const ctx = exportCanvas.getContext('2d');
@@ -2288,41 +2035,41 @@
             // 1. Draw base PDF canvas
             ctx.drawImage(pageCanvas, 0, 0, wrap.offsetWidth, wrap.offsetHeight);
 
-            // 2. Draw all objects (Whiteouts, Shapes, Images, Texts, Signatures)
-            for (const obj of pageMeta.objects) {
+            // 2. Whiteout & draw modified / edited in-place text nodes
+            const textNodes = pageMeta.textNodes || [];
+            for (const node of textNodes) {
+              if (node.isModified || node.isDeleted) {
+                // Erase background original text with white mask
+                ctx.fillStyle = '#ffffff';
+                ctx.fillRect(node.x - 2, node.y - 2, node.width + 6, node.height + 4);
+
+                // Draw new edited letters on top
+                if (node.text && node.text.trim() !== '') {
+                  ctx.fillStyle = node.color || '#0f172a';
+                  const fontWeight = node.isBold ? 'bold ' : 'normal ';
+                  const fontStyle = node.isItalic ? 'italic ' : '';
+                  ctx.font = `${fontStyle}${fontWeight}${node.fontSize}px ${node.fontFamily || 'Arial, sans-serif'}`;
+                  ctx.textBaseline = 'top';
+                  ctx.fillText(node.text, node.x, node.y);
+                }
+              }
+            }
+
+            // 3. Draw added stamps, signatures, shapes, whiteout boxes
+            const objs = pageMeta.objects || [];
+            for (const obj of objs) {
               if (obj.type === 'whiteout') {
                 ctx.fillStyle = obj.bg || '#ffffff';
                 ctx.fillRect(obj.x, obj.y, obj.width, obj.height);
               } else if (obj.type === 'shape') {
                 ctx.lineWidth = obj.borderWidth || 2;
                 ctx.strokeStyle = obj.borderColor || '#dc2626';
-                ctx.fillStyle = obj.fillColor || 'transparent';
-                if (obj.shapeType === 'ellipse') {
-                  ctx.beginPath();
-                  ctx.ellipse(obj.x + obj.width / 2, obj.y + obj.height / 2, obj.width / 2, obj.height / 2, 0, 0, 2 * Math.PI);
-                  if (obj.fillColor && obj.fillColor !== 'transparent') ctx.fill();
-                  ctx.stroke();
-                } else {
-                  if (obj.fillColor && obj.fillColor !== 'transparent') ctx.fillRect(obj.x, obj.y, obj.width, obj.height);
-                  ctx.strokeRect(obj.x, obj.y, obj.width, obj.height);
-                }
+                ctx.strokeRect(obj.x, obj.y, obj.width, obj.height);
               } else if (obj.type === 'image' || obj.type === 'sign') {
                 const img = new Image();
                 img.src = obj.imgSrc;
                 await new Promise(r => { img.onload = r; img.onerror = r; });
                 ctx.drawImage(img, obj.x, obj.y, obj.width, obj.height);
-              } else if (obj.type === 'text') {
-                ctx.fillStyle = obj.color || '#0f172a';
-                const fontSizeNum = parseInt(obj.fontSize) || 14;
-                const fontStyle = obj.isItalic ? 'italic ' : '';
-                const fontWeight = obj.isBold ? 'bold ' : 'normal ';
-                ctx.font = `${fontStyle}${fontWeight}${fontSizeNum}px ${obj.fontFamily || 'Arial, sans-serif'}`;
-                ctx.textBaseline = 'top';
-
-                const lines = (obj.text || '').split('\n');
-                lines.forEach((line, lineIdx) => {
-                  ctx.fillText(line, obj.x + 2, obj.y + 2 + (lineIdx * fontSizeNum * 1.25));
-                });
               }
             }
 
@@ -2349,16 +2096,15 @@
           } else {
             const outName = state.fileName.replace(/\.pdf$/i, '') + '_edited.pdf';
             outputPdf.save(outName);
-            showToast('PDF downloaded successfully!');
+            showToast('Edited PDF downloaded successfully!');
           }
 
-        } catch (exportErr) {
-          console.error('Export error:', exportErr);
-          alert('Failed to generate final PDF: ' + exportErr.message);
+        } catch (err) {
+          console.error('Export error:', err);
+          alert('Failed to export PDF: ' + err.message);
         }
       };
 
-      // Wallet Charge Interception
       if (window.JustcardWallet) {
         window.JustcardWallet.chargeService('pdfEditor', 'Online PDF Editor Studio', () => {
           executeExport();
@@ -2368,7 +2114,6 @@
       }
     }
 
-    // Startup Initialization
     document.addEventListener('DOMContentLoaded', () => {
       setupDragAndDrop();
     });
