@@ -2507,38 +2507,49 @@
     }
 
     // -------------------------------------------------------------
-    // APPLY CHANGES & EXPORT
+    // APPLY CHANGES & EXPORT (WITH PERFECT A4 ALIGNMENT & ZERO CUT-OFF)
     // -------------------------------------------------------------
     async function applyAndExportPdf(isDirectPrint = false) {
-      if (!state.pdfDoc) return;
+      if (!state.pdfDoc && state.pagesData.length === 0) return;
       deactivateActiveTextEditor();
       deselectAllOverlayObjects();
 
       const executeExport = async () => {
-        showToast('Rendering and compiling edited PDF...');
+        showToast(isDirectPrint ? 'Preparing A4 Print Preview...' : 'Rendering and compiling edited PDF...');
 
         try {
           const { jsPDF } = window.jspdf;
           let outputPdf = null;
+          const renderedPageImages = [];
+
+          const A4_PT_W = 595.28; // 210mm in pt
+          const A4_PT_H = 841.89; // 297mm in pt
 
           for (let i = 0; i < state.pagesData.length; i++) {
             const pageMeta = state.pagesData[i];
             if (pageMeta.isDeleted) continue;
 
             const wrap = $(`pageWrapper_${i}`);
+            if (!wrap) continue;
             const pageCanvas = wrap.querySelector('.page-canvas-bg');
 
+            // High resolution export canvas (2.5x supersampling for 300 DPI print quality)
             const exportCanvas = document.createElement('canvas');
-            const scale = 2.0;
+            const scale = 2.5;
             exportCanvas.width = wrap.offsetWidth * scale;
             exportCanvas.height = wrap.offsetHeight * scale;
             const ctx = exportCanvas.getContext('2d');
             ctx.scale(scale, scale);
 
-            // 1. Base canvas
-            ctx.drawImage(pageCanvas, 0, 0, wrap.offsetWidth, wrap.offsetHeight);
+            // 1. Draw base page canvas
+            if (pageCanvas) {
+              ctx.drawImage(pageCanvas, 0, 0, wrap.offsetWidth, wrap.offsetHeight);
+            } else {
+              ctx.fillStyle = '#ffffff';
+              ctx.fillRect(0, 0, wrap.offsetWidth, wrap.offsetHeight);
+            }
 
-            // 2. Modified text nodes
+            // 2. Render modified text nodes
             const textNodes = pageMeta.textNodes || [];
             for (const node of textNodes) {
               if (node.isModified || node.isDeleted) {
@@ -2556,7 +2567,7 @@
               }
             }
 
-            // 3. Added stamps, signatures, images, shapes
+            // 3. Render added stamps, signatures, images, shapes
             const objs = pageMeta.objects || [];
             for (const obj of objs) {
               if (obj.type === 'whiteout') {
@@ -2585,30 +2596,51 @@
               }
             }
 
-            const imgData = exportCanvas.toDataURL('image/jpeg', 0.95);
+            const imgData = exportCanvas.toDataURL('image/jpeg', 0.96);
+            renderedPageImages.push(imgData);
+
+            // True A4 Orientation & Bounds Setup
             const isLandscape = wrap.offsetWidth > wrap.offsetHeight;
+            const pdfTargetW = isLandscape ? A4_PT_H : A4_PT_W;
+            const pdfTargetH = isLandscape ? A4_PT_W : A4_PT_H;
+
+            // Safe Margins (approx 4mm / 11pt) to prevent any hardware printer margin clipping
+            const safeMargin = 10;
+            const availW = pdfTargetW - (safeMargin * 2);
+            const availH = pdfTargetH - (safeMargin * 2);
+
+            const pageAspect = wrap.offsetWidth / wrap.offsetHeight;
+            let drawW = availW;
+            let drawH = drawW / pageAspect;
+
+            if (drawH > availH) {
+              drawH = availH;
+              drawW = drawH * pageAspect;
+            }
+
+            const drawX = safeMargin + (availW - drawW) / 2;
+            const drawY = safeMargin + (availH - drawH) / 2;
 
             if (!outputPdf) {
               outputPdf = new jsPDF({
                 orientation: isLandscape ? 'landscape' : 'portrait',
                 unit: 'pt',
-                format: [wrap.offsetWidth, wrap.offsetHeight]
+                format: 'a4'
               });
             } else {
-              outputPdf.addPage([wrap.offsetWidth, wrap.offsetHeight], isLandscape ? 'landscape' : 'portrait');
+              outputPdf.addPage('a4', isLandscape ? 'landscape' : 'portrait');
             }
 
-            outputPdf.addImage(imgData, 'JPEG', 0, 0, wrap.offsetWidth, wrap.offsetHeight);
+            outputPdf.addImage(imgData, 'JPEG', drawX, drawY, drawW, drawH, undefined, 'FAST');
           }
 
           if (isDirectPrint) {
-            outputPdf.autoPrint();
-            const blobUrl = outputPdf.output('bloburl');
-            window.open(blobUrl, '_blank');
+            // DIRECT BROWSER A4 PRINT ENGINE (Zero Margins Cut, Perfectly Centered)
+            printRenderedPagesDirectly(renderedPageImages);
           } else {
-            const outName = state.fileName.replace(/\.pdf$/i, '') + '_edited.pdf';
+            const outName = state.fileName.replace(/\.pdf$/i, '') + '_A4_edited.pdf';
             outputPdf.save(outName);
-            showToast('Edited PDF downloaded successfully!');
+            showToast('Edited A4 PDF downloaded successfully!');
           }
 
         } catch (err) {
@@ -2624,6 +2656,85 @@
       } else {
         executeExport();
       }
+    }
+
+    // -------------------------------------------------------------
+    // DEDICATED A4 ZERO-CUT PRINT ENGINE VIA HIDDEN IFRAME
+    // -------------------------------------------------------------
+    function printRenderedPagesDirectly(images) {
+      if (!images || images.length === 0) return;
+
+      let printFrame = $('pdfDirectPrintFrame');
+      if (!printFrame) {
+        printFrame = document.createElement('iframe');
+        printFrame.id = 'pdfDirectPrintFrame';
+        printFrame.style.position = 'fixed';
+        printFrame.style.right = '0';
+        printFrame.style.bottom = '0';
+        printFrame.style.width = '0';
+        printFrame.style.height = '0';
+        printFrame.style.border = 'none';
+        document.body.appendChild(printFrame);
+      }
+
+      const doc = printFrame.contentWindow.document;
+      doc.open();
+      doc.write(`
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <title>Print Document — Justcard A4 Studio</title>
+          <style>
+            @page {
+              size: A4 portrait;
+              margin: 0;
+            }
+            * { box-sizing: border-box; margin: 0; padding: 0; }
+            body {
+              background: #ffffff;
+              color: #000000;
+              -webkit-print-color-adjust: exact;
+              print-color-adjust: exact;
+            }
+            .a4-print-page {
+              width: 210mm;
+              height: 297mm;
+              max-height: 297mm;
+              page-break-after: always;
+              break-after: page;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              padding: 4mm;
+              box-sizing: border-box;
+              overflow: hidden;
+            }
+            .a4-print-page:last-child {
+              page-break-after: avoid;
+              break-after: avoid;
+            }
+            .a4-print-page img {
+              max-width: 100%;
+              max-height: 100%;
+              width: auto;
+              height: auto;
+              object-fit: contain;
+              display: block;
+            }
+          </style>
+        </head>
+        <body>
+          ${images.map(img => `<div class="a4-print-page"><img src="${img}"></div>`).join('')}
+        </body>
+        </html>
+      `);
+      doc.close();
+
+      setTimeout(() => {
+        printFrame.contentWindow.focus();
+        printFrame.contentWindow.print();
+        showToast('Print dialog opened with exact A4 alignment!');
+      }, 350);
     }
 
     document.addEventListener('DOMContentLoaded', () => {
