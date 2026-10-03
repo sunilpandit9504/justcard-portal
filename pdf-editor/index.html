@@ -322,20 +322,20 @@
       margin: 0;
       border: 1px solid transparent;
       border-radius: 1px;
-      color: transparent; /* Invisible by default so canvas text shows crisply */
+      color: transparent;
       background: transparent;
       outline: none;
       z-index: 10;
     }
 
-    /* Hover State: Sleek blue dashed box without duplicate text */
+    /* Hover State */
     .tool-text .pdf-text-node:hover:not(.editing) {
       border: 1px dashed #3b82f6 !important;
       background: rgba(59, 130, 246, 0.08) !important;
       color: transparent !important;
     }
 
-    /* Active Editing State: Canvas underneath is cleared, DOM text replaces it seamlessly */
+    /* Active Editing State */
     .pdf-text-node.editing {
       background: #ffffff !important;
       color: #0f172a !important;
@@ -344,7 +344,6 @@
       z-index: 50;
     }
     
-    /* Modified State after editing */
     .pdf-text-node.has-edits {
       background: #ffffff !important;
       color: #0f172a !important;
@@ -355,7 +354,7 @@
       border: 1px dashed #3b82f6 !important;
     }
 
-    /* SEJDA FLOATING INLINE FORMATTING TOOLBAR */
+    /* SEJDA FLOATING INLINE FORMATTING TOOLBAR (TEXT) */
     .sejda-floating-toolbar {
       position: absolute;
       background: #ffffff;
@@ -412,11 +411,11 @@
       margin: 0 2px;
     }
 
-    /* OVERLAY INTERACTION LAYER FOR SHAPES, IMAGES, SIGNS, WHITEOUT */
+    /* OVERLAY INTERACTION LAYER */
     .page-overlay-layer {
       position: absolute;
       inset: 0;
-      overflow: hidden;
+      overflow: visible;
       cursor: default;
       pointer-events: none;
       z-index: 30;
@@ -428,7 +427,7 @@
     .page-overlay-layer.tool-draw { cursor: crosshair; }
     .page-overlay-layer.tool-shape { cursor: crosshair; }
 
-    /* EDITABLE OBJECTS ON PDF */
+    /* EDITABLE / DRAGGABLE / RESIZABLE OBJECTS (IMAGES, SIGNS, STAMPS, SHAPES, WHITEOUT) */
     .pdf-object {
       position: absolute;
       user-select: none;
@@ -436,49 +435,105 @@
       touch-action: none;
       pointer-events: auto;
       z-index: 40;
+      cursor: grab;
+      border: 1.5px dashed transparent;
+      transition: border-color 0.1s;
+    }
+    .pdf-object:hover {
+      border: 1.5px dashed #3b82f6;
+    }
+    .pdf-object:active, .pdf-object.dragging {
+      cursor: grabbing !important;
     }
     .pdf-object.selected {
-      outline: 1.5px dashed #2563eb;
+      border: 2px solid #2563eb !important;
+      box-shadow: 0 4px 20px rgba(37, 99, 235, 0.35);
+      z-index: 100;
     }
+
+    /* Floating action pill on top of selected image/sign */
     .pdf-object .obj-controls {
       display: none;
       position: absolute;
-      top: -30px;
-      left: 0;
-      background: #1e293b;
+      top: -42px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #0f172a;
       color: #fff;
-      padding: 3px 6px;
-      border-radius: 4px;
-      font-size: 11px;
+      padding: 5px 10px;
+      border-radius: 8px;
+      font-size: 11.5px;
       gap: 6px;
       align-items: center;
       z-index: 1000;
       white-space: nowrap;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+      box-shadow: 0 4px 18px rgba(0,0,0,0.4);
+      pointer-events: auto;
+      border: 1px solid rgba(255,255,255,0.15);
     }
     .pdf-object.selected .obj-controls { display: flex; }
     .obj-controls button {
-      background: transparent;
+      background: rgba(255,255,255,0.15);
       border: none;
-      color: #cbd5e1;
+      color: #f1f5f9;
       cursor: pointer;
-      padding: 2px 4px;
-      font-size: 11px;
-      transition: color 0.1s;
+      padding: 4px 8px;
+      font-size: 11.5px;
+      border-radius: 5px;
+      transition: all 0.15s;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-weight: 750;
     }
-    .obj-controls button:hover { color: #fff; }
-    .obj-controls button.del-btn:hover { color: #ef4444; }
+    .obj-controls button:hover { background: rgba(255,255,255,0.3); color: #fff; transform: scale(1.06); }
+    .obj-controls button.del-btn { background: rgba(239, 68, 68, 0.25); color: #fca5a5; }
+    .obj-controls button.del-btn:hover { background: #dc2626; color: #fff; }
+    .obj-controls .obj-badge {
+      font-size: 10px;
+      font-weight: 800;
+      background: #3b82f6;
+      color: #fff;
+      padding: 2px 6px;
+      border-radius: 4px;
+      text-transform: uppercase;
+    }
+
+    /* 8 RESIZE HANDLES (CHHOTA / BADA KARNE KE POINTS) */
+    .resize-handle {
+      position: absolute;
+      width: 12px;
+      height: 12px;
+      background: #2563eb;
+      border: 2px solid #ffffff;
+      border-radius: 50%;
+      display: none;
+      z-index: 999;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.35);
+      transition: transform 0.1s;
+    }
+    .resize-handle:hover {
+      transform: scale(1.35);
+      background: #1d4ed8;
+    }
+    .pdf-object.selected .resize-handle { display: block; }
+    .handle-nw { top: -7px; left: -7px; cursor: nwse-resize; }
+    .handle-ne { top: -7px; right: -7px; cursor: nesw-resize; }
+    .handle-se { bottom: -7px; right: -7px; cursor: nwse-resize; }
+    .handle-sw { bottom: -7px; left: -7px; cursor: nesw-resize; }
+    .handle-n { top: -7px; left: calc(50% - 6px); cursor: ns-resize; }
+    .handle-s { bottom: -7px; left: calc(50% - 6px); cursor: ns-resize; }
+    .handle-w { top: calc(50% - 6px); left: -7px; cursor: ew-resize; }
+    .handle-e { top: calc(50% - 6px); right: -7px; cursor: ew-resize; }
 
     /* WHITEOUT ELEMENT */
     .pdf-whiteout-elem {
       background: #ffffff;
-      border: 1px solid transparent;
-      cursor: move;
     }
 
     /* IMAGE / SIGN ELEMENT */
     .pdf-image-elem, .pdf-sign-elem {
-      cursor: move;
+      background: transparent;
     }
     .pdf-image-elem img, .pdf-sign-elem img {
       width: 100%;
@@ -490,7 +545,6 @@
 
     /* SHAPE ELEMENT */
     .pdf-shape-elem {
-      cursor: move;
       box-sizing: border-box;
     }
 
@@ -827,7 +881,7 @@
 
   </div>
 
-  <!-- SEJDA FLOATING INLINE FORMATTING TOOLBAR -->
+  <!-- SEJDA FLOATING INLINE FORMATTING TOOLBAR (TEXT) -->
   <div class="sejda-floating-toolbar" id="sejdaFloatingToolbar">
     <button type="button" class="sejda-tb-btn" id="tbBtnBold" onclick="toggleActiveTextFormat('bold')" title="Bold (Ctrl+B)"><b>B</b></button>
     <button type="button" class="sejda-tb-btn" id="tbBtnItalic" onclick="toggleActiveTextFormat('italic')" title="Italic (Ctrl+I)"><i>I</i></button>
@@ -1030,7 +1084,7 @@
   </div>
 
   <!-- =========================================================================
-       CORE PDF EDITOR JAVASCRIPT ENGINE (SEJDA LIVE IN-PLACE LETTER EDITING)
+       CORE PDF EDITOR JAVASCRIPT ENGINE
        ========================================================================= -->
   <script>
     if (typeof pdfjsLib !== 'undefined') {
@@ -1045,7 +1099,7 @@
       zoom: 1.0,
       activeTool: 'text',
       activeTextNode: null,
-      activeObject: null,
+      activeSelectedObjectId: null,
       pagesData: [],
       history: [],
       historyIndex: -1,
@@ -1195,7 +1249,7 @@
 
         await renderAllPages();
         saveHistoryState('Document Opened');
-        showToast('PDF ready! Click directly on any text to edit letters.');
+        showToast('PDF ready! Click on any text, image or signature to edit, move or resize.');
       } catch (err) {
         console.error('PDF load error:', err);
         if (err.name === 'PasswordException') {
@@ -1223,7 +1277,7 @@
     }
 
     // -------------------------------------------------------------
-    // RENDER ALL PAGES (Canvas + Accurate Text Layer)
+    // RENDER ALL PAGES
     // -------------------------------------------------------------
     async function renderAllPages() {
       const container = $('pagesStageContainer');
@@ -1244,7 +1298,7 @@
         const effectiveRotation = (page.rotate + pageMeta.rotation) % 360;
         const baseViewport = page.getViewport({ scale: 1.33 * state.zoom, rotation: effectiveRotation });
 
-        // Page Header Controls
+        // Page Controls
         const controlBar = document.createElement('div');
         controlBar.className = 'page-action-bar';
         controlBar.innerHTML = `
@@ -1256,14 +1310,14 @@
         `;
         container.appendChild(controlBar);
 
-        // Page Wrapper Box
+        // Page Box
         const pageWrap = document.createElement('div');
         pageWrap.className = 'page-wrapper';
         pageWrap.id = `pageWrapper_${idx}`;
         pageWrap.style.width = `${baseViewport.width}px`;
         pageWrap.style.height = `${baseViewport.height}px`;
 
-        // 1. High DPI Background Canvas
+        // 1. Canvas Background
         const canvas = document.createElement('canvas');
         canvas.className = 'page-canvas-bg';
         canvas.width = baseViewport.width * 1.5;
@@ -1281,7 +1335,6 @@
         textLayer.id = `textLayer_${idx}`;
         textLayer.dataset.pageIndex = idx;
         
-        // Extract text items from PDF
         if (!pageMeta.textNodes || pageMeta.textNodes.length === 0) {
           const textContent = await page.getTextContent();
           pageMeta.textNodes = extractAndMergeTextLines(textContent.items, baseViewport, page);
@@ -1290,7 +1343,7 @@
         renderTextLayerNodes(textLayer, idx);
         pageWrap.appendChild(textLayer);
 
-        // 3. User Overlays
+        // 3. User Overlay Layer (For Images, Signs, Stamps, Shapes, Whiteouts)
         const overlay = document.createElement('div');
         overlay.className = `page-overlay-layer ${state.activeTool !== 'text' ? 'active-tool' : ''}`;
         overlay.id = `pageOverlay_${idx}`;
@@ -1301,7 +1354,7 @@
 
         container.appendChild(pageWrap);
 
-        // Sidebar Thumbnail
+        // Thumbnail
         const thumbBox = document.createElement('div');
         thumbBox.className = `thumb-item ${idx === 0 ? 'active' : ''}`;
         thumbBox.onclick = () => {
@@ -1323,7 +1376,7 @@
     }
 
     // -------------------------------------------------------------
-    // EXTRACT & ALIGN TEXT WITH SUB-PIXEL ACCURACY
+    // EXTRACT TEXT LINES
     // -------------------------------------------------------------
     function extractAndMergeTextLines(items, viewport, page) {
       if (!items || items.length === 0) return [];
@@ -1335,7 +1388,6 @@
         const transform = pdfjsLib.Util.transform(viewport.transform, item.transform);
         const fontSize = Math.sqrt(transform[0] * transform[0] + transform[1] * transform[1]);
         const x = transform[4];
-        // Exact top alignment with typography baseline
         const y = transform[5] - (fontSize * 0.82);
         const width = item.width * (viewport.scale || 1.33);
 
@@ -1370,10 +1422,8 @@
         });
       }
 
-      // Sort top-to-bottom, left-to-right
       rawNodes.sort((a, b) => Math.abs(a.y - b.y) > 4 ? a.y - b.y : a.x - b.x);
 
-      // Merge adjacent items on same line into single continuous phrase
       const merged = [];
       let current = null;
 
@@ -1402,9 +1452,6 @@
       return merged;
     }
 
-    // -------------------------------------------------------------
-    // RENDER TEXT NODES (INVISIBLE UNTIL HOVER/EDIT)
-    // -------------------------------------------------------------
     function renderTextLayerNodes(textLayer, pageIndex) {
       textLayer.innerHTML = '';
       const nodes = state.pagesData[pageIndex].textNodes || [];
@@ -1430,9 +1477,9 @@
           el.style.color = node.color || '#0f172a';
         }
 
-        // Direct click activates in-place letter editing
         el.addEventListener('click', e => {
           e.stopPropagation();
+          deselectAllOverlayObjects();
           activateInPlaceTextEditor(el, node, pageIndex);
         });
 
@@ -1440,17 +1487,12 @@
       });
     }
 
-    // -------------------------------------------------------------
-    // INSTANT BACKGROUND WIPE & IN-PLACE LETTER EDITING
-    // -------------------------------------------------------------
     function wipeCanvasUnderText(pageIndex, node) {
       const wrap = $(`pageWrapper_${pageIndex}`);
       if (!wrap) return;
       const canvas = wrap.querySelector('.page-canvas-bg');
       if (!canvas) return;
       const ctx = canvas.getContext('2d');
-      
-      // Clear original rasterized text on canvas bitmap to eliminate any double-text or ghost shadow
       ctx.save();
       ctx.fillStyle = '#ffffff';
       ctx.fillRect(node.x - 2, node.y - 1, node.width + 4, node.height + 2);
@@ -1461,26 +1503,20 @@
       if (state.activeTextNode && state.activeTextNode.el === el) return;
 
       deactivateActiveTextEditor();
-
-      // 1. Instantly wipe original text on canvas underneath
       wipeCanvasUnderText(pageIndex, node);
 
-      // 2. Activate DOM editor with exact font & position
       state.activeTextNode = { el, node, pageIndex };
       el.classList.add('editing');
       el.contentEditable = 'true';
       el.style.color = node.color || '#0f172a';
       el.focus();
 
-      // 3. Show Sejda floating toolbar
       positionFloatingToolbar(el);
 
-      // 4. Live letter editing listener
       el.oninput = () => {
         node.text = el.innerText;
         node.isModified = true;
         el.classList.add('has-edits');
-        // Update width dynamically as user types or backspaces
         node.width = el.offsetWidth;
         wipeCanvasUnderText(pageIndex, node);
         positionFloatingToolbar(el);
@@ -1539,8 +1575,9 @@
     }
 
     function handleViewportClick(e) {
-      if (!e.target.closest('.pdf-text-node') && !e.target.closest('#sejdaFloatingToolbar') && !e.target.closest('.pdf-object')) {
+      if (!e.target.closest('.pdf-text-node') && !e.target.closest('#sejdaFloatingToolbar') && !e.target.closest('.pdf-object') && !e.target.closest('.obj-controls')) {
         deactivateActiveTextEditor();
+        deselectAllOverlayObjects();
       }
     }
 
@@ -1615,7 +1652,7 @@
     }
 
     // -------------------------------------------------------------
-    // OVERLAYS (STAMPS, DRAWINGS, SHAPES, WHITEOUT)
+    // OVERLAYS (DRAG & DROP, MOVE & RESIZE HANDLES FOR IMAGE / SIGN)
     // -------------------------------------------------------------
     function activateTool(toolName) {
       state.activeTool = toolName;
@@ -1636,7 +1673,7 @@
       });
 
       if (toolName === 'text') {
-        showToast('Text Mode: Click any text in the PDF to edit.');
+        showToast('Text Mode: Click any text in PDF to edit.');
       } else {
         deactivateActiveTextEditor();
         showToast(`Tool: ${toolName.toUpperCase()}`);
@@ -1647,7 +1684,7 @@
       let isDown = false, startX = 0, startY = 0, tempEl = null;
 
       overlay.onmousedown = e => {
-        if (state.activeTool === 'text') return;
+        if (state.activeTool === 'text' || e.target.closest('.pdf-object')) return;
         const rect = overlay.getBoundingClientRect();
         startX = e.clientX - rect.left;
         startY = e.clientY - rect.top;
@@ -1708,10 +1745,39 @@
       overlay.onmouseleave = finish;
     }
 
+    function getActiveVisiblePageIndex() {
+      const viewport = $('pdfViewport');
+      if (!viewport) return 0;
+      const vRect = viewport.getBoundingClientRect();
+      const vCenterY = vRect.top + vRect.height / 2;
+      
+      let bestIdx = 0;
+      let minDiff = Infinity;
+      for (let i = 0; i < state.pagesData.length; i++) {
+        if (state.pagesData[i].isDeleted) continue;
+        const wrap = $(`pageWrapper_${i}`);
+        if (wrap) {
+          const r = wrap.getBoundingClientRect();
+          const pageCenterY = r.top + r.height / 2;
+          const diff = Math.abs(pageCenterY - vCenterY);
+          if (diff < minDiff) {
+            minDiff = diff;
+            bestIdx = i;
+          }
+        }
+      }
+      return bestIdx;
+    }
+
     function addOverlayObject(pageIndex, obj) {
+      if (pageIndex === undefined || pageIndex === null || pageIndex < 0) {
+        pageIndex = getActiveVisiblePageIndex();
+      }
       obj.id = 'obj_' + Date.now() + Math.random().toString(36).substr(2, 4);
+      obj.rotation = obj.rotation || 0;
       state.pagesData[pageIndex].objects.push(obj);
       renderOverlayObjects($(`pageOverlay_${pageIndex}`), pageIndex);
+      selectOverlayObject(obj.id);
       saveHistoryState('Add ' + obj.type);
     }
 
@@ -1722,40 +1788,317 @@
 
       objs.forEach(obj => {
         const el = document.createElement('div');
-        el.className = 'pdf-object';
+        el.className = `pdf-object ${state.activeSelectedObjectId === obj.id ? 'selected' : ''}`;
         el.id = obj.id;
         el.style.left = `${obj.x}px`;
         el.style.top = `${obj.y}px`;
         el.style.width = `${obj.width}px`;
         el.style.height = `${obj.height}px`;
 
+        // Floating Top Actions Pill
+        const controls = document.createElement('div');
+        controls.className = 'obj-controls';
+        const typeLabel = obj.type === 'sign' ? 'Sign' : (obj.type === 'image' ? 'Image' : (obj.type === 'whiteout' ? 'Whiteout' : 'Shape'));
+        controls.innerHTML = `
+          <span class="obj-badge">${typeLabel}</span>
+          <button type="button" onclick="scaleOverlayObject('${obj.id}', 1.10)" title="Bada Karein (+10%)"><i class="fa-solid fa-magnifying-glass-plus"></i> +10%</button>
+          <button type="button" onclick="scaleOverlayObject('${obj.id}', 0.90)" title="Chhota Karein (-10%)"><i class="fa-solid fa-magnifying-glass-minus"></i> -10%</button>
+          <button type="button" onclick="rotateOverlayObject('${obj.id}')" title="Rotate 90°"><i class="fa-solid fa-rotate-right"></i> 90°</button>
+          <button type="button" onclick="duplicateOverlayObject('${obj.id}')" title="Duplicate"><i class="fa-solid fa-copy"></i></button>
+          <button type="button" class="del-btn" onclick="deleteOverlayObject('${obj.id}')" title="Delete"><i class="fa-solid fa-trash-can"></i></button>
+        `;
+        el.appendChild(controls);
+
+        // 8 Interactive Resize Handles (Corner & Edge)
+        ['nw', 'ne', 'se', 'sw', 'n', 's', 'e', 'w'].forEach(pos => {
+          const handle = document.createElement('div');
+          handle.className = `resize-handle handle-${pos}`;
+          handle.dataset.handle = pos;
+          el.appendChild(handle);
+        });
+
+        // Object Content Rendering
+        const contentWrap = document.createElement('div');
+        contentWrap.style.width = '100%';
+        contentWrap.style.height = '100%';
+        contentWrap.style.transform = `rotate(${obj.rotation || 0}deg)`;
+        contentWrap.style.transformOrigin = 'center center';
+        contentWrap.style.pointerEvents = 'none';
+
         if (obj.type === 'whiteout') {
-          el.classList.add('pdf-whiteout-elem');
-          el.style.background = obj.bg || '#ffffff';
+          contentWrap.classList.add('pdf-whiteout-elem');
+          contentWrap.style.background = obj.bg || '#ffffff';
         } else if (obj.type === 'sign' || obj.type === 'image') {
-          el.classList.add('pdf-image-elem');
+          contentWrap.classList.add('pdf-image-elem');
           const img = document.createElement('img');
           img.src = obj.imgSrc;
-          el.appendChild(img);
+          img.style.width = '100%';
+          img.style.height = '100%';
+          img.style.objectFit = 'contain';
+          img.style.display = 'block';
+          img.style.userSelect = 'none';
+          contentWrap.appendChild(img);
         } else if (obj.type === 'shape') {
-          el.classList.add('pdf-shape-elem');
-          el.style.border = `${obj.borderWidth || 2}px solid ${obj.borderColor || '#dc2626'}`;
+          contentWrap.classList.add('pdf-shape-elem');
+          contentWrap.style.border = `${obj.borderWidth || 2}px solid ${obj.borderColor || '#dc2626'}`;
         }
+        el.appendChild(contentWrap);
 
-        el.onclick = e => {
-          e.stopPropagation();
-          if (confirm('Delete this overlay element?')) {
-            const idx = state.pagesData[pageIndex].objects.indexOf(obj);
-            if (idx !== -1) {
-              state.pagesData[pageIndex].objects.splice(idx, 1);
-              renderOverlayObjects(overlay, pageIndex);
-            }
-          }
-        };
+        // Attach Mouse & Touch Move & Resize Handlers
+        setupObjectDraggableAndResizable(el, obj, pageIndex);
 
         overlay.appendChild(el);
       });
     }
+
+    // -------------------------------------------------------------
+    // DRAG & DROP AND RESIZE IMPLEMENTATION FOR OVERLAYS (MOUSE & TOUCH)
+    // -------------------------------------------------------------
+    function setupObjectDraggableAndResizable(el, obj, pageIndex) {
+      let isDragging = false;
+      let isResizing = false;
+      let activeHandle = '';
+      let startClientX = 0, startClientY = 0;
+      let origX = 0, origY = 0, origW = 0, origH = 0;
+
+      const getClientPos = e => {
+        if (e.touches && e.touches.length > 0) {
+          return { x: e.touches[0].clientX, y: e.touches[0].clientY };
+        }
+        return { x: e.clientX, y: e.clientY };
+      };
+
+      const startAction = e => {
+        if (e.target.closest('.obj-controls')) return;
+        e.stopPropagation();
+        if (e.cancelable && !e.target.classList.contains('resize-handle')) {
+          e.preventDefault();
+        }
+        
+        deactivateActiveTextEditor();
+        selectOverlayObject(obj.id);
+
+        const pos = getClientPos(e);
+        origX = obj.x;
+        origY = obj.y;
+        origW = obj.width;
+        origH = obj.height;
+        startClientX = pos.x;
+        startClientY = pos.y;
+
+        if (e.target.classList.contains('resize-handle')) {
+          isResizing = true;
+          activeHandle = e.target.dataset.handle;
+        } else {
+          isDragging = true;
+          el.classList.add('dragging');
+        }
+
+        const onMove = ev => {
+          const curPos = getClientPos(ev);
+          const dx = (curPos.x - startClientX) / state.zoom;
+          const dy = (curPos.y - startClientY) / state.zoom;
+
+          const wrap = $(`pageWrapper_${pageIndex}`);
+          const maxW = wrap ? wrap.offsetWidth : 1200;
+          const maxH = wrap ? wrap.offsetHeight : 1600;
+
+          if (isDragging) {
+            obj.x = Math.max(0, Math.min(maxW - 20, Math.round(origX + dx)));
+            obj.y = Math.max(0, Math.min(maxH - 20, Math.round(origY + dy)));
+            el.style.left = `${obj.x}px`;
+            el.style.top = `${obj.y}px`;
+          } else if (isResizing) {
+            const ratio = origW / Math.max(1, origH);
+
+            if (activeHandle === 'se') {
+              let newW = Math.max(20, Math.round(origW + dx));
+              let newH = Math.max(20, Math.round(origH + dy));
+              if (!ev.shiftKey && (obj.type === 'image' || obj.type === 'sign')) {
+                newH = Math.round(newW / ratio);
+              }
+              obj.width = newW;
+              obj.height = newH;
+            } else if (activeHandle === 'sw') {
+              let newW = Math.max(20, Math.round(origW - dx));
+              let newH = Math.max(20, Math.round(origH + dy));
+              if (!ev.shiftKey && (obj.type === 'image' || obj.type === 'sign')) {
+                newH = Math.round(newW / ratio);
+              }
+              obj.x = Math.max(0, origX + (origW - newW));
+              obj.width = newW;
+              obj.height = newH;
+              el.style.left = `${obj.x}px`;
+            } else if (activeHandle === 'ne') {
+              let newW = Math.max(20, Math.round(origW + dx));
+              let newH = Math.max(20, Math.round(origH - dy));
+              if (!ev.shiftKey && (obj.type === 'image' || obj.type === 'sign')) {
+                newH = Math.round(newW / ratio);
+              }
+              obj.y = Math.max(0, origY + (origH - newH));
+              obj.width = newW;
+              obj.height = newH;
+              el.style.top = `${obj.y}px`;
+            } else if (activeHandle === 'nw') {
+              let newW = Math.max(20, Math.round(origW - dx));
+              let newH = Math.max(20, Math.round(origH - dy));
+              if (!ev.shiftKey && (obj.type === 'image' || obj.type === 'sign')) {
+                newH = Math.round(newW / ratio);
+              }
+              obj.x = Math.max(0, origX + (origW - newW));
+              obj.y = Math.max(0, origY + (origH - newH));
+              obj.width = newW;
+              obj.height = newH;
+              el.style.left = `${obj.x}px`;
+              el.style.top = `${obj.y}px`;
+            } else if (activeHandle === 'e') {
+              obj.width = Math.max(20, Math.round(origW + dx));
+            } else if (activeHandle === 'w') {
+              const newW = Math.max(20, Math.round(origW - dx));
+              obj.x = Math.max(0, origX + (origW - newW));
+              obj.width = newW;
+              el.style.left = `${obj.x}px`;
+            } else if (activeHandle === 's') {
+              obj.height = Math.max(20, Math.round(origH + dy));
+            } else if (activeHandle === 'n') {
+              const newH = Math.max(20, Math.round(origH - dy));
+              obj.y = Math.max(0, origY + (origH - newH));
+              obj.height = newH;
+              el.style.top = `${obj.y}px`;
+            }
+
+            el.style.width = `${obj.width}px`;
+            el.style.height = `${obj.height}px`;
+          }
+        };
+
+        const endAction = () => {
+          if (isDragging || isResizing) {
+            saveHistoryState('Transform ' + obj.type);
+          }
+          isDragging = false;
+          isResizing = false;
+          el.classList.remove('dragging');
+          window.removeEventListener('mousemove', onMove);
+          window.removeEventListener('mouseup', endAction);
+          window.removeEventListener('touchmove', onMove);
+          window.removeEventListener('touchend', endAction);
+        };
+
+        window.addEventListener('mousemove', onMove, { passive: false });
+        window.addEventListener('mouseup', endAction);
+        window.addEventListener('touchmove', onMove, { passive: false });
+        window.addEventListener('touchend', endAction);
+      };
+
+      el.addEventListener('mousedown', startAction);
+      el.addEventListener('touchstart', startAction, { passive: false });
+    }
+
+    function selectOverlayObject(id) {
+      deselectAllOverlayObjects();
+      state.activeSelectedObjectId = id;
+      const el = $(id);
+      if (el) el.classList.add('selected');
+    }
+
+    function deselectAllOverlayObjects() {
+      state.activeSelectedObjectId = null;
+      document.querySelectorAll('.pdf-object').forEach(el => el.classList.remove('selected'));
+    }
+
+    function scaleOverlayObject(id, factor) {
+      for (let pIdx = 0; pIdx < state.pagesData.length; pIdx++) {
+        const obj = state.pagesData[pIdx].objects.find(o => o.id === id);
+        if (obj) {
+          obj.width = Math.max(24, Math.round(obj.width * factor));
+          obj.height = Math.max(24, Math.round(obj.height * factor));
+          renderOverlayObjects($(`pageOverlay_${pIdx}`), pIdx);
+          selectOverlayObject(id);
+          saveHistoryState('Scale object');
+          showToast(`Size: ${obj.width} x ${obj.height}px`);
+          break;
+        }
+      }
+    }
+
+    function rotateOverlayObject(id) {
+      for (let pIdx = 0; pIdx < state.pagesData.length; pIdx++) {
+        const obj = state.pagesData[pIdx].objects.find(o => o.id === id);
+        if (obj) {
+          obj.rotation = ((obj.rotation || 0) + 90) % 360;
+          renderOverlayObjects($(`pageOverlay_${pIdx}`), pIdx);
+          selectOverlayObject(id);
+          saveHistoryState('Rotate object');
+          showToast(`Rotated to ${obj.rotation}°`);
+          break;
+        }
+      }
+    }
+
+    function duplicateOverlayObject(id) {
+      for (let pIdx = 0; pIdx < state.pagesData.length; pIdx++) {
+        const obj = state.pagesData[pIdx].objects.find(o => o.id === id);
+        if (obj) {
+          const clone = { ...obj, id: 'obj_' + Date.now() + Math.random().toString(36).substr(2, 4), x: obj.x + 25, y: obj.y + 25 };
+          state.pagesData[pIdx].objects.push(clone);
+          renderOverlayObjects($(`pageOverlay_${pIdx}`), pIdx);
+          selectOverlayObject(clone.id);
+          showToast('Duplicated!');
+          break;
+        }
+      }
+    }
+
+    function deleteOverlayObject(id) {
+      for (let pIdx = 0; pIdx < state.pagesData.length; pIdx++) {
+        const idx = state.pagesData[pIdx].objects.findIndex(o => o.id === id);
+        if (idx !== -1) {
+          state.pagesData[pIdx].objects.splice(idx, 1);
+          renderOverlayObjects($(`pageOverlay_${pIdx}`), pIdx);
+          showToast('Deleted');
+          break;
+        }
+      }
+    }
+
+    // Keyboard Arrow Nudge & Delete shortcut for selected images / signatures
+    window.addEventListener('keydown', e => {
+      if (state.activeSelectedObjectId && !state.activeTextNode) {
+        let found = null, pIndex = -1;
+        for (let p = 0; p < state.pagesData.length; p++) {
+          const o = state.pagesData[p].objects.find(x => x.id === state.activeSelectedObjectId);
+          if (o) { found = o; pIndex = p; break; }
+        }
+        if (found) {
+          const step = e.shiftKey ? 10 : 2;
+          if (e.key === 'ArrowLeft') {
+            e.preventDefault();
+            found.x = Math.max(0, found.x - step);
+            const el = $(found.id);
+            if (el) el.style.left = `${found.x}px`;
+          } else if (e.key === 'ArrowRight') {
+            e.preventDefault();
+            found.x += step;
+            const el = $(found.id);
+            if (el) el.style.left = `${found.x}px`;
+          } else if (e.key === 'ArrowUp') {
+            e.preventDefault();
+            found.y = Math.max(0, found.y - step);
+            const el = $(found.id);
+            if (el) el.style.top = `${found.y}px`;
+          } else if (e.key === 'ArrowDown') {
+            e.preventDefault();
+            found.y += step;
+            const el = $(found.id);
+            if (el) el.style.top = `${found.y}px`;
+          } else if (e.key === 'Delete' || e.key === 'Backspace') {
+            e.preventDefault();
+            deleteOverlayObject(found.id);
+          }
+        }
+      }
+    });
 
     // -------------------------------------------------------------
     // SIGNATURES & STAMPS
@@ -1784,6 +2127,23 @@
         };
         signCanvas.onmouseup = () => isSignDrawing = false;
         signCanvas.onmouseleave = () => isSignDrawing = false;
+
+        // Touch support for signature canvas
+        signCanvas.ontouchstart = e => {
+          e.preventDefault();
+          isSignDrawing = true;
+          const r = signCanvas.getBoundingClientRect();
+          signCtx.beginPath();
+          signCtx.moveTo(e.touches[0].clientX - r.left, e.touches[0].clientY - r.top);
+        };
+        signCanvas.ontouchmove = e => {
+          if (!isSignDrawing) return;
+          e.preventDefault();
+          const r = signCanvas.getBoundingClientRect();
+          signCtx.lineTo(e.touches[0].clientX - r.left, e.touches[0].clientY - r.top);
+          signCtx.stroke();
+        };
+        signCanvas.ontouchend = () => isSignDrawing = false;
       }, 100);
     }
 
@@ -1837,8 +2197,17 @@
 
       if (!dataUrl) return;
       closeSignatureModal();
-      addOverlayObject(0, { type: 'sign', imgSrc: dataUrl, x: 100, y: 220, width: 160, height: 70 });
-      showToast('Signature placed!');
+
+      const activePage = getActiveVisiblePageIndex();
+      const wrap = $(`pageWrapper_${activePage}`);
+      const pw = wrap ? wrap.offsetWidth : 600;
+      const ph = wrap ? wrap.offsetHeight : 800;
+      const w = 170, h = 75;
+      const x = Math.max(20, Math.round((pw - w) / 2));
+      const y = Math.max(40, Math.round((ph - h) / 3));
+
+      addOverlayObject(activePage, { type: 'sign', imgSrc: dataUrl, x, y, width: w, height: h, rotation: 0 });
+      showToast('Signature placed! Click & drag to move, use handles or +/- to resize.');
     }
 
     function triggerImageUpload() { $('imageToolInput').click(); }
@@ -1849,10 +2218,23 @@
       reader.onload = () => {
         const img = new Image();
         img.onload = () => {
-          let w = 140;
-          let h = (img.height * 140) / img.width;
-          addOverlayObject(0, { type: 'image', imgSrc: reader.result, x: 120, y: 160, width: w, height: h });
-          showToast('Image / Stamp added!');
+          const activePage = getActiveVisiblePageIndex();
+          const wrap = $(`pageWrapper_${activePage}`);
+          const pw = wrap ? wrap.offsetWidth : 600;
+          const ph = wrap ? wrap.offsetHeight : 800;
+
+          let w = 160;
+          let h = Math.round((img.height * 160) / img.width);
+          if (h > ph / 2) {
+            h = Math.round(ph / 2);
+            w = Math.round((img.width * h) / img.height);
+          }
+
+          const x = Math.max(20, Math.round((pw - w) / 2));
+          const y = Math.max(40, Math.round((ph - h) / 3));
+
+          addOverlayObject(activePage, { type: 'image', imgSrc: reader.result, x, y, width: w, height: h, rotation: 0 });
+          showToast('Image added! Click & drag to move, use handles or +/- to resize.');
         };
         img.src = reader.result;
       };
@@ -1860,7 +2242,7 @@
     }
 
     // -------------------------------------------------------------
-    // PAGE OPERATIONS (Delete, Rotate, Zoom, Insert)
+    // PAGE OPERATIONS
     // -------------------------------------------------------------
     function deletePage(pageIndex) {
       if (confirm(`Delete Page ${pageIndex + 1}?`)) {
@@ -2010,11 +2392,12 @@
     }
 
     // -------------------------------------------------------------
-    // APPLY CHANGES & EXPORT (WITH IN-PLACE REPLACED LETTERS)
+    // APPLY CHANGES & EXPORT
     // -------------------------------------------------------------
     async function applyAndExportPdf(isDirectPrint = false) {
       if (!state.pdfDoc) return;
       deactivateActiveTextEditor();
+      deselectAllOverlayObjects();
 
       const executeExport = async () => {
         showToast('Rendering and compiling edited PDF...');
@@ -2037,10 +2420,10 @@
             const ctx = exportCanvas.getContext('2d');
             ctx.scale(scale, scale);
 
-            // 1. Draw base PDF canvas
+            // 1. Base canvas
             ctx.drawImage(pageCanvas, 0, 0, wrap.offsetWidth, wrap.offsetHeight);
 
-            // 2. Whiteout & draw modified text nodes
+            // 2. Modified text nodes
             const textNodes = pageMeta.textNodes || [];
             for (const node of textNodes) {
               if (node.isModified || node.isDeleted) {
@@ -2058,7 +2441,7 @@
               }
             }
 
-            // 3. Draw added stamps, signatures, shapes, whiteouts
+            // 3. Added stamps, signatures, images, shapes
             const objs = pageMeta.objects || [];
             for (const obj of objs) {
               if (obj.type === 'whiteout') {
@@ -2072,7 +2455,18 @@
                 const img = new Image();
                 img.src = obj.imgSrc;
                 await new Promise(r => { img.onload = r; img.onerror = r; });
-                ctx.drawImage(img, obj.x, obj.y, obj.width, obj.height);
+                
+                if (obj.rotation && obj.rotation !== 0) {
+                  ctx.save();
+                  const cx = obj.x + obj.width / 2;
+                  const cy = obj.y + obj.height / 2;
+                  ctx.translate(cx, cy);
+                  ctx.rotate((obj.rotation * Math.PI) / 180);
+                  ctx.drawImage(img, -obj.width / 2, -obj.height / 2, obj.width, obj.height);
+                  ctx.restore();
+                } else {
+                  ctx.drawImage(img, obj.x, obj.y, obj.width, obj.height);
+                }
               }
             }
 
