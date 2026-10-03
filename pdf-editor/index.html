@@ -303,7 +303,7 @@
       pointer-events: none;
     }
 
-    /* EXISTING PDF TEXT LAYER (IN-PLACE LETTER EDITING) */
+    /* EXISTING PDF TEXT LAYER (SEJDA IN-PLACE EDITING) */
     .pdf-text-layer {
       position: absolute;
       inset: 0;
@@ -317,36 +317,42 @@
       cursor: text;
       user-select: text;
       white-space: pre;
-      line-height: 1.15;
-      padding: 0 1px;
+      line-height: 1;
+      padding: 0;
+      margin: 0;
       border: 1px solid transparent;
-      border-radius: 2px;
-      color: transparent; /* transparent over background text until hovered or edited */
-      transition: background 0.1s, border-color 0.1s;
+      border-radius: 1px;
+      color: transparent; /* Invisible by default so canvas text shows crisply */
+      background: transparent;
+      outline: none;
       z-index: 10;
     }
 
-    /* Sejda-style hover box on existing text */
-    .tool-text .pdf-text-node:hover,
-    .pdf-text-node.hovered {
+    /* Hover State: Sleek blue dashed box without duplicate text */
+    .tool-text .pdf-text-node:hover:not(.editing) {
       border: 1px dashed #3b82f6 !important;
-      background: rgba(59, 130, 246, 0.12) !important;
+      background: rgba(59, 130, 246, 0.08) !important;
       color: transparent !important;
     }
 
-    /* Active in-place editing state (replaces background text with whiteout mask + crisp editable text) */
-    .pdf-text-node.editing,
+    /* Active Editing State: Canvas underneath is cleared, DOM text replaces it seamlessly */
+    .pdf-text-node.editing {
+      background: #ffffff !important;
+      color: #0f172a !important;
+      border: 1px solid #2563eb !important;
+      box-shadow: 0 0 0 1px #2563eb;
+      z-index: 50;
+    }
+    
+    /* Modified State after editing */
     .pdf-text-node.has-edits {
       background: #ffffff !important;
       color: #0f172a !important;
-      border: 1.5px solid #2563eb !important;
-      box-shadow: 0 2px 8px rgba(37, 99, 235, 0.18);
-      outline: none;
-      z-index: 25;
+      border: 1px dashed transparent;
+      z-index: 20;
     }
-    .pdf-text-node.has-edits:not(.editing) {
-      border: 1px solid #93c5fd !important;
-      box-shadow: none;
+    .pdf-text-node.has-edits:hover:not(.editing) {
+      border: 1px dashed #3b82f6 !important;
     }
 
     /* SEJDA FLOATING INLINE FORMATTING TOOLBAR */
@@ -355,7 +361,7 @@
       background: #ffffff;
       border: 1px solid #93c5fd;
       border-radius: 6px;
-      box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+      box-shadow: 0 4px 18px rgba(0,0,0,0.16);
       display: none;
       align-items: center;
       padding: 3px 6px;
@@ -363,9 +369,9 @@
       z-index: 9999;
       user-select: none;
       white-space: nowrap;
-      animation: fadeIn 0.15s ease;
+      animation: popToolbar 0.12s cubic-bezier(0.4, 0, 0.2, 1);
     }
-    @keyframes fadeIn {
+    @keyframes popToolbar {
       from { opacity: 0; transform: translateY(4px); }
       to { opacity: 1; transform: translateY(0); }
     }
@@ -413,7 +419,7 @@
       overflow: hidden;
       cursor: default;
       pointer-events: none;
-      z-index: 20;
+      z-index: 30;
     }
     .page-overlay-layer.active-tool {
       pointer-events: auto;
@@ -429,7 +435,7 @@
       box-sizing: border-box;
       touch-action: none;
       pointer-events: auto;
-      z-index: 30;
+      z-index: 40;
     }
     .pdf-object.selected {
       outline: 1.5px dashed #2563eb;
@@ -462,23 +468,6 @@
     }
     .obj-controls button:hover { color: #fff; }
     .obj-controls button.del-btn:hover { color: #ef4444; }
-
-    /* RESIZE HANDLES */
-    .resize-handle {
-      position: absolute;
-      width: 8px;
-      height: 8px;
-      background: #2563eb;
-      border: 1px solid #ffffff;
-      border-radius: 50%;
-      display: none;
-      z-index: 999;
-    }
-    .pdf-object.selected .resize-handle { display: block; }
-    .handle-nw { top: -4px; left: -4px; cursor: nwse-resize; }
-    .handle-ne { top: -4px; right: -4px; cursor: nesw-resize; }
-    .handle-se { bottom: -4px; right: -4px; cursor: nwse-resize; }
-    .handle-sw { bottom: -4px; left: -4px; cursor: nesw-resize; }
 
     /* WHITEOUT ELEMENT */
     .pdf-whiteout-elem {
@@ -847,7 +836,7 @@
 
     <!-- Font Size -->
     <button type="button" class="sejda-tb-btn" onclick="adjustActiveFontSize(-1)" title="Decrease Size"><i class="fa-solid fa-minus" style="font-size:9px;"></i></button>
-    <span id="tbFontSizeDisplay" style="font-size:11px;font-weight:800;padding:0 3px;color:#1e293b;">14</span>
+    <span id="tbFontSizeDisplay" style="font-size:11px;font-weight:800;padding:0 4px;color:#1e293b;">14</span>
     <button type="button" class="sejda-tb-btn" onclick="adjustActiveFontSize(1)" title="Increase Size"><i class="fa-solid fa-plus" style="font-size:9px;"></i></button>
 
     <div class="sejda-tb-divider"></div>
@@ -896,7 +885,7 @@
       Online PDF editor <span class="beta-badge" style="font-size:12px;">BETA</span>
     </div>
     <div class="upload-hero-sub">
-      Edit PDF files for free. Fill &amp; sign PDF. Click on any text to edit letters directly.
+      Edit PDF files for free. Fill &amp; sign PDF. Click on any text to edit letters directly in-place.
     </div>
 
     <div class="drop-zone" id="dropZone" onclick="document.getElementById('pdfFileInput').click()">
@@ -1041,24 +1030,23 @@
   </div>
 
   <!-- =========================================================================
-       CORE PDF EDITOR JAVASCRIPT ENGINE (SEJDA LIVE TEXT EDITING)
+       CORE PDF EDITOR JAVASCRIPT ENGINE (SEJDA LIVE IN-PLACE LETTER EDITING)
        ========================================================================= -->
   <script>
     if (typeof pdfjsLib !== 'undefined') {
       pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
     }
 
-    // STATE
     const state = {
       pdfDoc: null,
       pdfRawBytes: null,
       fileName: 'Document.pdf',
       pageCount: 0,
       zoom: 1.0,
-      activeTool: 'text', // 'text', 'link', 'form', 'whiteout', 'draw', 'shape'
+      activeTool: 'text',
       activeTextNode: null,
       activeObject: null,
-      pagesData: [], // Array of { pageNum, rotation, width, height, textNodes: [], objects: [], isDeleted: false }
+      pagesData: [],
       history: [],
       historyIndex: -1,
       isSidebarOpen: true,
@@ -1077,7 +1065,6 @@
       setTimeout(() => toast.classList.remove('show'), 2600);
     }
 
-    // Setup Drag & Drop
     function setupDragAndDrop() {
       const dropZone = $('dropZone');
       ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
@@ -1158,7 +1145,6 @@
       }
     }
 
-    // Load PDF Document
     async function loadPdfFromBytes(arrayBuffer, password = '') {
       try {
         state.pdfRawBytes = arrayBuffer;
@@ -1209,7 +1195,7 @@
 
         await renderAllPages();
         saveHistoryState('Document Opened');
-        showToast('PDF loaded! Move cursor over any text to edit letters.');
+        showToast('PDF ready! Click directly on any text to edit letters.');
       } catch (err) {
         console.error('PDF load error:', err);
         if (err.name === 'PasswordException') {
@@ -1237,7 +1223,7 @@
     }
 
     // -------------------------------------------------------------
-    // RENDER ALL PAGES (Canvas + Text Extraction Layer + Overlays)
+    // RENDER ALL PAGES (Canvas + Accurate Text Layer)
     // -------------------------------------------------------------
     async function renderAllPages() {
       const container = $('pagesStageContainer');
@@ -1258,7 +1244,7 @@
         const effectiveRotation = (page.rotate + pageMeta.rotation) % 360;
         const baseViewport = page.getViewport({ scale: 1.33 * state.zoom, rotation: effectiveRotation });
 
-        // Page Control Bar
+        // Page Header Controls
         const controlBar = document.createElement('div');
         controlBar.className = 'page-action-bar';
         controlBar.innerHTML = `
@@ -1270,14 +1256,14 @@
         `;
         container.appendChild(controlBar);
 
-        // Page Wrapper
+        // Page Wrapper Box
         const pageWrap = document.createElement('div');
         pageWrap.className = 'page-wrapper';
         pageWrap.id = `pageWrapper_${idx}`;
         pageWrap.style.width = `${baseViewport.width}px`;
         pageWrap.style.height = `${baseViewport.height}px`;
 
-        // 1. High DPI Canvas Background
+        // 1. High DPI Background Canvas
         const canvas = document.createElement('canvas');
         canvas.className = 'page-canvas-bg';
         canvas.width = baseViewport.width * 1.5;
@@ -1289,13 +1275,13 @@
         await page.render({ canvasContext: ctx, viewport: baseViewport }).promise;
         pageWrap.appendChild(canvas);
 
-        // 2. Extracted Text Layer for In-Place Letter Editing (Sejda Style)
+        // 2. Extracted Text Layer
         const textLayer = document.createElement('div');
         textLayer.className = 'pdf-text-layer';
         textLayer.id = `textLayer_${idx}`;
         textLayer.dataset.pageIndex = idx;
         
-        // Extract text items from PDF and create editable nodes if not already done
+        // Extract text items from PDF
         if (!pageMeta.textNodes || pageMeta.textNodes.length === 0) {
           const textContent = await page.getTextContent();
           pageMeta.textNodes = extractAndMergeTextLines(textContent.items, baseViewport, page);
@@ -1304,7 +1290,7 @@
         renderTextLayerNodes(textLayer, idx);
         pageWrap.appendChild(textLayer);
 
-        // 3. User Overlays (Stamps, Signs, Shapes, Whiteouts)
+        // 3. User Overlays
         const overlay = document.createElement('div');
         overlay.className = `page-overlay-layer ${state.activeTool !== 'text' ? 'active-tool' : ''}`;
         overlay.id = `pageOverlay_${idx}`;
@@ -1337,7 +1323,7 @@
     }
 
     // -------------------------------------------------------------
-    // EXTRACT & GROUP PDF TEXT ITEMS INTO CONTINUOUS EDITABLE LINES
+    // EXTRACT & ALIGN TEXT WITH SUB-PIXEL ACCURACY
     // -------------------------------------------------------------
     function extractAndMergeTextLines(items, viewport, page) {
       if (!items || items.length === 0) return [];
@@ -1349,10 +1335,11 @@
         const transform = pdfjsLib.Util.transform(viewport.transform, item.transform);
         const fontSize = Math.sqrt(transform[0] * transform[0] + transform[1] * transform[1]);
         const x = transform[4];
-        const y = transform[5] - fontSize;
+        // Exact top alignment with typography baseline
+        const y = transform[5] - (fontSize * 0.82);
         const width = item.width * (viewport.scale || 1.33);
 
-        let fontFamily = "'Plus Jakarta Sans', Arial, sans-serif";
+        let fontFamily = "Arial, Helvetica, sans-serif";
         const fn = (item.fontName || '').toLowerCase();
         if (fn.includes('times') || fn.includes('serif') || fn.includes('roman')) {
           fontFamily = "'Times New Roman', Times, serif";
@@ -1372,8 +1359,8 @@
           x: Math.round(x),
           y: Math.round(y),
           width: Math.round(width),
-          height: Math.round(fontSize * 1.25),
-          fontSize: Math.max(10, Math.round(fontSize)),
+          height: Math.round(fontSize * 1.15),
+          fontSize: Math.max(9, Math.round(fontSize)),
           fontFamily: fontFamily,
           isBold: isBold,
           isItalic: isItalic,
@@ -1384,9 +1371,9 @@
       }
 
       // Sort top-to-bottom, left-to-right
-      rawNodes.sort((a, b) => a.y !== b.y ? a.y - b.y : a.x - b.x);
+      rawNodes.sort((a, b) => Math.abs(a.y - b.y) > 4 ? a.y - b.y : a.x - b.x);
 
-      // Merge adjacent words on the same baseline into single editable sentences/names
+      // Merge adjacent items on same line into single continuous phrase
       const merged = [];
       let current = null;
 
@@ -1397,7 +1384,7 @@
         }
 
         const sameLine = Math.abs(current.y - node.y) <= 4;
-        const closeX = node.x - (current.x + current.width) <= (current.fontSize * 1.5);
+        const closeX = node.x - (current.x + current.width) <= (current.fontSize * 1.2);
 
         if (sameLine && closeX) {
           const space = (node.x - (current.x + current.width)) > 2 ? ' ' : '';
@@ -1416,7 +1403,7 @@
     }
 
     // -------------------------------------------------------------
-    // RENDER INTERACTIVE TEXT NODES ON PAGE
+    // RENDER TEXT NODES (INVISIBLE UNTIL HOVER/EDIT)
     // -------------------------------------------------------------
     function renderTextLayerNodes(textLayer, pageIndex) {
       textLayer.innerHTML = '';
@@ -1426,7 +1413,7 @@
         if (node.isDeleted) return;
 
         const el = document.createElement('div');
-        el.className = 'pdf-text-node';
+        el.className = `pdf-text-node ${node.isModified ? 'has-edits' : ''}`;
         el.id = node.id;
         el.dataset.nodeId = node.id;
         el.dataset.pageIndex = pageIndex;
@@ -1440,11 +1427,10 @@
         el.innerText = node.text;
 
         if (node.isModified) {
-          el.classList.add('has-edits');
           el.style.color = node.color || '#0f172a';
         }
 
-        // Click to activate in-place letter editing
+        // Direct click activates in-place letter editing
         el.addEventListener('click', e => {
           e.stopPropagation();
           activateInPlaceTextEditor(el, node, pageIndex);
@@ -1455,28 +1441,48 @@
     }
 
     // -------------------------------------------------------------
-    // ACTIVATE IN-PLACE LETTER EDITING & SEJDA FLOATING TOOLBAR
+    // INSTANT BACKGROUND WIPE & IN-PLACE LETTER EDITING
     // -------------------------------------------------------------
+    function wipeCanvasUnderText(pageIndex, node) {
+      const wrap = $(`pageWrapper_${pageIndex}`);
+      if (!wrap) return;
+      const canvas = wrap.querySelector('.page-canvas-bg');
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      
+      // Clear original rasterized text on canvas bitmap to eliminate any double-text or ghost shadow
+      ctx.save();
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(node.x - 2, node.y - 1, node.width + 4, node.height + 2);
+      ctx.restore();
+    }
+
     function activateInPlaceTextEditor(el, node, pageIndex) {
       if (state.activeTextNode && state.activeTextNode.el === el) return;
 
-      // Blur previous if any
       deactivateActiveTextEditor();
 
+      // 1. Instantly wipe original text on canvas underneath
+      wipeCanvasUnderText(pageIndex, node);
+
+      // 2. Activate DOM editor with exact font & position
       state.activeTextNode = { el, node, pageIndex };
       el.classList.add('editing');
       el.contentEditable = 'true';
       el.style.color = node.color || '#0f172a';
       el.focus();
 
-      // Show floating Sejda formatting bar right above the clicked text line
+      // 3. Show Sejda floating toolbar
       positionFloatingToolbar(el);
 
-      // Listen for text edits in real-time
+      // 4. Live letter editing listener
       el.oninput = () => {
         node.text = el.innerText;
         node.isModified = true;
         el.classList.add('has-edits');
+        // Update width dynamically as user types or backspaces
+        node.width = el.offsetWidth;
+        wipeCanvasUnderText(pageIndex, node);
         positionFloatingToolbar(el);
       };
 
@@ -1499,36 +1505,34 @@
       const viewportRect = $('pdfViewport').getBoundingClientRect();
 
       tb.style.display = 'flex';
-      let top = (rect.top - 42);
+      let top = (rect.top - 38);
       let left = rect.left;
 
       if (top < viewportRect.top) top = rect.bottom + 6;
-      if (left + 340 > window.innerWidth) left = window.innerWidth - 350;
+      if (left + 320 > window.innerWidth) left = window.innerWidth - 330;
 
       tb.style.top = `${top}px`;
       tb.style.left = `${Math.max(10, left)}px`;
 
-      // Update toolbar control states
       if (state.activeTextNode) {
         const node = state.activeTextNode.node;
         $('tbBtnBold').classList.toggle('active', !!node.isBold);
         $('tbBtnItalic').classList.toggle('active', !!node.isItalic);
         $('tbFontSizeDisplay').innerText = node.fontSize || 14;
-        $('tbFontFamilySelect').value = node.fontFamily || "'Plus Jakarta Sans', Arial, sans-serif";
+        $('tbFontFamilySelect').value = node.fontFamily || "Arial, Helvetica, sans-serif";
         $('tbTextColorPicker').value = node.color || '#0f172a';
       }
     }
 
     function deactivateActiveTextEditor() {
       if (state.activeTextNode) {
-        const { el, node } = state.activeTextNode;
+        const { el, node, pageIndex } = state.activeTextNode;
         el.contentEditable = 'false';
         el.classList.remove('editing');
-        if (node.text !== node.originalText) {
-          node.isModified = true;
-          el.classList.add('has-edits');
-          saveHistoryState('Edit text: ' + node.text);
-        }
+        node.isModified = true;
+        el.classList.add('has-edits');
+        wipeCanvasUnderText(pageIndex, node);
+        saveHistoryState('Edit text: ' + node.text);
         state.activeTextNode = null;
       }
       $('sejdaFloatingToolbar').style.display = 'none';
@@ -1540,10 +1544,9 @@
       }
     }
 
-    // Floating toolbar actions
     function toggleActiveTextFormat(format) {
       if (!state.activeTextNode) return;
-      const { el, node } = state.activeTextNode;
+      const { el, node, pageIndex } = state.activeTextNode;
       if (format === 'bold') {
         node.isBold = !node.isBold;
         el.style.fontWeight = node.isBold ? '700' : '400';
@@ -1555,26 +1558,29 @@
       }
       node.isModified = true;
       el.classList.add('has-edits');
+      wipeCanvasUnderText(pageIndex, node);
     }
 
     function adjustActiveFontSize(delta) {
       if (!state.activeTextNode) return;
-      const { el, node } = state.activeTextNode;
+      const { el, node, pageIndex } = state.activeTextNode;
       node.fontSize = Math.max(8, Math.min(60, (node.fontSize || 14) + delta));
       el.style.fontSize = `${node.fontSize}px`;
       $('tbFontSizeDisplay').innerText = node.fontSize;
       node.isModified = true;
       el.classList.add('has-edits');
+      wipeCanvasUnderText(pageIndex, node);
       positionFloatingToolbar(el);
     }
 
     function changeActiveFontFamily(val) {
       if (!state.activeTextNode) return;
-      const { el, node } = state.activeTextNode;
+      const { el, node, pageIndex } = state.activeTextNode;
       node.fontFamily = val;
       el.style.fontFamily = val;
       node.isModified = true;
       el.classList.add('has-edits');
+      wipeCanvasUnderText(pageIndex, node);
     }
 
     function changeActiveTextColor(color) {
@@ -1601,7 +1607,8 @@
       const { el, node, pageIndex } = state.activeTextNode;
       node.isDeleted = true;
       node.isModified = true;
-      node.text = ''; // Clear text so whiteout masks background
+      node.text = '';
+      wipeCanvasUnderText(pageIndex, node);
       el.remove();
       deactivateActiveTextEditor();
       showToast('Text deleted');
@@ -1629,10 +1636,10 @@
       });
 
       if (toolName === 'text') {
-        showToast('Text mode: Click any letter/word in PDF to edit.');
+        showToast('Text Mode: Click any text in the PDF to edit.');
       } else {
         deactivateActiveTextEditor();
-        showToast(`Tool active: ${toolName.toUpperCase()}`);
+        showToast(`Tool: ${toolName.toUpperCase()}`);
       }
     }
 
@@ -1735,7 +1742,6 @@
           el.style.border = `${obj.borderWidth || 2}px solid ${obj.borderColor || '#dc2626'}`;
         }
 
-        // Delete button on click
         el.onclick = e => {
           e.stopPropagation();
           if (confirm('Delete this overlay element?')) {
@@ -1923,7 +1929,7 @@
     }
 
     // -------------------------------------------------------------
-    // LOAD SAMPLE JHARKHAND / CSC ACKNOWLEDGEMENT WITH EDITABLE TEXT
+    // SAMPLE DOCUMENTS
     // -------------------------------------------------------------
     async function loadSampleDoc(type) {
       showToast('Loading document with editable text...');
@@ -1950,7 +1956,6 @@
         pdf.text('"This is a system generated acknowledgement slip. It does not require any signature."', width / 2, 75, { align: 'center' });
         pdf.text('Track application status on \'www.serviceonline.jharkhand.gov.in\'. Contact nearest CSC Operator.', width / 2, 90, { align: 'center' });
 
-        // Table Rows
         const rows = [
           ['Application Type / आवेदन का प्रकार', ': Normal'],
           ['Applicant\'s Name / आवेदक का नाम', ': MD LIYAKAT ALI'],
@@ -2026,7 +2031,7 @@
             const pageCanvas = wrap.querySelector('.page-canvas-bg');
 
             const exportCanvas = document.createElement('canvas');
-            const scale = 2.0; // 2x high resolution
+            const scale = 2.0;
             exportCanvas.width = wrap.offsetWidth * scale;
             exportCanvas.height = wrap.offsetHeight * scale;
             const ctx = exportCanvas.getContext('2d');
@@ -2035,15 +2040,13 @@
             // 1. Draw base PDF canvas
             ctx.drawImage(pageCanvas, 0, 0, wrap.offsetWidth, wrap.offsetHeight);
 
-            // 2. Whiteout & draw modified / edited in-place text nodes
+            // 2. Whiteout & draw modified text nodes
             const textNodes = pageMeta.textNodes || [];
             for (const node of textNodes) {
               if (node.isModified || node.isDeleted) {
-                // Erase background original text with white mask
                 ctx.fillStyle = '#ffffff';
-                ctx.fillRect(node.x - 2, node.y - 2, node.width + 6, node.height + 4);
+                ctx.fillRect(node.x - 2, node.y - 1, node.width + 4, node.height + 2);
 
-                // Draw new edited letters on top
                 if (node.text && node.text.trim() !== '') {
                   ctx.fillStyle = node.color || '#0f172a';
                   const fontWeight = node.isBold ? 'bold ' : 'normal ';
@@ -2055,7 +2058,7 @@
               }
             }
 
-            // 3. Draw added stamps, signatures, shapes, whiteout boxes
+            // 3. Draw added stamps, signatures, shapes, whiteouts
             const objs = pageMeta.objects || [];
             for (const obj of objs) {
               if (obj.type === 'whiteout') {
