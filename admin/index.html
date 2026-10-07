@@ -404,8 +404,8 @@
             <span id="pendingRequestsBadge" style="background:#dc2626;color:#fff;font-size:11px;font-weight:800;padding:2px 8px;border-radius:12px;display:none;">0 PENDING</span>
           </div>
           <div style="display:flex;gap:8px;align-items:center;">
-            <button type="button" class="btn btn-outline btn-sm" onclick="openUpiConfigModal()" style="color:#5f259f;border-color:#d8b4fe;">
-              <i class="fa-solid fa-gear"></i> UPI Settings (${dbUpiId || 'Q021541804@ybl'})
+            <button type="button" class="btn btn-outline btn-sm" onclick="openUpiConfigModal()" style="color:#2563eb;border-color:#bfdbfe;">
+              <i class="fa-solid fa-gear"></i> UPI Settings (${dbUpiId || '9504329735@okbizaxis'})
             </button>
             <button type="button" class="btn btn-outline btn-sm" onclick="loadDashboardData()"><i class="fa-solid fa-rotate"></i> Refresh</button>
           </div>
@@ -809,26 +809,26 @@
   <div class="modal-overlay" id="upiConfigModal">
     <div class="modal-card">
       <div class="modal-header">
-        <b><i class="fa-solid fa-qrcode" style="color:#5f259f;"></i> PhonePe UPI Payment Settings</b>
+        <b><i class="fa-solid fa-qrcode" style="color:#2563eb;"></i> Google Pay / UPI Payment Settings</b>
         <button type="button" class="back-btn" style="padding:4px 8px;" onclick="closeModal('upiConfigModal')">✕</button>
       </div>
       <div class="modal-body">
         <form id="upiConfigForm">
           <div class="form-group">
-            <label>PhonePe UPI ID (VPA)</label>
-            <input type="text" id="cfgUpiId" class="form-input" placeholder="e.g. Q021541804@ybl" required>
-            <small style="color:#64748b;font-size:11px;">Current: <b>Q021541804@ybl</b></small>
+            <label>UPI ID (VPA)</label>
+            <input type="text" id="cfgUpiId" class="form-input" placeholder="e.g. 9504329735@okbizaxis" required>
+            <small style="color:#64748b;font-size:11px;">Default: <b>9504329735@okbizaxis</b></small>
           </div>
           <div class="form-group">
-            <label>Merchant / Shop Name</label>
-            <input type="text" id="cfgUpiName" class="form-input" placeholder="e.g. Justcomes" required>
-            <small style="color:#64748b;font-size:11px;">Current: <b>Justcomes</b></small>
+            <label>Merchant / Account Holder Name</label>
+            <input type="text" id="cfgUpiName" class="form-input" placeholder="e.g. JUSTCOMES" required>
+            <small style="color:#64748b;font-size:11px;">Default: <b>JUSTCOMES</b></small>
           </div>
-          <div style="background:#f3e8ff;border:1px solid #d8b4fe;border-radius:8px;padding:10px;font-size:11.5px;color:#5f259f;margin-bottom:14px;">
-            <i class="fa-solid fa-circle-info"></i> Retailer ko yahi UPI ID aur QR code dikhega jisse wo direct PhonePe se scan karke balance add kar payenge.
+          <div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;padding:10px;font-size:11.5px;color:#1e40af;margin-bottom:14px;">
+            <i class="fa-solid fa-circle-info"></i> Retailer ko yahi UPI ID aur QR code dikhega jisse wo direct Google Pay / PhonePe / Paytm se scan karke balance add kar payenge.
           </div>
-          <button type="submit" class="btn btn-primary" style="width:100%;padding:11px;">
-            <i class="fa-solid fa-floppy-disk"></i> Save PhonePe UPI Details
+          <button type="submit" class="btn btn-primary" style="width:100%;padding:11px;background:linear-gradient(135deg,#2563eb 0%,#7c3aed 100%);">
+            <i class="fa-solid fa-floppy-disk"></i> Save UPI Payment Details
           </button>
         </form>
       </div>
@@ -929,8 +929,8 @@
 
         // UPI Config
         if (data.adminConfig) {
-          document.getElementById('cfgUpiId').value = data.adminConfig.upiId || 'Q021541804@ybl';
-          document.getElementById('cfgUpiName').value = data.adminConfig.upiName || 'Justcomes';
+          document.getElementById('cfgUpiId').value = data.adminConfig.upiId || '9504329735@okbizaxis';
+          document.getElementById('cfgUpiName').value = data.adminConfig.upiName || 'JUSTCOMES';
         }
 
         // Recharge Requests
@@ -1041,8 +1041,8 @@
 
     function openUpiConfigModal() {
       if (globalAdminData && globalAdminData.adminConfig) {
-        document.getElementById('cfgUpiId').value = globalAdminData.adminConfig.upiId || 'Q021541804@ybl';
-        document.getElementById('cfgUpiName').value = globalAdminData.adminConfig.upiName || 'Justcomes';
+        document.getElementById('cfgUpiId').value = globalAdminData.adminConfig.upiId || '9504329735@okbizaxis';
+        document.getElementById('cfgUpiName').value = globalAdminData.adminConfig.upiName || 'JUSTCOMES';
       }
       document.getElementById('upiConfigModal').classList.add('open');
     }

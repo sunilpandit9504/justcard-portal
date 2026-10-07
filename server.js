@@ -86,8 +86,8 @@ const DEFAULT_PACKAGES = {
 };
 
 const DEFAULT_UPI_CONFIG = {
-  upiId: 'Q021541804@ybl',
-  upiName: 'Justcomes',
+  upiId: '9504329735@okbizaxis',
+  upiName: 'JUSTCOMES',
   phonePeMerchantId: 'M17LJKW0G8TA'
 };
 
@@ -100,8 +100,8 @@ if (!fs.existsSync(DB_FILE)) {
     adminConfig: {
       adminPin: '1234',
       adminName: 'Justcard Admin',
-      upiId: 'Q021541804@ybl',
-      upiName: 'Justcomes'
+      upiId: '9504329735@okbizaxis',
+      upiName: 'JUSTCOMES'
     },
     pricing: { singlePrint: 5, a4Document: 2, photoMaker: 3, resumeMaker: 5, pdfEditor: 3 },
     packages: DEFAULT_PACKAGES,

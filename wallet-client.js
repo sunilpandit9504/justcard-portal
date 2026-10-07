@@ -675,8 +675,8 @@
     overlay.className = 'jc-modal-overlay';
     overlay.id = 'jc-phonepe-recharge-modal';
 
-    const upiId = 'Q021541804@ybl';
-    const upiName = 'Justcomes';
+    const upiId = '9504329735@okbizaxis';
+    const upiName = 'JUSTCOMES';
     let currentRechargeAmt = initialAmt ? Number(initialAmt) : 0;
     const initialBalance = Number(currentUser.balance || 0);
 
@@ -695,18 +695,18 @@
     function renderModalContent() {
       overlay.innerHTML = `
         <div class="jc-modal-card" style="max-width: 480px; max-height: 92vh; overflow-y: auto;">
-          <!-- PhonePe Brand Header -->
-          <div class="jc-phonepe-header" style="position:sticky;top:0;z-index:10;">
+          <!-- UPI Brand Header -->
+          <div class="jc-phonepe-header" style="position:sticky;top:0;z-index:10;background:linear-gradient(135deg,#4285F4 0%,#34A853 50%,#FBBC05 75%,#EA4335 100%);">
             <div style="display:flex;align-items:center;gap:10px;">
-              <div style="width:34px;height:34px;background:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#5f259f;font-weight:900;font-size:18px;">
-                पे
+              <div style="width:36px;height:36px;background:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#4285F4;font-weight:900;font-size:18px;box-shadow:0 2px 8px rgba(0,0,0,0.15);">
+                <i class="fa-brands fa-google-pay" style="font-size:22px;"></i>
               </div>
               <div>
-                <div style="font-weight:800;font-size:16px;font-family:'Outfit',sans-serif;letter-spacing:0.3px;">PhonePe Instant Recharge</div>
-                <div style="font-size:11px;opacity:0.85;">Merchant: <b>${upiName}</b></div>
+                <div style="font-weight:800;font-size:16px;font-family:'Outfit',sans-serif;letter-spacing:0.3px;color:#fff;">Google Pay / UPI Instant Recharge</div>
+                <div style="font-size:11px;opacity:0.95;color:#fff;">Merchant: <b>${upiName}</b></div>
               </div>
             </div>
-            <button type="button" class="jc-modal-close" id="jcCloseRechargeModalBtn" style="background:rgba(255,255,255,0.2);color:#fff;">✕</button>
+            <button type="button" class="jc-modal-close" id="jcCloseRechargeModalBtn" style="background:rgba(255,255,255,0.3);color:#fff;">✕</button>
           </div>
 
           <div class="jc-modal-body" id="jcRechargeModalBody" style="padding:18px 20px;">
@@ -748,8 +748,8 @@
               </div>
 
               <!-- Proceed / Generate QR Button -->
-              <button type="button" id="jcGenerateQrBtn" class="jc-btn-submit" style="background:linear-gradient(135deg,#5f259f 0%,#7c3aed 100%);padding:13px;font-size:15px;margin-top:0;">
-                <i class="fa-solid fa-qrcode"></i> Generate PhonePe QR Code ➔
+              <button type="button" id="jcGenerateQrBtn" class="jc-btn-submit" style="background:linear-gradient(135deg,#2563eb 0%,#7c3aed 100%);padding:13px;font-size:15px;margin-top:0;">
+                <i class="fa-solid fa-qrcode"></i> Generate Payment QR Code ➔
               </button>
             </div>
 
@@ -769,40 +769,40 @@
               <!-- QR Box -->
               <div style="background:#f8fafc;border:1.5px solid #ede9fe;border-radius:12px;padding:14px;text-align:center;margin-bottom:12px;position:relative;">
                 <div class="jc-qr-wrapper" style="padding:8px;position:relative;">
-                  <img id="jcRechargeQrImg" src="" alt="PhonePe QR" style="width:150px;height:150px;display:block;margin:0 auto;border-radius:6px;box-shadow:0 4px 12px rgba(0,0,0,0.08);">
-                  <div style="font-size:12px;font-weight:800;color:#0f172a;margin-top:8px;">
-                    Scan with PhonePe / GPay / Paytm to Pay <span id="jcQrAmountText" style="color:#5f259f;font-weight:900;font-size:15px;">₹0</span>
+                  <img id="jcRechargeQrImg" src="" alt="Payment QR" style="width:160px;height:160px;display:block;margin:0 auto;border-radius:8px;box-shadow:0 4px 14px rgba(0,0,0,0.1);background:#fff;padding:6px;">
+                  <div style="font-size:12.5px;font-weight:800;color:#0f172a;margin-top:10px;">
+                    Scan with <b style="color:#2563eb;">Google Pay</b> / <b style="color:#5f259f;">PhonePe</b> / <b style="color:#0284c7;">Paytm</b> to Pay <span id="jcQrAmountText" style="color:#16a34a;font-weight:900;font-size:16px;">₹0</span>
                   </div>
                 </div>
 
                 <!-- UPI ID & Copy -->
-                <div class="jc-upi-copy-box" style="margin:8px auto;display:inline-flex;align-items:center;gap:8px;background:#f3e8ff;padding:4px 10px;border-radius:6px;">
-                  <span style="font-size:11.5px;">UPI ID: <b>${upiId}</b></span>
-                  <button type="button" id="jcCopyUpiBtn" style="background:#5f259f;color:#fff;border:none;padding:3px 8px;border-radius:5px;font-size:11px;font-weight:750;cursor:pointer;">
+                <div class="jc-upi-copy-box" style="margin:8px auto;display:inline-flex;align-items:center;gap:8px;background:#f1f5f9;border:1px solid #cbd5e1;padding:5px 12px;border-radius:8px;">
+                  <span style="font-size:12px;color:#334155;">UPI ID: <b style="color:#0f172a;">${upiId}</b></span>
+                  <button type="button" id="jcCopyUpiBtn" style="background:#2563eb;color:#fff;border:none;padding:3px 10px;border-radius:5px;font-size:11.5px;font-weight:750;cursor:pointer;">
                     <i class="fa-regular fa-copy"></i> Copy
                   </button>
                 </div>
 
                 <!-- Direct UPI Mobile Link -->
-                <div style="margin-top:6px;">
-                  <a id="jcDirectUpiLink" href="#" style="display:inline-flex;align-items:center;gap:6px;background:#5f259f;color:#fff;text-decoration:none;padding:7px 14px;border-radius:6px;font-size:12px;font-weight:800;">
-                    <i class="fa-solid fa-mobile-screen"></i> Pay Directly in PhonePe App
+                <div style="margin-top:8px;">
+                  <a id="jcDirectUpiLink" href="#" style="display:inline-flex;align-items:center;gap:6px;background:linear-gradient(135deg,#2563eb 0%,#7c3aed 100%);color:#fff;text-decoration:none;padding:8px 16px;border-radius:8px;font-size:12.5px;font-weight:800;box-shadow:0 3px 10px rgba(37,99,235,0.25);">
+                    <i class="fa-solid fa-mobile-screen"></i> Pay Directly in UPI App
                   </a>
                 </div>
               </div>
 
               <!-- Step 3: Confirm Payment -->
-              <div style="background:#faf5ff;border:2px solid #7c3aed;border-radius:12px;padding:12px 14px;margin-bottom:6px;box-shadow:0 4px 14px rgba(124,58,237,0.12);">
-                <div style="font-size:12.5px;font-weight:850;color:#5f259f;margin-bottom:4px;display:flex;align-items:center;gap:6px;">
+              <div style="background:#f8fafc;border:2px solid #2563eb;border-radius:12px;padding:12px 14px;margin-bottom:6px;box-shadow:0 4px 14px rgba(37,99,235,0.12);">
+                <div style="font-size:12.5px;font-weight:850;color:#1e40af;margin-bottom:4px;display:flex;align-items:center;gap:6px;">
                   <i class="fa-solid fa-receipt"></i> Payment Complete Karne Ke Baad:
                 </div>
                 <p style="font-size:11px;color:#475569;margin-bottom:8px;line-height:1.4;">
-                  PhonePe app se payment ho jane ke baad niche <b>Maine Payment Kar Diya</b> button dabayein:
+                  Google Pay / UPI app se payment hone ke baad receipt se <b>12-Digit UTR / Ref Number</b> enter karein:
                 </p>
-                <input type="text" id="jcRechargeUtrInput" class="jc-input" placeholder="PhonePe 12-Digit UTR (Ya khali chhod sakte hain)" maxlength="22" style="letter-spacing:1px;font-weight:800;font-family:monospace;font-size:13px;background:#fff;border:1.5px solid #d8b4fe;color:#0f172a;text-align:center;margin-bottom:10px;">
+                <input type="text" id="jcRechargeUtrInput" class="jc-input" placeholder="Enter 12-Digit UPI / UTR Ref No." maxlength="22" style="letter-spacing:1px;font-weight:800;font-family:monospace;font-size:13px;background:#fff;border:1.5px solid #93c5fd;color:#0f172a;text-align:center;margin-bottom:10px;">
 
                 <button type="button" id="jcSubmitRechargeBtn" class="jc-btn-submit" style="background:linear-gradient(135deg,#059669 0%,#10b981 100%);padding:12px;font-size:14.5px;margin-top:0;box-shadow:0 4px 14px rgba(16,185,129,0.35);">
-                  <i class="fa-solid fa-circle-check"></i> ✅ Maine Payment Kar Diya (Add Balance)
+                  <i class="fa-solid fa-circle-check"></i> ✅ Maine Payment Kar Diya (Submit UTR)
                 </button>
               </div>
             </div>
