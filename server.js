@@ -31,7 +31,6 @@ const dbManager = require('./db');
 dbManager.initDatabase();
 
 const PORT = process.env.PORT || 3000;
-const DB_FILE = path.join(__dirname, 'data', 'db.json');
 
 const MIME_TYPES = {
   '.html': 'text/html; charset=utf-8',
@@ -91,105 +90,166 @@ const DEFAULT_UPI_CONFIG = {
   phonePeMerchantId: 'M17LJKW0G8TA'
 };
 
-// Ensure data folder & db file exist
-if (!fs.existsSync(path.join(__dirname, 'data'))) {
-  fs.mkdirSync(path.join(__dirname, 'data'), { recursive: true });
-}
-if (!fs.existsSync(DB_FILE)) {
-  const initialData = {
-    adminConfig: {
-      adminPin: '1234',
-      adminName: 'Justcard Admin',
-      upiId: '9504329735@okbizaxis',
-      upiName: 'JUSTCOMES'
-    },
-    pricing: { singlePrint: 5, a4Document: 2, photoMaker: 3, resumeMaker: 5, pdfEditor: 3 },
-    packages: DEFAULT_PACKAGES,
-    users: [
-      {
-        id: 'USR-1001',
-        mobile: '9999999999',
-        shopName: 'Demo Justcard Cyber Cafe',
-        pin: '1234',
-        balance: 100,
-        createdAt: new Date().toISOString(),
-        status: 'active',
-        package: null
-      }
-    ],
-    rechargeRequests: [],
-    transactions: [
-      {
-        id: 'TXN-10001',
-        userId: 'USR-1001',
-        mobile: '9999999999',
-        shopName: 'Demo Justcard Cyber Cafe',
-        type: 'credit',
-        amount: 100,
-        service: 'Welcome Bonus',
-        balanceAfter: 100,
-        timestamp: new Date().toISOString(),
-        note: 'Initial Demo Balance'
-      }
-    ]
-  };
-  fs.writeFileSync(DB_FILE, JSON.stringify(initialData, null, 2), 'utf8');
-}
+const DATA_DIR = path.join(__dirname, 'data');
+const DB_FILE = path.join(DATA_DIR, 'db.json');
+const MASTER_BACKUP_FILE = path.join(DATA_DIR, 'db.master.json');
+const BACKUP_FILE = path.join(DATA_DIR, 'db.backup.json');
+const BACKUPS_DIR = path.join(DATA_DIR, 'backups');
 
-const BACKUP_FILE = path.join(__dirname, 'data', 'db.backup.json');
-let cachedDb = null;
+// Ensure data folder & backups folder exist
+if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
+if (!fs.existsSync(BACKUPS_DIR)) fs.mkdirSync(BACKUPS_DIR, { recursive: true });
 
-function readDb() {
+function safeReadJson(filePath) {
   try {
-    if (fs.existsSync(DB_FILE)) {
-      const raw = fs.readFileSync(DB_FILE, 'utf8');
+    if (fs.existsSync(filePath)) {
+      const raw = fs.readFileSync(filePath, 'utf8');
       if (raw && raw.trim().length > 0) {
-        const data = JSON.parse(raw);
-        if (data && typeof data === 'object') {
-          // Anti-wipe protection: If disk users is empty but cache had users, preserve them!
-          if ((!data.users || data.users.length === 0) && cachedDb && cachedDb.users && cachedDb.users.length > 0) {
-            console.warn('⚠️ Anti-wipe guard: Preserved existing users from memory cache.');
-            data.users = cachedDb.users;
-          }
-          if (!data.packages) data.packages = JSON.parse(JSON.stringify(DEFAULT_PACKAGES));
-          if (!data.adminConfig) data.adminConfig = { adminPin: '1234', adminName: 'Justcard Admin', ...DEFAULT_UPI_CONFIG };
-          if (!data.rechargeRequests) data.rechargeRequests = [];
-          if (!data.transactions) data.transactions = [];
-          if (!data.users) data.users = [];
-
-          cachedDb = data;
-          return data;
-        }
+        const parsed = JSON.parse(raw);
+        if (parsed && typeof parsed === 'object') return parsed;
       }
     }
   } catch (err) {
-    console.error('Database read error, attempting backup restore...', err);
+    console.warn(`[SafeRead] Notice reading ${path.basename(filePath)}:`, err.message);
   }
+  return null;
+}
 
-  // Backup fallback
-  try {
-    if (fs.existsSync(BACKUP_FILE)) {
-      const bkpRaw = fs.readFileSync(BACKUP_FILE, 'utf8');
-      if (bkpRaw && bkpRaw.trim().length > 0) {
-        const bkpData = JSON.parse(bkpRaw);
-        if (bkpData && typeof bkpData === 'object') {
-          console.log('🔄 Restored database from db.backup.json');
-          cachedDb = bkpData;
-          return bkpData;
+function mergeUsers(targetUsers, sourceUsers) {
+  const map = new Map();
+  const add = (u) => {
+    if (!u || !u.mobile) return;
+    const cleanMobile = String(u.mobile).trim();
+    if (!cleanMobile) return;
+
+    if (!map.has(cleanMobile)) {
+      map.set(cleanMobile, { ...u, mobile: cleanMobile });
+    } else {
+      const existing = map.get(cleanMobile);
+      const balance = Math.max(Number(existing.balance !== undefined ? existing.balance : 0), Number(u.balance !== undefined ? u.balance : 0));
+      const status = (existing.status === 'blocked' || u.status === 'blocked') ? 'blocked' : 'active';
+      const shopName = u.shopName || existing.shopName || 'Retailer';
+      const pin = u.pin || existing.pin || '1234';
+      const id = existing.id || u.id;
+
+      let pkg = existing.package;
+      if (u.package && u.package.expiresAt) {
+        if (!pkg || !pkg.expiresAt || new Date(u.package.expiresAt) > new Date(pkg.expiresAt)) {
+          pkg = u.package;
         }
       }
+
+      map.set(cleanMobile, {
+        ...existing,
+        ...u,
+        id,
+        mobile: cleanMobile,
+        shopName,
+        pin,
+        balance,
+        status,
+        package: pkg
+      });
     }
-  } catch (bkpErr) {
-    console.error('Backup read error:', bkpErr);
+  };
+
+  (sourceUsers || []).forEach(add);
+  (targetUsers || []).forEach(add);
+
+  return Array.from(map.values());
+}
+
+function selfHealAndConsolidateDb() {
+  const sources = [];
+
+  const mainDb = safeReadJson(DB_FILE);
+  if (mainDb) sources.push(mainDb);
+
+  const masterDb = safeReadJson(MASTER_BACKUP_FILE);
+  if (masterDb) sources.push(masterDb);
+
+  const backupDb = safeReadJson(BACKUP_FILE);
+  if (backupDb) sources.push(backupDb);
+
+  try {
+    if (fs.existsSync(BACKUPS_DIR)) {
+      const files = fs.readdirSync(BACKUPS_DIR)
+        .filter(f => f.endsWith('.json'))
+        .sort()
+        .reverse()
+        .slice(0, 15);
+      for (const f of files) {
+        const snap = safeReadJson(path.join(BACKUPS_DIR, f));
+        if (snap) sources.push(snap);
+      }
+    }
+  } catch (e) {}
+
+  let consolidatedUsers = [];
+  const consolidatedTxns = new Map();
+  const consolidatedReqs = new Map();
+  let consolidatedPricing = null;
+  let consolidatedPackages = null;
+  let consolidatedAdminConfig = null;
+
+  for (const s of sources) {
+    if (s.users && Array.isArray(s.users)) {
+      consolidatedUsers = mergeUsers(consolidatedUsers, s.users);
+    }
+    if (s.transactions && Array.isArray(s.transactions)) {
+      for (const t of s.transactions) {
+        if (t && t.id && !consolidatedTxns.has(t.id)) consolidatedTxns.set(t.id, t);
+      }
+    }
+    if (s.rechargeRequests && Array.isArray(s.rechargeRequests)) {
+      for (const r of s.rechargeRequests) {
+        if (r && r.id && !consolidatedReqs.has(r.id)) consolidatedReqs.set(r.id, r);
+      }
+    }
+    if (!consolidatedPricing && s.pricing && typeof s.pricing === 'object' && Object.keys(s.pricing).length > 0) {
+      consolidatedPricing = { ...s.pricing };
+    }
+    if (!consolidatedPackages && s.packages && typeof s.packages === 'object' && Object.keys(s.packages).length > 0) {
+      consolidatedPackages = { ...s.packages };
+    }
+    if (!consolidatedAdminConfig && s.adminConfig && typeof s.adminConfig === 'object' && Object.keys(s.adminConfig).length > 0) {
+      consolidatedAdminConfig = { ...s.adminConfig };
+    }
   }
 
-  if (cachedDb) return cachedDb;
+  // Preserve adminConfig
+  if (!consolidatedAdminConfig) {
+    consolidatedAdminConfig = {
+      adminPin: '1234',
+      adminName: 'Justcard Admin',
+      upiId: DEFAULT_UPI_CONFIG.upiId,
+      upiName: DEFAULT_UPI_CONFIG.upiName
+    };
+  } else {
+    if (!consolidatedAdminConfig.upiId) consolidatedAdminConfig.upiId = DEFAULT_UPI_CONFIG.upiId;
+    if (!consolidatedAdminConfig.upiName) consolidatedAdminConfig.upiName = DEFAULT_UPI_CONFIG.upiName;
+    if (!consolidatedAdminConfig.adminPin) consolidatedAdminConfig.adminPin = '1234';
+  }
 
-  return {
-    adminConfig: { adminPin: '1234', ...DEFAULT_UPI_CONFIG },
-    pricing: { singlePrint: 5, a4Document: 2, photoMaker: 3, resumeMaker: 5, pdfEditor: 3 },
-    packages: DEFAULT_PACKAGES,
-    users: [
+  if (!consolidatedPricing) {
+    consolidatedPricing = { singlePrint: 5, a4Document: 2, photoMaker: 3, resumeMaker: 5, pdfEditor: 3 };
+  }
+
+  if (!consolidatedPackages) {
+    consolidatedPackages = JSON.parse(JSON.stringify(DEFAULT_PACKAGES));
+  }
+
+  const txnsArray = Array.from(consolidatedTxns.values()).sort((a, b) => {
+    return new Date(b.timestamp || 0).getTime() - new Date(a.timestamp || 0).getTime();
+  });
+
+  const reqsArray = Array.from(consolidatedReqs.values()).sort((a, b) => {
+    return new Date(b.timestamp || 0).getTime() - new Date(a.timestamp || 0).getTime();
+  });
+
+  // If no users at all across all sources, add standard initial demo user
+  if (!consolidatedUsers || consolidatedUsers.length === 0) {
+    consolidatedUsers = [
       {
         id: 'USR-1001',
         mobile: '9999999999',
@@ -200,46 +260,93 @@ function readDb() {
         status: 'active',
         package: null
       }
-    ],
-    rechargeRequests: [],
-    transactions: []
+    ];
+  }
+
+  const finalDb = {
+    adminConfig: consolidatedAdminConfig,
+    pricing: consolidatedPricing,
+    packages: consolidatedPackages,
+    users: consolidatedUsers,
+    transactions: txnsArray,
+    rechargeRequests: reqsArray
   };
+
+  return finalDb;
 }
+
+let cachedDb = null;
+let lastBackupTime = 0;
+
+function readDb() {
+  if (!cachedDb) {
+    cachedDb = selfHealAndConsolidateDb();
+    // Persist consolidated master state
+    try {
+      const jsonStr = JSON.stringify(cachedDb, null, 2);
+      fs.writeFileSync(DB_FILE, jsonStr, 'utf8');
+      fs.writeFileSync(MASTER_BACKUP_FILE, jsonStr, 'utf8');
+      fs.writeFileSync(BACKUP_FILE, jsonStr, 'utf8');
+    } catch (e) {}
+  }
+  return cachedDb;
+}
+
+// Auto-heal and warm up cache immediately on startup
+readDb();
 
 function writeDb(data) {
   try {
     if (!data || typeof data !== 'object') return false;
 
-    // Anti-wipe guard: Never overwrite existing users with an empty list
-    if ((!data.users || data.users.length === 0) && cachedDb && cachedDb.users && cachedDb.users.length > 0) {
-      console.warn('⚠️ Anti-wipe guard: Prevented writing empty user list. Retaining active users.');
-      data.users = cachedDb.users;
+    // Deep merge with memory cache to make sure zero users or configurations are ever lost
+    if (cachedDb && cachedDb.users && cachedDb.users.length > 0) {
+      data.users = mergeUsers(cachedDb.users, data.users || []);
     }
 
     cachedDb = data;
     const jsonStr = JSON.stringify(data, null, 2);
 
-    const dir = path.dirname(DB_FILE);
-    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+    if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
+    if (!fs.existsSync(BACKUPS_DIR)) fs.mkdirSync(BACKUPS_DIR, { recursive: true });
 
-    // 1. Write atomic temp file
+    // 1. Atomic write to main DB
     const tmpFile = DB_FILE + '.tmp';
     fs.writeFileSync(tmpFile, jsonStr, 'utf8');
-
-    // 2. Save backup whenever users exist
-    if (data.users && data.users.length > 0) {
-      try {
-        fs.writeFileSync(BACKUP_FILE, jsonStr, 'utf8');
-      } catch (bErr) {
-        console.warn('Backup file write warning:', bErr);
-      }
-    }
-
-    // 3. Atomically rename/replace
     try {
       fs.renameSync(tmpFile, DB_FILE);
     } catch (renameErr) {
       fs.writeFileSync(DB_FILE, jsonStr, 'utf8');
+    }
+
+    // 2. Save to Master Vault and Backup
+    try {
+      fs.writeFileSync(MASTER_BACKUP_FILE, jsonStr, 'utf8');
+      fs.writeFileSync(BACKUP_FILE, jsonStr, 'utf8');
+    } catch (bErr) {
+      console.warn('Backup write warning:', bErr.message);
+    }
+
+    // 3. Create rolling snapshot backup (throttled to at most once every 30s)
+    const now = Date.now();
+    if (now - lastBackupTime > 30000) {
+      lastBackupTime = now;
+      try {
+        const d = new Date();
+        const stamp = d.toISOString().replace(/[:.]/g, '-');
+        const snapFile = path.join(BACKUPS_DIR, `db_backup_${stamp}.json`);
+        fs.writeFileSync(snapFile, jsonStr, 'utf8');
+
+        // Prune oldest snapshots, retain last 30
+        const files = fs.readdirSync(BACKUPS_DIR)
+          .filter(f => f.startsWith('db_backup_') && f.endsWith('.json'))
+          .sort();
+        if (files.length > 30) {
+          for (let i = 0; i < files.length - 30; i++) {
+            try { fs.unlinkSync(path.join(BACKUPS_DIR, files[i])); } catch (err) {}
+          }
+        }
+      } catch (snapErr) {}
     }
 
     if (dbManager && typeof dbManager.isMySqlActive === 'function' && dbManager.isMySqlActive()) {
