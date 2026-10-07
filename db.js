@@ -56,104 +56,44 @@ function safeReadJson(filePath) {
   return null;
 }
 
-function mergeUsers(targetUsers, sourceUsers) {
-  const map = new Map();
-  const add = (u) => {
-    if (!u || !u.mobile) return;
-    const cleanMobile = String(u.mobile).trim();
-    if (!cleanMobile) return;
-
-    if (!map.has(cleanMobile)) {
-      map.set(cleanMobile, { ...u, mobile: cleanMobile });
-    } else {
-      const existing = map.get(cleanMobile);
-      const balance = Math.max(Number(existing.balance !== undefined ? existing.balance : 0), Number(u.balance !== undefined ? u.balance : 0));
-      const status = (existing.status === 'blocked' || u.status === 'blocked') ? 'blocked' : 'active';
-      const shopName = u.shopName || existing.shopName || 'Retailer';
-      const pin = u.pin || existing.pin || '1234';
-      const id = existing.id || u.id;
-
-      let pkg = existing.package;
-      if (u.package && u.package.expiresAt) {
-        if (!pkg || !pkg.expiresAt || new Date(u.package.expiresAt) > new Date(pkg.expiresAt)) {
-          pkg = u.package;
-        }
-      }
-
-      map.set(cleanMobile, {
-        ...existing,
-        ...u,
-        id,
-        mobile: cleanMobile,
-        shopName,
-        pin,
-        balance,
-        status,
-        package: pkg
-      });
-    }
-  };
-
-  (sourceUsers || []).forEach(add);
-  (targetUsers || []).forEach(add);
-
-  return Array.from(map.values());
-}
-
 function readJsonDb() {
   if (cachedJsonDb) return cachedJsonDb;
 
-  const sources = [];
-  const mainDb = safeReadJson(DB_FILE);
-  if (mainDb) sources.push(mainDb);
-
-  const masterDb = safeReadJson(MASTER_BACKUP_FILE);
-  if (masterDb) sources.push(masterDb);
-
-  const backupDb = safeReadJson(BACKUP_FILE);
-  if (backupDb) sources.push(backupDb);
-
-  try {
-    if (fs.existsSync(BACKUPS_DIR)) {
-      const files = fs.readdirSync(BACKUPS_DIR)
-        .filter(f => f.endsWith('.json'))
-        .sort()
-        .reverse()
-        .slice(0, 10);
-      for (const f of files) {
-        const snap = safeReadJson(path.join(BACKUPS_DIR, f));
-        if (snap) sources.push(snap);
+  let loaded = safeReadJson(DB_FILE);
+  if (!loaded || !loaded.users || !Array.isArray(loaded.users)) {
+    const master = safeReadJson(MASTER_BACKUP_FILE);
+    if (master && master.users && Array.isArray(master.users)) {
+      loaded = master;
+    } else {
+      const backup = safeReadJson(BACKUP_FILE);
+      if (backup && backup.users && Array.isArray(backup.users)) {
+        loaded = backup;
       }
     }
-  } catch (e) {}
+  }
 
-  let consolidatedUsers = [];
-  const consolidatedTxns = new Map();
-  const consolidatedReqs = new Map();
-  let consolidatedPricing = null;
-  let consolidatedPackages = null;
-  let consolidatedAdminConfig = null;
-
-  for (const s of sources) {
-    if (s.users && Array.isArray(s.users)) consolidatedUsers = mergeUsers(consolidatedUsers, s.users);
-    if (s.transactions && Array.isArray(s.transactions)) {
-      for (const t of s.transactions) if (t && t.id && !consolidatedTxns.has(t.id)) consolidatedTxns.set(t.id, t);
-    }
-    if (s.rechargeRequests && Array.isArray(s.rechargeRequests)) {
-      for (const r of s.rechargeRequests) if (r && r.id && !consolidatedReqs.has(r.id)) consolidatedReqs.set(r.id, r);
-    }
-    if (!consolidatedPricing && s.pricing && typeof s.pricing === 'object') consolidatedPricing = { ...s.pricing };
-    if (!consolidatedPackages && s.packages && typeof s.packages === 'object') consolidatedPackages = { ...s.packages };
-    if (!consolidatedAdminConfig && s.adminConfig && typeof s.adminConfig === 'object') consolidatedAdminConfig = { ...s.adminConfig };
+  if (!loaded || typeof loaded !== 'object') {
+    loaded = {};
   }
 
   cachedJsonDb = {
-    adminConfig: consolidatedAdminConfig || { adminPin: '1234', adminName: 'Justcard Admin', upiId: '9504329735@okbizaxis', upiName: 'JUSTCOMES' },
-    pricing: consolidatedPricing || { singlePrint: 5, a4Document: 2, photoMaker: 3, resumeMaker: 5, pdfEditor: 3 },
-    packages: consolidatedPackages || {},
-    users: consolidatedUsers,
-    transactions: Array.from(consolidatedTxns.values()),
-    rechargeRequests: Array.from(consolidatedReqs.values())
+    adminConfig: Object.assign({
+      adminPin: '1234',
+      adminName: 'Justcard Admin',
+      upiId: '9504329735@okbizaxis',
+      upiName: 'JUSTCOMES'
+    }, loaded.adminConfig || {}),
+    pricing: Object.assign({
+      singlePrint: 5,
+      a4Document: 2,
+      photoMaker: 3,
+      resumeMaker: 5,
+      pdfEditor: 3
+    }, loaded.pricing || {}),
+    packages: loaded.packages || {},
+    users: Array.isArray(loaded.users) ? loaded.users : [],
+    transactions: Array.isArray(loaded.transactions) ? loaded.transactions : [],
+    rechargeRequests: Array.isArray(loaded.rechargeRequests) ? loaded.rechargeRequests : []
   };
 
   return cachedJsonDb;
@@ -162,10 +102,6 @@ function readJsonDb() {
 function writeJsonDb(data) {
   try {
     if (!data || typeof data !== 'object') return;
-
-    if (cachedJsonDb && cachedJsonDb.users && cachedJsonDb.users.length > 0) {
-      data.users = mergeUsers(cachedJsonDb.users, data.users || []);
-    }
 
     cachedJsonDb = data;
     const jsonStr = JSON.stringify(data, null, 2);

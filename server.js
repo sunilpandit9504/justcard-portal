@@ -115,141 +115,42 @@ function safeReadJson(filePath) {
   return null;
 }
 
-function mergeUsers(targetUsers, sourceUsers) {
-  const map = new Map();
-  const add = (u) => {
-    if (!u || !u.mobile) return;
-    const cleanMobile = String(u.mobile).trim();
-    if (!cleanMobile) return;
+const DEFAULT_PRICING = {
+  singlePrint: 5,
+  a4Document: 2,
+  photoMaker: 3,
+  resumeMaker: 5,
+  pdfEditor: 3
+};
 
-    if (!map.has(cleanMobile)) {
-      map.set(cleanMobile, { ...u, mobile: cleanMobile });
+let cachedDb = null;
+let lastBackupTime = 0;
+
+function readDb() {
+  if (cachedDb) return cachedDb;
+
+  let loaded = safeReadJson(DB_FILE);
+
+  // If primary db.json is missing or invalid, try master backup then backup
+  if (!loaded || !loaded.users || !Array.isArray(loaded.users)) {
+    const master = safeReadJson(MASTER_BACKUP_FILE);
+    if (master && master.users && Array.isArray(master.users)) {
+      loaded = master;
     } else {
-      const existing = map.get(cleanMobile);
-      const balance = Math.max(Number(existing.balance !== undefined ? existing.balance : 0), Number(u.balance !== undefined ? u.balance : 0));
-      const status = (existing.status === 'blocked' || u.status === 'blocked') ? 'blocked' : 'active';
-      const shopName = u.shopName || existing.shopName || 'Retailer';
-      const pin = u.pin || existing.pin || '1234';
-      const id = existing.id || u.id;
-
-      let pkg = existing.package;
-      if (u.package && u.package.expiresAt) {
-        if (!pkg || !pkg.expiresAt || new Date(u.package.expiresAt) > new Date(pkg.expiresAt)) {
-          pkg = u.package;
-        }
+      const backup = safeReadJson(BACKUP_FILE);
+      if (backup && backup.users && Array.isArray(backup.users)) {
+        loaded = backup;
       }
-
-      map.set(cleanMobile, {
-        ...existing,
-        ...u,
-        id,
-        mobile: cleanMobile,
-        shopName,
-        pin,
-        balance,
-        status,
-        package: pkg
-      });
-    }
-  };
-
-  (sourceUsers || []).forEach(add);
-  (targetUsers || []).forEach(add);
-
-  return Array.from(map.values());
-}
-
-function selfHealAndConsolidateDb() {
-  const sources = [];
-
-  const mainDb = safeReadJson(DB_FILE);
-  if (mainDb) sources.push(mainDb);
-
-  const masterDb = safeReadJson(MASTER_BACKUP_FILE);
-  if (masterDb) sources.push(masterDb);
-
-  const backupDb = safeReadJson(BACKUP_FILE);
-  if (backupDb) sources.push(backupDb);
-
-  try {
-    if (fs.existsSync(BACKUPS_DIR)) {
-      const files = fs.readdirSync(BACKUPS_DIR)
-        .filter(f => f.endsWith('.json'))
-        .sort()
-        .reverse()
-        .slice(0, 15);
-      for (const f of files) {
-        const snap = safeReadJson(path.join(BACKUPS_DIR, f));
-        if (snap) sources.push(snap);
-      }
-    }
-  } catch (e) {}
-
-  let consolidatedUsers = [];
-  const consolidatedTxns = new Map();
-  const consolidatedReqs = new Map();
-  let consolidatedPricing = null;
-  let consolidatedPackages = null;
-  let consolidatedAdminConfig = null;
-
-  for (const s of sources) {
-    if (s.users && Array.isArray(s.users)) {
-      consolidatedUsers = mergeUsers(consolidatedUsers, s.users);
-    }
-    if (s.transactions && Array.isArray(s.transactions)) {
-      for (const t of s.transactions) {
-        if (t && t.id && !consolidatedTxns.has(t.id)) consolidatedTxns.set(t.id, t);
-      }
-    }
-    if (s.rechargeRequests && Array.isArray(s.rechargeRequests)) {
-      for (const r of s.rechargeRequests) {
-        if (r && r.id && !consolidatedReqs.has(r.id)) consolidatedReqs.set(r.id, r);
-      }
-    }
-    if (!consolidatedPricing && s.pricing && typeof s.pricing === 'object' && Object.keys(s.pricing).length > 0) {
-      consolidatedPricing = { ...s.pricing };
-    }
-    if (!consolidatedPackages && s.packages && typeof s.packages === 'object' && Object.keys(s.packages).length > 0) {
-      consolidatedPackages = { ...s.packages };
-    }
-    if (!consolidatedAdminConfig && s.adminConfig && typeof s.adminConfig === 'object' && Object.keys(s.adminConfig).length > 0) {
-      consolidatedAdminConfig = { ...s.adminConfig };
     }
   }
 
-  // Preserve adminConfig
-  if (!consolidatedAdminConfig) {
-    consolidatedAdminConfig = {
-      adminPin: '1234',
-      adminName: 'Justcard Admin',
-      upiId: DEFAULT_UPI_CONFIG.upiId,
-      upiName: DEFAULT_UPI_CONFIG.upiName
-    };
-  } else {
-    if (!consolidatedAdminConfig.upiId) consolidatedAdminConfig.upiId = DEFAULT_UPI_CONFIG.upiId;
-    if (!consolidatedAdminConfig.upiName) consolidatedAdminConfig.upiName = DEFAULT_UPI_CONFIG.upiName;
-    if (!consolidatedAdminConfig.adminPin) consolidatedAdminConfig.adminPin = '1234';
+  if (!loaded || typeof loaded !== 'object') {
+    loaded = {};
   }
 
-  if (!consolidatedPricing) {
-    consolidatedPricing = { singlePrint: 5, a4Document: 2, photoMaker: 3, resumeMaker: 5, pdfEditor: 3 };
-  }
-
-  if (!consolidatedPackages) {
-    consolidatedPackages = JSON.parse(JSON.stringify(DEFAULT_PACKAGES));
-  }
-
-  const txnsArray = Array.from(consolidatedTxns.values()).sort((a, b) => {
-    return new Date(b.timestamp || 0).getTime() - new Date(a.timestamp || 0).getTime();
-  });
-
-  const reqsArray = Array.from(consolidatedReqs.values()).sort((a, b) => {
-    return new Date(b.timestamp || 0).getTime() - new Date(a.timestamp || 0).getTime();
-  });
-
-  // If no users at all across all sources, add standard initial demo user
-  if (!consolidatedUsers || consolidatedUsers.length === 0) {
-    consolidatedUsers = [
+  // Ensure users array exists
+  if (!loaded.users || !Array.isArray(loaded.users)) {
+    loaded.users = [
       {
         id: 'USR-1001',
         mobile: '9999999999',
@@ -263,46 +164,77 @@ function selfHealAndConsolidateDb() {
     ];
   }
 
-  const finalDb = {
-    adminConfig: consolidatedAdminConfig,
-    pricing: consolidatedPricing,
-    packages: consolidatedPackages,
-    users: consolidatedUsers,
-    transactions: txnsArray,
-    rechargeRequests: reqsArray
-  };
+  // Ensure adminConfig exists
+  loaded.adminConfig = Object.assign({
+    adminPin: '1234',
+    adminName: 'Justcard Admin',
+    upiId: DEFAULT_UPI_CONFIG.upiId,
+    upiName: DEFAULT_UPI_CONFIG.upiName
+  }, loaded.adminConfig || {});
 
-  return finalDb;
-}
+  // Ensure pricing exists with defaults for missing keys
+  loaded.pricing = Object.assign({}, DEFAULT_PRICING, loaded.pricing || {});
 
-let cachedDb = null;
-let lastBackupTime = 0;
-
-function readDb() {
-  if (!cachedDb) {
-    cachedDb = selfHealAndConsolidateDb();
-    // Persist consolidated master state
-    try {
-      const jsonStr = JSON.stringify(cachedDb, null, 2);
-      fs.writeFileSync(DB_FILE, jsonStr, 'utf8');
-      fs.writeFileSync(MASTER_BACKUP_FILE, jsonStr, 'utf8');
-      fs.writeFileSync(BACKUP_FILE, jsonStr, 'utf8');
-    } catch (e) {}
+  // Ensure packages exists with full metadata for all 4 packages
+  const mergedPackages = {};
+  for (const key of ['silver', 'gold', 'platinum', 'diamond']) {
+    mergedPackages[key] = Object.assign(
+      {},
+      DEFAULT_PACKAGES[key],
+      (loaded.packages && loaded.packages[key]) || {}
+    );
   }
+  loaded.packages = mergedPackages;
+
+  if (!loaded.transactions || !Array.isArray(loaded.transactions)) {
+    loaded.transactions = [];
+  }
+  if (!loaded.rechargeRequests || !Array.isArray(loaded.rechargeRequests)) {
+    loaded.rechargeRequests = [];
+  }
+
+  cachedDb = loaded;
+
+  // Ensure persisted cleanly to disk
+  try {
+    const jsonStr = JSON.stringify(cachedDb, null, 2);
+    fs.writeFileSync(DB_FILE, jsonStr, 'utf8');
+    fs.writeFileSync(MASTER_BACKUP_FILE, jsonStr, 'utf8');
+    fs.writeFileSync(BACKUP_FILE, jsonStr, 'utf8');
+  } catch (e) {}
+
   return cachedDb;
 }
 
-// Auto-heal and warm up cache immediately on startup
+// Warm up cache immediately on startup
 readDb();
 
 function writeDb(data) {
   try {
     if (!data || typeof data !== 'object') return false;
 
-    // Deep merge with memory cache to make sure zero users or configurations are ever lost
-    if (cachedDb && cachedDb.users && cachedDb.users.length > 0) {
-      data.users = mergeUsers(cachedDb.users, data.users || []);
+    // Ensure structure integrity
+    if (!data.users || !Array.isArray(data.users)) data.users = [];
+    if (!data.transactions || !Array.isArray(data.transactions)) data.transactions = [];
+    if (!data.rechargeRequests || !Array.isArray(data.rechargeRequests)) data.rechargeRequests = [];
+
+    // Ensure packages maintain full metadata
+    const mergedPackages = {};
+    for (const key of ['silver', 'gold', 'platinum', 'diamond']) {
+      mergedPackages[key] = Object.assign(
+        {},
+        DEFAULT_PACKAGES[key],
+        (data.packages && data.packages[key]) || {}
+      );
     }
+    data.packages = mergedPackages;
+    data.pricing = Object.assign({}, DEFAULT_PRICING, data.pricing || {});
+    data.adminConfig = Object.assign({
+      adminPin: '1234',
+      adminName: 'Justcard Admin',
+      upiId: DEFAULT_UPI_CONFIG.upiId,
+      upiName: DEFAULT_UPI_CONFIG.upiName
+    }, data.adminConfig || {});
 
     cachedDb = data;
     const jsonStr = JSON.stringify(data, null, 2);
@@ -349,26 +281,6 @@ function writeDb(data) {
       } catch (snapErr) {}
     }
 
-    if (dbManager && typeof dbManager.isMySqlActive === 'function' && dbManager.isMySqlActive()) {
-      (async () => {
-        try {
-          if (data.users) {
-            for (const u of data.users) await dbManager.saveUser(u);
-          }
-          if (data.transactions && data.transactions.length > 0) {
-            await dbManager.addTransaction(data.transactions[0]);
-          }
-          if (data.rechargeRequests && data.rechargeRequests.length > 0) {
-            await dbManager.addRechargeRequest(data.rechargeRequests[0]);
-          }
-          if (data.pricing) await dbManager.setConfig('pricing', data.pricing);
-          if (data.packages) await dbManager.setConfig('packages', data.packages);
-          if (data.adminConfig) await dbManager.setConfig('adminConfig', data.adminConfig);
-        } catch (syncErr) {
-          console.error('MySQL background sync error:', syncErr);
-        }
-      })();
-    }
     return true;
   } catch (err) {
     console.error('Database write error:', err);
@@ -1205,20 +1117,24 @@ const server = http.createServer(async (req, res) => {
 
       db.packages = {
         silver: {
-          ...current.silver,
-          price: Number(packages.silver !== undefined ? packages.silver : (current.silver ? current.silver.price : 299))
+          ...DEFAULT_PACKAGES.silver,
+          ...(current.silver || {}),
+          price: Number(packages.silver !== undefined ? packages.silver : (current.silver ? current.silver.price : DEFAULT_PACKAGES.silver.price))
         },
         gold: {
-          ...current.gold,
-          price: Number(packages.gold !== undefined ? packages.gold : (current.gold ? current.gold.price : 699))
+          ...DEFAULT_PACKAGES.gold,
+          ...(current.gold || {}),
+          price: Number(packages.gold !== undefined ? packages.gold : (current.gold ? current.gold.price : DEFAULT_PACKAGES.gold.price))
         },
         platinum: {
-          ...current.platinum,
-          price: Number(packages.platinum !== undefined ? packages.platinum : (current.platinum ? current.platinum.price : 1199))
+          ...DEFAULT_PACKAGES.platinum,
+          ...(current.platinum || {}),
+          price: Number(packages.platinum !== undefined ? packages.platinum : (current.platinum ? current.platinum.price : DEFAULT_PACKAGES.platinum.price))
         },
         diamond: {
-          ...current.diamond,
-          price: Number(packages.diamond !== undefined ? packages.diamond : (current.diamond ? current.diamond.price : 1999))
+          ...DEFAULT_PACKAGES.diamond,
+          ...(current.diamond || {}),
+          price: Number(packages.diamond !== undefined ? packages.diamond : (current.diamond ? current.diamond.price : DEFAULT_PACKAGES.diamond.price))
         }
       };
 

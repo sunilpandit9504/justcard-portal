@@ -19,6 +19,7 @@
       "durationText": "1 Month",
       "months": 1,
       "price": 349,
+      "description": "1 Month All 4 Services Unlimited Free Print & Download",
       "badgeColor": "#94a3b8"
     },
     "gold": {
@@ -27,7 +28,26 @@
       "durationText": "3 Months",
       "months": 3,
       "price": 799,
+      "description": "3 Months All 4 Services Unlimited Free Print & Download",
       "badgeColor": "#f59e0b"
+    },
+    "platinum": {
+      "key": "platinum",
+      "name": "Platinum Plan",
+      "durationText": "6 Months",
+      "months": 6,
+      "price": 1199,
+      "description": "6 Months All 4 Services Unlimited Free Print & Download",
+      "badgeColor": "#06b6d4"
+    },
+    "diamond": {
+      "key": "diamond",
+      "name": "Diamond Plan",
+      "durationText": "1 Year (12 Months)",
+      "months": 12,
+      "price": 1999,
+      "description": "1 Year (12 Months) All 4 Services Unlimited Free Print & Download",
+      "badgeColor": "#a855f7"
     }
   },
   "users": [
@@ -47,7 +67,8 @@
       "shopName": "Test Cyber Cafe",
       "pin": "5678",
       "balance": 550,
-      "status": "active"
+      "status": "active",
+      "package": null
     },
     {
       "id": "USR-JUSTCOMES-1",
@@ -59,6 +80,7 @@
       "package": {
         "key": "gold",
         "name": "Gold Plan",
+        "activatedAt": "2026-10-01T00:00:00.000Z",
         "expiresAt": "2027-01-01T00:00:00.000Z"
       }
     }
