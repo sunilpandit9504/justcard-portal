@@ -1118,14 +1118,17 @@
               <button type="button" class="btn btn-outline btn-sm" onclick="openAssignPackageModal('${u.id}', '${u.shopName}', '${u.mobile}', '${pkg.name}', '${expStr}')" style="color:#7c3aed;border-color:#d8b4fe;" title="Assign/Extend Unlimited Subscription Plan">
                 <i class="fa-solid fa-crown"></i> Plan
               </button>
-              <button type="button" class="btn btn-green btn-sm" onclick="openRechargeModal('${u.id}', '${u.shopName}', '${u.mobile}')" style="margin-left:3px;">
+              <button type="button" class="btn btn-green btn-sm" onclick="openRechargeModal('${u.id}', '${u.shopName}', '${u.mobile}')" style="margin-left:3px;" title="Add/Deduct Balance">
                 <i class="fa-solid fa-plus"></i> Recharge
               </button>
               <button type="button" class="btn btn-outline btn-sm" onclick="openResetUserPinModal('${u.id}', '${u.shopName}', '${u.mobile}', '${u.pin || ''}')" style="margin-left:3px;" title="Reset Security PIN">
                 <i class="fa-solid fa-key"></i>
               </button>
-              <button type="button" class="btn btn-outline btn-sm" onclick="toggleUserStatus('${u.id}', '${u.status}')" style="margin-left:3px;">
-                ${isBlocked ? '<i class="fa-solid fa-unlock"></i>' : '<i class="fa-solid fa-ban" style="color:#dc2626;"></i>'}
+              <button type="button" class="btn btn-outline btn-sm" onclick="toggleUserStatus('${u.id}', '${u.status}')" style="margin-left:3px;" title="${isBlocked ? 'Unblock Retailer' : 'Block Retailer'}">
+                ${isBlocked ? '<i class="fa-solid fa-unlock"></i>' : '<i class="fa-solid fa-ban" style="color:#d97706;"></i>'}
+              </button>
+              <button type="button" class="btn btn-outline btn-sm" onclick="handleDeleteUser('${u.id}', '${u.shopName}', '${u.mobile}')" style="margin-left:3px;color:#dc2626;border-color:#fecaca;" title="Permanently Delete Retailer">
+                <i class="fa-solid fa-trash-can"></i>
               </button>
             </td>
           </tr>
@@ -1321,6 +1324,29 @@
         }
       } catch (err) {
         alert('Failed to update status');
+      }
+    }
+
+    async function handleDeleteUser(userId, shopName, mobile) {
+      if (!confirm(`⚠️ Kya aap sach me retailer "${shopName}" (${mobile}) ko permanently DELETE karna chahte hain?\n\nYeh action undo nahi kiya ja sakta.`)) {
+        return;
+      }
+
+      try {
+        const res = await fetch(`${API_BASE}/api/admin/delete-user`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ userId, mobile })
+        });
+        const data = await res.json();
+        if (res.ok) {
+          alert(`✅ ${data.message || 'Retailer successfully deleted!'}`);
+          loadDashboardData();
+        } else {
+          alert('Error: ' + (data.error || 'Failed to delete retailer'));
+        }
+      } catch (err) {
+        alert('Server communication error: ' + err.message);
       }
     }
 

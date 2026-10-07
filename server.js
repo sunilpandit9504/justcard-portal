@@ -1588,6 +1588,44 @@ const server = http.createServer(async (req, res) => {
   }
 
   // -------------------------------------------------------------
+  // 21.1 Admin Delete Retailer (/api/admin/delete-user)
+  // -------------------------------------------------------------
+  if (pathname === '/api/admin/delete-user' && req.method === 'POST') {
+    try {
+      const body = await parseJsonBody(req);
+      const { userId, mobile } = body;
+
+      if (!userId && !mobile) {
+        return sendJson(res, 400, { error: 'Retailer ID or Mobile is required.' });
+      }
+
+      const db = readDb();
+      const userIndex = db.users.findIndex(u => (userId && u.id === userId) || (mobile && u.mobile === mobile));
+
+      if (userIndex === -1) {
+        return sendJson(res, 404, { error: 'Retailer not found.' });
+      }
+
+      const deletedUser = db.users.splice(userIndex, 1)[0];
+
+      // Update memory cache and write directly to all vault files
+      cachedDb = db;
+      const jsonStr = JSON.stringify(db, null, 2);
+      fs.writeFileSync(DB_FILE, jsonStr, 'utf8');
+      fs.writeFileSync(MASTER_BACKUP_FILE, jsonStr, 'utf8');
+      fs.writeFileSync(BACKUP_FILE, jsonStr, 'utf8');
+
+      return sendJson(res, 200, {
+        success: true,
+        message: `✅ Retailer "${deletedUser.shopName}" (${deletedUser.mobile}) successfully deleted!`,
+        deletedUser
+      });
+    } catch (e) {
+      return sendJson(res, 500, { error: e.message });
+    }
+  }
+
+  // -------------------------------------------------------------
   // 22. Admin Get Recharge Requests (/api/admin/recharge-requests)
   // -------------------------------------------------------------
   if (pathname === '/api/admin/recharge-requests' && req.method === 'GET') {
